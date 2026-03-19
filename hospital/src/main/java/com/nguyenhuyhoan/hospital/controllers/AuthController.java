@@ -8,6 +8,7 @@ import com.nguyenhuyhoan.hospital.models.Role;
 import com.nguyenhuyhoan.hospital.models.User;
 import com.nguyenhuyhoan.hospital.repositoris.RoleRepository;
 import com.nguyenhuyhoan.hospital.repositoris.UserRepository;
+import com.nguyenhuyhoan.hospital.securitis.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -71,7 +69,8 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginDTO.getPhone(), loginDTO.getPassword())
             );
 
-            User user = (User) authentication.getPrincipal();
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            User user = userDetails.getUser();
 
             String token = jwtTokenUtils.generateToken(user);
 
@@ -82,14 +81,24 @@ public class AuthController {
                     .fullName(user.getFullName())
                     .message("Đăng nhập thành công")
                     .build();
+
             return ResponseEntity.ok(response);
-        }catch (Exception e){
+
+        } catch (Exception e){
+            e.printStackTrace(); // 🔥 thêm dòng này để debug
             return ResponseEntity.status(401).body(AuthResponse.builder()
                     .message("Sai số điện thoại hoặc mật khẩu")
                     .build()
             );
-
-
         }
+    }
+
+    @PostMapping("/test-password")
+    public String testPassword(@RequestParam String phone, @RequestParam String plainPassword) {
+        User user = userRepository.findByPhone(phone)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        boolean match = passwordEncoder.matches(plainPassword, user.getPasswordHash());
+        return "Mật khẩu khớp không? " + match + "\nHash trong DB: " + user.getPasswordHash();
     }
 }
