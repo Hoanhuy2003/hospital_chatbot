@@ -27,7 +27,7 @@ public class Specialty {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
-    @Column(name = "icon_url", length = 100)
+    @Column(name = "icon_url", length = 500)
     private String iconUrl;
 
 

@@ -2,6 +2,7 @@ package com.nguyenhuyhoan.hospital.dtos.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -10,8 +11,6 @@ import lombok.*;
 @NoArgsConstructor
 public class SpecialtyDTO {
 
-    @JsonProperty("id")
-    private Long id;
 
     @JsonProperty("name")
     private String name;
@@ -22,6 +21,10 @@ public class SpecialtyDTO {
     @JsonProperty("is_active")
     private Boolean isActive;
 
-    @JsonProperty("icon_url")
-    private String iconUrl;
+
+    private MultipartFile iconUrl;
+
+    public void setIcon_url(MultipartFile icon_url) {
+        this.iconUrl = icon_url;
+    }
 }

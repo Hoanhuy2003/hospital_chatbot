@@ -15,4 +15,6 @@ public class SpecialtyResponse {
     private String description;
 
     private String iconUrl;
+
+    private Boolean isActive;
 }
