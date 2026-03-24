@@ -34,3 +34,4 @@ jwt:
 file:
   upload-dir: uploads
   specialty-dir: specialties
+  doctor-dir: doctors

@@ -2,6 +2,7 @@ package com.nguyenhuyhoan.hospital.dtos.requests;
 
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Getter
@@ -14,22 +15,14 @@ public class DoctorDTO {
     @JsonProperty("id")
     private Long id;
 
-    // Lấy thông tin từ Entity User
+
     @JsonProperty("user_id")
     private Long userId;
-
-    @JsonProperty("full_name")
-    private String fullName;
-
-    @JsonProperty("phone")
-    private String phone;
 
     // Thông tin chuyên môn
     @JsonProperty("specialty_id")
     private Long specialtyId;
 
-    @JsonProperty("specialty_name")
-    private String specialtyName;
 
     @JsonProperty("qualification")
     private String qualification;
@@ -54,21 +47,15 @@ public class DoctorDTO {
     @JsonProperty("hospital_id")
     private Long hospitalId;
 
-    @JsonProperty("hospital_name")
-    private String hospitalName;
-
     @JsonProperty("clinic_id")
     private Long clinicId;
-
-    @JsonProperty("clinic_name")
-    private String clinicName;
 
     // Media & Hỗ trợ
     @JsonProperty("supports_online")
     private Boolean supportsOnline;
 
-    @JsonProperty("photo_url")
-    private String photoUrl;
+
+    private MultipartFile photoUrl;
 
     @JsonProperty("photo_thumbnail_url")
     private String photoThumbnailUrl;

@@ -33,7 +33,7 @@ public class Doctor {
     private String biography;
 
     @Column(name = "rating")
-    private Double rating = 0.00; // cấp bậc
+    private Double rating ; // cấp bậc
 
     @Column(name = "total_reviews")
     private Integer totalReviews = 0;// đánh giá

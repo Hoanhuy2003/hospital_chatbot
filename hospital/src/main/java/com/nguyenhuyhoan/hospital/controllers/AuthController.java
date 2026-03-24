@@ -39,6 +39,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody UserRegisterDTO registerDTO){
+
+        if(!registerDTO.getPassword().equals(registerDTO.getRetypePassword())){
+            return ResponseEntity.badRequest().body("Mật khẩu nhập lại không khớp");
+        }
+
         if(userRepository.existsByPhone(registerDTO.getPhone())){
             return ResponseEntity.badRequest().body("Số điện thoại đã tồn tại");
         }
@@ -56,8 +61,18 @@ public class AuthController {
                 .email(registerDTO.getEmail())
                 .passwordHash(passwordEncoder.encode(registerDTO.getPassword()))
                 .role(patientRole)
+                .dateOfBirth(registerDTO.getDateOfBirth())
+                .address(registerDTO.getAddress())
                 .isActive(true)
                 .build();
+
+        if(registerDTO.getGender() != null){
+            try {
+                user.setGender(User.Gender.valueOf(registerDTO.getGender().toUpperCase()));
+            } catch (IllegalArgumentException e){
+                return ResponseEntity.badRequest().body("Giới tính không hợp lệ");
+            }
+        }
         userRepository.save(user);
         return ResponseEntity.ok("Đăng ký thành công");
     }

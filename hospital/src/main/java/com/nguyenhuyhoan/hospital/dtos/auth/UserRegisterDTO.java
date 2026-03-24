@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Builder
@@ -26,11 +28,29 @@ public class UserRegisterDTO {
     @NotBlank
     private String email;
 
+    @JsonProperty("date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @JsonProperty("gender")
+    private String gender;
+
+    @JsonProperty("address")
+    private String address;
+
+    @JsonProperty("role_id")
+    private String roleId;
 
     @JsonProperty("password")
     @NotBlank
     @Size(min = 6, max = 50)
     private String password;
+
+
+    @JsonProperty("retype_password")
+    @NotBlank
+    @Size(min = 6, max = 50)
+    private String retypePassword;
+
 
 
 
