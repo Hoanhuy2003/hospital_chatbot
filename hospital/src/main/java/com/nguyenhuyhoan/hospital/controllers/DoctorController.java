@@ -14,6 +14,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/doctors")
@@ -60,5 +61,12 @@ public class DoctorController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateDoctor(@PathVariable Long id, @ModelAttribute DoctorDTO doctorDTO) throws IOException{
         return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
+    }
+
+    @PatchMapping("/assign-to-clinic/{clinicId}")
+    public ResponseEntity<?> assignDoctor(@PathVariable Long clinicId,
+                                          @RequestBody List<Long> doctorIds){
+        doctorService.assignDoctorsToClinic(clinicId, doctorIds);
+        return ResponseEntity.ok("Gán bác sỹ thành công");
     }
 }

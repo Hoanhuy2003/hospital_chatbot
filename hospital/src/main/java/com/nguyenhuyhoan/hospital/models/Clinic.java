@@ -28,10 +28,15 @@ public class Clinic {
     @JoinColumn(name = "specialty_id")
     private Specialty specialty;
 
-    @ManyToOne
-    @JoinColumn(name = "doctor_id")
-    private Doctor doctor;
+//    @ManyToOne
+//    @JoinColumn(name = "doctor_id")
+//    private Doctor doctor;
+
+    @OneToMany(mappedBy = "clinic", fetch = FetchType.LAZY)
+    private java.util.List<Doctor> doctors;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+
 }

@@ -28,8 +28,8 @@ public class ClinicDTO {
 
 
     // Thông tin Bác sĩ phụ trách
-    @JsonProperty("doctor_id")
-    private Long doctorId;
+
+   // private Long doctorId;
 
 
     @JsonProperty("is_active")

@@ -32,17 +32,16 @@ public class ClinicService implements IClinicService {
         Specialty specialty = specialtyRepository.findById(clinicDTO.getSpecialtyId())
                 .orElseThrow(()-> new DataNotFoundException("Không tồn tại chuyên khoa này"));
 
-        Doctor doctor = null;
-        if (clinicDTO.getDoctorId() != null) {
-            doctor = doctorRepository.findById(clinicDTO.getDoctorId())
-                    .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bác sĩ"));
-        }
+//        Doctor doctor = null;
+//        if (clinicDTO.getDoctorId() != null) {
+//            doctor = doctorRepository.findById(clinicDTO.getDoctorId())
+//                    .orElseThrow(() -> new DataNotFoundException("Không tìm thấy bác sĩ"));
+//        }
         Clinic clinic = Clinic.builder()
                 .name(clinicDTO.getName())
                 .phone(clinicDTO.getPhone())
                 .address(clinicDTO.getAddress())
                 .specialty(specialty)
-                .doctor(doctor)
                 .isActive(clinicDTO.getIsActive())
                 .build();
         return ClinicResponse.fromClinic(clinicRepository.save(clinic));
@@ -75,12 +74,12 @@ public class ClinicService implements IClinicService {
             clinic.setSpecialty(specialty);
         }
 
-        if(clinicDTO.getDoctorId() != null){
-            Doctor doctor = doctorRepository.findById(id)
-                    .orElseThrow(()-> new DataNotFoundException("Không có bác sỹ này trong phòng khám"));
-            clinic.setDoctor(doctor);
-        }
-        return ClinicResponse.fromClinic(clinicRepository.save(clinic));
+//        if(clinicDTO.getDoctorId() != null){
+//            Doctor doctor = doctorRepository.findById(id)
+//                    .orElseThrow(()-> new DataNotFoundException("Không có bác sỹ này trong phòng khám"));
+//            clinic.setDoctor(doctor);
+//        }
+         return ClinicResponse.fromClinic(clinicRepository.save(clinic));
     }
 
     @Override

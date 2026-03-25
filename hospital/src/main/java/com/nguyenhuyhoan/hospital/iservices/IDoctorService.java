@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface IDoctorService {
 
@@ -14,4 +15,6 @@ public interface IDoctorService {
     void deleteDoctor(Long id) throws IOException;
     DoctorResponse getDoctorById(Long id);
     Page<DoctorResponse> getAllDoctors(String keyword, Long specialtyId, Pageable pageable);
+
+    void assignDoctorsToClinic(Long clinicId, List<Long> doctorIds);
 }

@@ -2,7 +2,12 @@ package com.nguyenhuyhoan.hospital.dtos.responses;
 
 
 import com.nguyenhuyhoan.hospital.models.Clinic;
+import com.nguyenhuyhoan.hospital.models.Doctor;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -14,8 +19,10 @@ public class ClinicResponse {
     private String name;
     private String phone;
     private String specialtyName;
-    private String doctorName;
+    //private String doctorName;
     private Boolean isActive;
+
+    private List<DoctorSimpleResponse> doctors;
 
 
     public  static ClinicResponse fromClinic(Clinic clinic){
@@ -24,8 +31,20 @@ public class ClinicResponse {
                 .name(clinic.getName())
                 .phone(clinic.getPhone())
                 .specialtyName(clinic.getSpecialty().getName())
-                .doctorName(clinic.getDoctor().getUser().getFullName())
+     //           .doctorName(clinic.getDoctor().getUser().getFullName())
                 .isActive(clinic.getIsActive())
+                .doctors(clinic.getDoctors() != null ?
+                                clinic.getDoctors().stream()
+                                        .map(doc -> DoctorSimpleResponse.builder()
+                                                .id(doc.getId())
+                                                .fullName(doc.getUser().getFullName())
+                                                .qualification(doc.getQualification())
+                                                .build())
+                                        .collect(Collectors.toList()) : new ArrayList<>()
+
+                        )
                 .build();
     }
+
+
 }

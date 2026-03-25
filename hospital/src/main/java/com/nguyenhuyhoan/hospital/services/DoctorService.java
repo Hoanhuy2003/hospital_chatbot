@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -123,6 +124,38 @@ public class DoctorService implements IDoctorService {
 
         return doctorRepository.searchDoctors(keyword, specialtyId, pageable)
                 .map(this::mapToDoctor);
+    }
+
+    @Override
+    public void assignDoctorsToClinic(Long clinicId, List<Long> doctorIds) {
+        Clinic clinic = clinicRepository.findById(clinicId)
+                .orElseThrow(()-> new DataNotFoundException("Phòng khám chưa tồn tại"));
+
+        List<Doctor> newDoctors = doctorRepository.findAllById(doctorIds);
+        if(newDoctors.isEmpty()) return;
+
+        Long requiredSpecialtyId;
+        String requiredSpecialtyName;
+
+        List<Doctor> existingDoctors = doctorRepository.findByClinicId(clinicId);
+
+        if(!existingDoctors.isEmpty()){
+            requiredSpecialtyId = existingDoctors.get(0).getSpecialty().getId();
+            requiredSpecialtyName = existingDoctors.get(0).getSpecialty().getName();
+
+        } else {
+            requiredSpecialtyId = newDoctors.get(0).getSpecialty().getId();
+            requiredSpecialtyName = newDoctors.get(0).getSpecialty().getName();
+        }
+
+        for (Doctor doctor : newDoctors){
+            if(!doctor.getSpecialty().getId().equals(requiredSpecialtyId)){
+                throw new DataNotFoundException("Lỗi: Phòng khám chỉ nhận khoa "+ requiredSpecialtyName +
+                        "Bác sĩ "+ doctor.getUser().getFullName() + "không cùng chuyeen khoa");
+            }
+        }
+        newDoctors.forEach(d -> d.setClinic(clinic));
+        doctorRepository.saveAll(newDoctors);
     }
 
 
