@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MedicalRecordDTO {
 
-    @JsonProperty("id")
-    private Long id;
+
 
     @JsonProperty("name")
     private String name;
