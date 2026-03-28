@@ -1,0 +1,119 @@
+package com.nguyenhuyhoan.hospital.services;
+
+import com.nguyenhuyhoan.hospital.dtos.requests.AppointmentDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.AppointmentResponse;
+import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
+import com.nguyenhuyhoan.hospital.iservices.IAppointmentService;
+import com.nguyenhuyhoan.hospital.models.Appointment;
+import com.nguyenhuyhoan.hospital.models.Schedule;
+import com.nguyenhuyhoan.hospital.models.User;
+import com.nguyenhuyhoan.hospital.repositoris.AppointmentRepository;
+import com.nguyenhuyhoan.hospital.repositoris.ScheduleRepository;
+import com.nguyenhuyhoan.hospital.repositoris.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class AppointmentService implements IAppointmentService {
+
+    private final AppointmentRepository appointmentRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
+
+
+    @Override
+    public AppointmentResponse createAppointment(AppointmentDTO appointmentDTO) throws DataNotFoundException {
+
+        Schedule schedule = scheduleRepository.findById(appointmentDTO.getScheduleId())
+                .orElseThrow(()-> new DataNotFoundException("Không co lịch khám này"));
+
+        // kiểm tra chỗ trôngs
+        if(schedule.getCurrentPatients() >= schedule.getMaxPatients()){
+            throw new DataNotFoundException("Khung giờ này đã được đặt hết rồi!!!");
+
+        }
+
+        User patient = userRepository.findById(appointmentDTO.getPatientId())
+                .orElseThrow(()-> new DataNotFoundException("Khoong tồn tại bệnh nhân"));
+
+        LocalDateTime appointmentTime;
+        try {
+            String startTimeStr = schedule.getTimeSlot().split("_")[0].trim();
+            LocalTime startTime = LocalTime.parse(startTimeStr);
+            appointmentTime = schedule.getDate().atTime(startTime);
+        } catch (Exception e){
+            appointmentTime = schedule.getDate().atStartOfDay();
+        }
+
+        Appointment appointment = Appointment.builder()
+                .name(appointmentDTO.getName())
+                .patient(patient)
+                .schedule(schedule)
+                .doctor(schedule.getDoctor())
+                .clinic(schedule.getClinic())
+                .appointmentTime(appointmentTime)
+                .reason(appointmentDTO.getReason())
+                .type(Appointment.Type.valueOf(appointmentDTO.getType()))
+                .status(Appointment.Status.PENDING)
+                .queueNumber("QN-" + schedule.getId() + "_"+ (schedule.getCurrentPatients() + 1))
+
+                .build();
+
+        schedule.setCurrentPatients(schedule.getCurrentPatients() + 1);
+        scheduleRepository.save(schedule);
+
+
+        return AppointmentResponse.fromAppointment(appointmentRepository.save(appointment));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AppointmentResponse getById(Long id) throws DataNotFoundException {
+
+
+        return appointmentRepository.findById(id)
+                .map(AppointmentResponse:: fromAppointment)
+                .orElseThrow(()-> new DataNotFoundException("lỗi rồi nhé"));
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getByPatient(Long patientId) {
+
+
+        return appointmentRepository.findByPatientIdOrderByCreatedAtDesc(patientId)
+                .stream()
+                .map(AppointmentResponse::fromAppointment)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public AppointmentResponse updateStatus(Long id, String status) throws DataNotFoundException {
+
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(()-> new DataNotFoundException("Không tồn tại cuộc hẹn này"));
+        Appointment.Status newStatus = Appointment.Status.valueOf(status.toUpperCase());
+        Appointment.Status oldStatus = appointment.getStatus();
+
+        // nếu hủy lịch phải trả lại slot
+        if(newStatus == Appointment.Status.CANCELLED && oldStatus != Appointment.Status.CANCELLED){
+            Schedule schedule = appointment.getSchedule();
+            if(schedule.getCurrentPatients() > 0){
+                schedule.setCurrentPatients(schedule.getCurrentPatients() - 1);
+                scheduleRepository.save(schedule);
+            }
+        }
+
+        appointment.setStatus(newStatus);
+        return AppointmentResponse.fromAppointment(appointmentRepository.save(appointment));
+    }
+}

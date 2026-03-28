@@ -42,6 +42,10 @@ public class Appointment {
     @Column(name = "appointment_time", nullable = false)
     private LocalDateTime appointmentTime;// thơi gian khám
 
+    @ManyToOne
+    @JoinColumn(name = "schedule_id", nullable = false)
+    private Schedule schedule;
+
     @Column(name = "queue_number", unique = true, length = 20)
     private String queueNumber;// số chờ
 

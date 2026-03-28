@@ -16,4 +16,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     // kiểm tra lịch trống
     boolean existsByDoctorIdAndDateAndTimeSlot(Long doctorId, LocalDate date, String timeSlot);
+
+    List<Schedule> findByDoctorIdAndDateOrderByTimeSlotAsc(Long doctorId, LocalDate date);
 }

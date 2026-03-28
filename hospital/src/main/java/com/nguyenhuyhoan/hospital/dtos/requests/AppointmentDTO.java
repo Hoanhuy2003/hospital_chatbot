@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AppointmentDTO {
-    @JsonProperty("id")
-    private Long id;
 
     @JsonProperty("name")
     private String name;
@@ -30,8 +28,11 @@ public class AppointmentDTO {
     @JsonProperty("clinic_id")
     private Long clinicId;
 
+    @JsonProperty("schedule_id")
+    private Long scheduleId;
+
     @JsonProperty("appointment_time")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") // Định dạng phía Client gửi lên
     private LocalDateTime appointmentTime;
 
     @JsonProperty("queue_number")

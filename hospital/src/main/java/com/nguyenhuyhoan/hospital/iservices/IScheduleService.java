@@ -1,6 +1,7 @@
 package com.nguyenhuyhoan.hospital.iservices;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
+import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleTemplateDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 
@@ -19,4 +20,8 @@ public interface IScheduleService {
     void deleteSchedule(Long id) throws DataNotFoundException;
 
     void autoUpdateExpiredSchedules();
+
+    void createScheduleTemplate(ScheduleTemplateDTO scheduleTemplateDTO) ;
+
+    void autoGenerateSchedules();
 }
