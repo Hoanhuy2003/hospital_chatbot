@@ -4,6 +4,7 @@ import com.nguyenhuyhoan.hospital.dtos.requests.AppointmentDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.AppointmentResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface IAppointmentService {
@@ -15,4 +16,6 @@ public interface IAppointmentService {
     List<AppointmentResponse> getByPatient(Long patientId);
 
     AppointmentResponse updateStatus(Long id, String status) throws DataNotFoundException;
+
+    //List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date);
 }

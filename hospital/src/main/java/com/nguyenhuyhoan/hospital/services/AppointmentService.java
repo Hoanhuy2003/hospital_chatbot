@@ -4,7 +4,9 @@ import com.nguyenhuyhoan.hospital.dtos.requests.AppointmentDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.AppointmentResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 import com.nguyenhuyhoan.hospital.iservices.IAppointmentService;
+import com.nguyenhuyhoan.hospital.iservices.INotificationService;
 import com.nguyenhuyhoan.hospital.models.Appointment;
+import com.nguyenhuyhoan.hospital.models.Notification;
 import com.nguyenhuyhoan.hospital.models.Schedule;
 import com.nguyenhuyhoan.hospital.models.User;
 import com.nguyenhuyhoan.hospital.repositoris.AppointmentRepository;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -27,12 +30,22 @@ public class AppointmentService implements IAppointmentService {
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
 
+    private final INotificationService notificationService;
+
 
     @Override
     public AppointmentResponse createAppointment(AppointmentDTO appointmentDTO) throws DataNotFoundException {
 
         Schedule schedule = scheduleRepository.findById(appointmentDTO.getScheduleId())
                 .orElseThrow(()-> new DataNotFoundException("Không co lịch khám này"));
+
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        // 1. Kiểm tra ngày
+        if (schedule.getDate().isBefore(today)) {
+            throw new RuntimeException("Không thể đặt lịch cho ngày trong quá khứ!");
+        }
 
         // kiểm tra chỗ trôngs
         if(schedule.getCurrentPatients() >= schedule.getMaxPatients()){
@@ -52,6 +65,8 @@ public class AppointmentService implements IAppointmentService {
             appointmentTime = schedule.getDate().atStartOfDay();
         }
 
+        int nextQueueNumber = schedule.getCurrentPatients() + 1;
+
         Appointment appointment = Appointment.builder()
                 .name(appointmentDTO.getName())
                 .patient(patient)
@@ -66,8 +81,34 @@ public class AppointmentService implements IAppointmentService {
 
                 .build();
 
-        schedule.setCurrentPatients(schedule.getCurrentPatients() + 1);
+        Appointment saveAppointment = appointmentRepository.save(appointment);
+
+
+
+        schedule.setCurrentPatients(nextQueueNumber);
         scheduleRepository.save(schedule);
+
+        try {
+            String message = String.format(
+                    "Chào %s, bạn đã đặt lịch thành công với bác sĩ %s vào lúc %s ngày %s. Số thứ tự của bạn là: %d.",
+                    patient.getFullName(),
+                    schedule.getDoctor().getUser().getFullName(),
+                    schedule.getTimeSlot(),
+                    schedule.getDate(),
+                    nextQueueNumber
+
+
+            );
+            notificationService.sendNotification(
+                    patient.getId(),
+                    "Đặt lịch khám thành công",
+                    message,
+                    Notification.Type.APPOINTMENT_CONFIRMED
+            );
+
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi thông báo: " + e.getMessage());
+        }
 
 
         return AppointmentResponse.fromAppointment(appointmentRepository.save(appointment));
@@ -116,4 +157,13 @@ public class AppointmentService implements IAppointmentService {
         appointment.setStatus(newStatus);
         return AppointmentResponse.fromAppointment(appointmentRepository.save(appointment));
     }
+
+//    @Override
+//    public List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date) {
+//        List<Appointment> appointments = appointmentRepository.findByDoctorIdAndDate(doctorId, date);
+//
+//        return appointments.stream()
+//                .map(AppointmentResponse::fromAppointment)
+//                .collect(Collectors.toList());
+//    }
 }

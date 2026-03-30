@@ -156,7 +156,7 @@ public class ScheduleService implements IScheduleService {
     @Transactional
     public void autoGenerateSchedules(){
 
-        LocalDate targetDate = LocalDate.now().plusDays(0);
+        LocalDate targetDate = LocalDate.now().plusDays(7);
         List<ScheduleTemplate> templates = scheduleTemplateRepository.findByIsActiveTrue();
 
         for (ScheduleTemplate template : templates){
