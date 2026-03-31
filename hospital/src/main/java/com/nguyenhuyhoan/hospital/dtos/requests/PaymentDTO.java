@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentDTO {
-    @JsonProperty("id")
-    private Long id;
 
     @JsonProperty("name")
     private String name;
