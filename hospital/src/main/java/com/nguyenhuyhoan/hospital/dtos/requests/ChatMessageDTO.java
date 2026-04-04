@@ -26,6 +26,9 @@ public class ChatMessageDTO {
     @JsonProperty("message_type")
     private String messageType; // TEXT, QUICK_REPLY, BUTTON, CAROUSEL
 
+    @JsonProperty("message_text")
+    private String messageText;
+
     @JsonProperty("payload")
     private String payload; // Chứa dữ liệu JSON cho các loại tin nhắn đặc biệt (nút bấm, link ảnh)
 

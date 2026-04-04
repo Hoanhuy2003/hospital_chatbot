@@ -1,5 +1,7 @@
 package com.nguyenhuyhoan.hospital.models;
 
+import com.nguyenhuyhoan.hospital.enums.Message;
+import com.nguyenhuyhoan.hospital.enums.Sender;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,6 +36,9 @@ public class ChatMessage {
     @Column(name = "message_type")
     private Message messageType;
 
+    @Column(name = "message_text", columnDefinition = "TEXT")
+    private String messageText;
+
     @Column(name = "payload", columnDefinition = "JSON")
     private String payload;
 
@@ -50,6 +55,5 @@ public class ChatMessage {
     @Column(name = "create_at")
     private LocalDateTime createAt;
 
-    private enum Sender {USER, BOT, SYSTEM}
-    private enum Message {TEXT, QUICK_REPLY, BUTTON, CAROUSEL}
+
 }

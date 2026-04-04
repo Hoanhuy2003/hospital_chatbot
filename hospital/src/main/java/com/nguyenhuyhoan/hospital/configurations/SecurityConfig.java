@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/specialty/**").permitAll()
                         .requestMatchers("/api/v1/doctors/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/v1/chatbots/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

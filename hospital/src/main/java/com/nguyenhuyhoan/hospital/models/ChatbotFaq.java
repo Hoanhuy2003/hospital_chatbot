@@ -1,5 +1,6 @@
 package com.nguyenhuyhoan.hospital.models;
 
+import com.nguyenhuyhoan.hospital.enums.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -49,5 +50,5 @@ public class ChatbotFaq {
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
-    private enum Category{TRIEU_CHUNG, DAT_LICH, TU_VAN_ONLINE, THANH_TOAN, HUONG_DAN, KHAC}
+
 }

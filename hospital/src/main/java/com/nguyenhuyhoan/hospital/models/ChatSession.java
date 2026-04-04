@@ -1,5 +1,7 @@
 package com.nguyenhuyhoan.hospital.models;
 
+import com.nguyenhuyhoan.hospital.enums.ChannelType;
+import com.nguyenhuyhoan.hospital.enums.StatusSession;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -48,11 +50,11 @@ public class ChatSession {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Status status = Status.ACTIVE;
+    private StatusSession status = StatusSession.ACTIVE;
 
     @Column(name = "context_json", columnDefinition = "JSON")
     private String contextJson;
 
-    public enum ChannelType { WEB, MOBILE_APP, ZALO_OA, FACEBOOK_MESSENGER, OTHER }
-    public enum Status { ACTIVE, ENDED, TIMEOUT, ERROR }
+
+
 }
