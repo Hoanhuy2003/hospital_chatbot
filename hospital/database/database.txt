@@ -1,0 +1,259 @@
+-- Tạo database
+CREATE DATABASE IF NOT EXISTS hospital_chatbot
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE hospital_chatbot;
+
+-- ======================================
+-- Bảng Role riêng
+-- ======================================
+CREATE TABLE roles (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE COMMENT 'PATIENT, DOCTOR, ADMIN, STAFF...',
+    description TEXT COMMENT 'Mô tả quyền hạn',
+    level SMALLINT DEFAULT 0 COMMENT 'Mức độ quyền (ADMIN cao hơn)',
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_role_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert dữ liệu mẫu cho roles (chạy 1 lần)
+INSERT INTO roles (name, description, level) VALUES
+('PATIENT', 'Bệnh nhân: đặt lịch, xem hồ sơ, tư vấn online', 1),
+('DOCTOR', 'Bác sĩ: xem lịch hẹn, cập nhật bệnh án, tư vấn video/chat', 5),
+('STAFF', 'Nhân viên: duyệt phiếu khám, quản lý lịch', 7),
+('ADMIN', 'Quản trị viên: quản lý toàn hệ thống', 10);
+
+-- ======================================
+-- 1. Người dùng
+-- ======================================
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(120) NOT NULL,
+    phone VARCHAR(15) UNIQUE NOT NULL,
+    email VARCHAR(120) UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    date_of_birth DATE,
+    gender ENUM('MALE', 'FEMALE', 'OTHER') DEFAULT NULL,
+    address TEXT,
+    role_id BIGINT NOT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    avatar_url VARCHAR(255) COMMENT 'Ảnh đại diện người dùng (nếu có)',
+    health_profile_json JSON COMMENT 'Hồ sơ sức khỏe cơ bản (dị ứng, bệnh mạn tính...)',
+    last_login_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT,
+    INDEX idx_phone (phone),
+    INDEX idx_email (email),
+    INDEX idx_role_id (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 2. Bác sĩ – Thêm photo_url (ảnh bác sĩ)
+-- ======================================
+CREATE TABLE doctors (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNIQUE NOT NULL,
+    specialty_id BIGINT NOT NULL,
+    qualification VARCHAR(200) COMMENT 'BS.CK2, ThS.BS...',
+    experience_years SMALLINT DEFAULT 0,
+    biography TEXT,
+    rating DECIMAL(3,2) DEFAULT 0.00,
+    total_reviews INT DEFAULT 0,
+    hospital_id BIGINT,
+    clinic_id BIGINT,
+    supports_online TINYINT(1) DEFAULT 1 COMMENT 'Hỗ trợ tư vấn online',
+    photo_url VARCHAR(255) COMMENT 'Link ảnh bác sĩ (Cloudinary/S3) – bắt buộc cho UX',
+    photo_thumbnail_url VARCHAR(255) COMMENT 'Ảnh nhỏ (thumbnail) để hiển thị danh sách',
+    is_verified TINYINT(1) DEFAULT 0 COMMENT 'Bác sĩ đã xác thực chứng chỉ chưa',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (specialty_id) REFERENCES specialties(id),
+    FOREIGN KEY (hospital_id) REFERENCES hospitals(id) ON DELETE SET NULL,
+    FOREIGN KEY (clinic_id) REFERENCES clinics(id) ON DELETE SET NULL,
+    INDEX idx_specialty (specialty_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 3. Chuyên khoa
+-- ======================================
+CREATE TABLE specialties (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE COMMENT 'Nhi khoa, Tiêu hóa, Da liễu...',
+    description TEXT,
+    is_active TINYINT(1) DEFAULT 1,
+    icon_url VARCHAR(255) COMMENT 'Icon chuyên khoa (nếu có)'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 4. Bệnh viện
+-- ======================================
+CREATE TABLE hospitals (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL UNIQUE,
+    address TEXT NOT NULL,
+    phone VARCHAR(20),
+    working_hours TEXT,
+    website VARCHAR(255),
+    is_partner TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 5. Phòng khám
+-- ======================================
+CREATE TABLE clinics (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    address TEXT NOT NULL,
+    phone VARCHAR(20),
+    specialty_id BIGINT,
+    doctor_id BIGINT COMMENT 'Bác sĩ chủ trì (nếu có)',
+    is_active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (specialty_id) REFERENCES specialties(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 6. Lịch hẹn (phiếu khám)
+-- ======================================
+CREATE TABLE appointments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    patient_id BIGINT NOT NULL,
+    doctor_id BIGINT NOT NULL,
+    hospital_id BIGINT,
+    clinic_id BIGINT,
+    appointment_time DATETIME NOT NULL,
+    queue_number VARCHAR(20) UNIQUE COMMENT 'Số thứ tự phiếu khám (e.g. 045/2026)',
+    status ENUM('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW') DEFAULT 'PENDING',
+    type ENUM('IN_PERSON', 'ONLINE_CHAT', 'ONLINE_VIDEO') DEFAULT 'IN_PERSON',
+    voucher_code VARCHAR(50) UNIQUE COMMENT 'Mã phiếu khám điện tử',
+    video_call_link VARCHAR(255) COMMENT 'Link video call nếu ONLINE_VIDEO',
+    reason TEXT,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE RESTRICT,
+    FOREIGN KEY (hospital_id) REFERENCES hospitals(id) ON DELETE SET NULL,
+    FOREIGN KEY (clinic_id) REFERENCES clinics(id) ON DELETE SET NULL,
+    UNIQUE KEY uk_queue (hospital_id, appointment_time, queue_number),
+    INDEX idx_patient_time (patient_id, appointment_time),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 7. Thanh toán
+-- ======================================
+CREATE TABLE payments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id BIGINT UNIQUE NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    payment_method ENUM('VNPAY', 'MOMO', 'BANK_TRANSFER', 'CASH') DEFAULT 'CASH',
+    status ENUM('PENDING', 'PAID', 'FAILED', 'REFUNDED') DEFAULT 'PENDING',
+    transaction_id VARCHAR(100),
+    paid_at TIMESTAMP NULL,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 8. Hồ sơ bệnh án
+-- ======================================
+CREATE TABLE medical_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    patient_id BIGINT NOT NULL,
+    doctor_id BIGINT NOT NULL,
+    appointment_id BIGINT,
+    symptoms TEXT,
+    diagnosis TEXT,
+    treatment TEXT,
+    prescription JSON,
+    attachments JSON COMMENT 'Kết quả xét nghiệm, ảnh...',
+    follow_up_date DATE COMMENT 'Ngày tái khám',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 9. Thông báo
+-- ======================================
+CREATE TABLE notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    type ENUM('APPOINTMENT_CONFIRMED', 'REMINDER', 'RE_EXAM', 'RESULT_READY', 'CANCELLATION') NOT NULL,
+    title VARCHAR(150),
+    message TEXT NOT NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_read (user_id, is_read)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 10. Phiên chat (cho Rasa chatbot)
+-- ======================================
+CREATE TABLE chat_sessions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    channel_type ENUM('WEB', 'MOBILE_APP', 'ZALO_OA', 'FACEBOOK_MESSENGER', 'OTHER') NOT NULL,
+    session_id VARCHAR(100) UNIQUE NOT NULL,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP NULL,
+    last_active_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status ENUM('ACTIVE', 'ENDED', 'TIMEOUT', 'ERROR') DEFAULT 'ACTIVE',
+    context_json JSON COMMENT 'Slots, intent hiện tại, trạng thái đặt lịch...',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_session_id (session_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 11. Lịch sử tin nhắn chatbot
+-- ======================================
+CREATE TABLE chat_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id BIGINT NOT NULL,
+    sender_type ENUM('USER', 'BOT', 'SYSTEM') NOT NULL,
+    message_text TEXT NOT NULL,
+    message_type ENUM('TEXT', 'QUICK_REPLY', 'BUTTON', 'CAROUSEL') DEFAULT 'TEXT',
+    payload JSON,
+    intent_name VARCHAR(100),
+    intent_confidence DECIMAL(5,4) DEFAULT 0.0000,
+    entities JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    INDEX idx_session_time (session_id, created_at),
+    FULLTEXT INDEX ft_text (message_text)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 12. FAQ cho chatbot
+-- ======================================
+CREATE TABLE chatbot_faq (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    question VARCHAR(255) NOT NULL,
+    answer TEXT NOT NULL,
+    category ENUM('TRIỆU_CHỨNG', 'ĐẶT_LỊCH', 'TƯ_VẤN_ONLINE', 'THANH_TOÁN', 'HƯỚNG_DẪN', 'KHÁC') NOT NULL,
+    keywords JSON,
+    is_active TINYINT(1) DEFAULT 1,
+    priority SMALLINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FULLTEXT INDEX ft_question (question)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ======================================
+-- 13. Mapping triệu chứng → chuyên khoa
+-- ======================================
+CREATE TABLE symptoms_specialty_mapping (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    symptom_name VARCHAR(150) NOT NULL,
+    specialty_id BIGINT NOT NULL,
+    confidence_level DECIMAL(4,2) DEFAULT 0.50,
+    description TEXT,
+    is_common TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (specialty_id) REFERENCES specialties(id) ON DELETE RESTRICT,
+    INDEX idx_symptom (symptom_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
