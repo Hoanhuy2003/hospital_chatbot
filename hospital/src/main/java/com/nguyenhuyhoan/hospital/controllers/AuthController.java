@@ -12,6 +12,7 @@ import com.nguyenhuyhoan.hospital.securitis.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -115,5 +116,45 @@ public class AuthController {
 
         boolean match = passwordEncoder.matches(plainPassword, user.getPasswordHash());
         return "Mật khẩu khớp không? " + match + "\nHash trong DB: " + user.getPasswordHash();
+    }
+
+    @PostMapping("register/admin")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> registerAdmin(@Valid @RequestBody UserRegisterDTO registerDTO){
+        if(!registerDTO.getPassword().equals(registerDTO.getRetypePassword())){
+            return ResponseEntity.badRequest().body("Mật khẩu nhập lại không khớp");
+        }
+
+        if(userRepository.existsByPhone(registerDTO.getPhone())){
+            return ResponseEntity.badRequest().body("Số điện thoại đã tồn tại");
+        }
+
+        if(userRepository.existsByEmail(registerDTO.getEmail())){
+            return ResponseEntity.badRequest().body("Email đã tồn tại");
+        }
+
+        Role adminRole = roleRepository.findByName("ADMIN")
+                .orElseThrow(() -> new RuntimeException("Role ADMIN không tồn tại trong hệ thống"));
+
+        User admin = User.builder()
+                .fullName(registerDTO.getFullName())
+                .phone(registerDTO.getPhone())
+                .email(registerDTO.getEmail())
+                .passwordHash(passwordEncoder.encode(registerDTO.getPassword()))
+                .role(adminRole)
+                .dateOfBirth(registerDTO.getDateOfBirth())
+                .address(registerDTO.getAddress())
+                .isActive(true)
+                .build();
+        if(registerDTO.getGender() != null){
+            try {
+                admin.setGender(User.Gender.valueOf(registerDTO.getGender().toUpperCase()));
+            } catch (IllegalArgumentException e){
+                return ResponseEntity.badRequest().body("Giới tính không hợp lệ");
+            }
+        }
+
+        userRepository.save(admin);
+        return ResponseEntity.ok("Tạo tài khoản Admin thành công");
     }
 }

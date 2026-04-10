@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket Notification - Hospital</title>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #messages { border: 1px solid #ccc; padding: 15px; height: 400px; overflow-y: auto; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; background: #e3f2fd; }
+        .info { color: #1976d2; }
+    </style>
+</head>
+<body>
+<h1>🔔 Test WebSocket Notification</h1>
+<p>Trạng thái: <strong id="status">Đang kết nối...</strong></p>
+<button onclick="disconnect()">Ngắt kết nối</button>
+<hr>
+<h3>Thông báo nhận được:</h3>
+<div id="messages"></div>
+
+<script>
+    let client;
+
+    function connect() {
+        client = new StompJs.Client({
+            brokerURL: 'ws://localhost:8080/ws-hospital',
+            reconnectDelay: 5000,
+            debug: function(str) {
+                console.log(str);
+            }
+        });
+
+        client.onConnect = function(frame) {
+            document.getElementById('status').innerHTML = '✅ Đã kết nối thành công!';
+            document.getElementById('status').classList.add('info');
+
+            console.log('Connected to WebSocket');
+
+            // Subscribe vào topic thông báo chung
+            client.subscribe('/topic/notifications', function(message) {
+                const notification = JSON.parse(message.body);
+                console.log('Nhận được thông báo:', notification);
+
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.innerHTML = `
+                    <strong>${notification.title}</strong><br>
+                    ${notification.message}<br>
+                    <small>Loại: ${notification.type} | Thời gian: ${notification.sentAt}</small>
+                `;
+                document.getElementById('messages').appendChild(msgDiv);
+
+                // Tự động scroll xuống dưới
+                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            });
+        };
+
+        client.onStompError = function(frame) {
+            document.getElementById('status').innerHTML = '❌ Lỗi STOMP: ' + frame.headers.message;
+            console.error('STOMP error:', frame);
+        };
+
+        client.activate();
+    }
+
+    function disconnect() {
+        if (client) {
+            client.deactivate();
+            document.getElementById('status').innerHTML = 'Đã ngắt kết nối';
+        }
+    }
+
+    // Tự động kết nối khi mở trang
+    window.onload = connect;
+</script>
+</body>
+</html>

@@ -27,7 +27,7 @@ public class Notification {// thông báo
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", length = 50)
     private Type type;
 
     @Column(name = "title", length = 150)
@@ -46,6 +46,6 @@ public class Notification {// thông báo
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    public enum Type { APPOINTMENT_CONFIRMED, REMINDER, RE_EXAM, RESULT_READY, CANCELLATION}
+    public enum Type { APPOINTMENT_CONFIRMED, REMINDER, RE_EXAM, RESULT_READY, CANCELLATION, SYSTEM}
 
 }

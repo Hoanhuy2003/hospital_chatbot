@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ public class ScheduleController {
     private final IScheduleService scheduleService;
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('DOCTOR')")
     public ResponseEntity<?> createSchedules(@Valid @RequestBody ScheduleDTO scheduleDTO) {
         try {
             scheduleService.createSchedules(scheduleDTO);
@@ -31,6 +33,7 @@ public class ScheduleController {
     }
 
     @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<ScheduleResponse>> getByDoctor(
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -38,6 +41,7 @@ public class ScheduleController {
     }
 
     @GetMapping("/clinic/{clinicId}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<ScheduleResponse>> getByClinic(
             @PathVariable Long clinicId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -45,6 +49,7 @@ public class ScheduleController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteSchedule(@PathVariable Long id) {
         try {
             scheduleService.deleteSchedule(id);

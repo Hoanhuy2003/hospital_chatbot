@@ -8,12 +8,14 @@ import com.nguyenhuyhoan.hospital.securitis.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,6 +28,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -45,6 +48,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/doctors/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/v1/chatbots/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
+
+// 2. Cho phép Admin/Bác sĩ duyệt lịch (Cái API PATCH Hoàn đang test)
+                                .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers("/api/v1/schedules/**").hasAnyRole("DOCTOR","ADMIN")
+                        .requestMatchers("/api/auth/register/admin").hasRole("ADMIN")
+                        .requestMatchers("/ws-hospital/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

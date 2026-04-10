@@ -4,6 +4,8 @@ import com.nguyenhuyhoan.hospital.dtos.responses.NotificationResponse;
 import com.nguyenhuyhoan.hospital.iservices.INotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,4 +33,16 @@ public class NotificationController {
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok("Đã đọc tất cả thông báo");
     }
+
+
+
+        @MessageMapping("/hello") // Client gửi tới /app/hello
+        @SendTo("/topic/notifications") // Server trả về /topic/notifications
+        public NotificationResponse greeting(String message) {
+            return NotificationResponse.builder()
+                    .title("Server nhận được tin!")
+                    .message("Bạn vừa nói: " + message)
+                    .build();
+        }
+
 }

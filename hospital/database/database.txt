@@ -257,3 +257,43 @@ CREATE TABLE symptoms_specialty_mapping (
     FOREIGN KEY (specialty_id) REFERENCES specialties(id) ON DELETE RESTRICT,
     INDEX idx_symptom (symptom_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE schedules (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id BIGINT NOT NULL,
+    clinic_id BIGINT NOT NULL,
+    `date` DATE NOT NULL,
+    time_slot VARCHAR(50) NOT NULL,
+    max_patients INT DEFAULT 0,
+    current_patients INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+
+    -- Ràng buộc khóa ngoại
+    CONSTRAINT fk_schedule_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id),
+    CONSTRAINT fk_schedule_clinic FOREIGN KEY (clinic_id) REFERENCES clinics(id),
+
+    -- Đảm bảo không thể đặt quá số người tối đa (Tùy chọn)
+    CONSTRAINT chk_patients_limit CHECK (current_patients <= max_patients)
+);
+
+-- Tạo Index để truy vấn lịch trình theo bác sĩ hoặc ngày nhanh hơn
+CREATE INDEX idx_schedule_doctor_date ON schedules(doctor_id, `date`);
+
+CREATE TABLE schedule_templates (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id BIGINT,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    duration_minutes INT NOT NULL,
+    max_patients INT NOT NULL DEFAULT 1,
+    is_active BOOLEAN DEFAULT TRUE,
+
+    -- Khóa ngoại liên kết với bảng doctors
+    CONSTRAINT fk_template_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE,
+
+    -- Ràng buộc logic: thời gian kết thúc phải sau thời gian bắt đầu
+    CONSTRAINT chk_time_range CHECK (end_time > start_time)
+);
+
+-- Index để tìm kiếm mẫu lịch theo bác sĩ nhanh hơn
+CREATE INDEX idx_template_doctor ON schedule_templates(doctor_id);

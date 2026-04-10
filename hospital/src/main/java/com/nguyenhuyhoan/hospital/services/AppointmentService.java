@@ -155,7 +155,83 @@ public class AppointmentService implements IAppointmentService {
         }
 
         appointment.setStatus(newStatus);
-        return AppointmentResponse.fromAppointment(appointmentRepository.save(appointment));
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        // thông báo cho bênh nhân
+
+        try{
+            String title = "Cập nhật trạng thái lịch khám";
+            String message = "";
+            Notification.Type notifyType = Notification.Type.SYSTEM;
+
+            if(newStatus == Appointment.Status.CONFIRMED){
+                message = "Lịch khám của bạn đã được bác sĩ xác nhận. Hãy đến đúng giờ nhé!";
+                notifyType = Notification.Type.APPOINTMENT_CONFIRMED;
+
+            } else if(newStatus == Appointment.Status.CANCELLED){
+                message = "Rất tiếc, lịch khám của bạn đã bị hủy. Vui lòng chọn khung giờ khác.";
+            }
+
+            if(!message.isEmpty()){
+                notificationService.sendNotification(
+                        appointment.getPatient().getId(),
+                        title,
+                        message,
+                        notifyType
+                );
+            }
+        }catch (Exception e){
+            System.err.println("Không thể gửi thông báo Real-time: " + e.getMessage());
+        }
+
+        try {
+            String doctorMsg = String.format(
+                    "Bạn có một lịch hẹn mới từ bệnh nhân %s vào lúc %s ngày %s.",
+                    appointment.getPatient().getFullName(),
+                    appointment.getSchedule().getTimeSlot(),
+                    appointment.getSchedule().getDate()
+            );
+
+            Long doctorId = appointment.getDoctor().getUser().getId();
+
+            notificationService.sendNotification(
+                    doctorId,
+                    "Lịch hẹn mới",
+                    doctorMsg,
+                    Notification.Type.SYSTEM
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi gửi thông báo cho bác sĩ: " + e.getMessage());
+        }
+
+
+        // thông báo cho bác sỹ khi đặt lịch khám thành coong
+
+        try{
+            Long doctorUserId = appointment.getDoctor().getUser().getId();
+
+            String doctorMessage = String.format(
+                    "Bạn có lịch hẹn mới: Bệnh nhân %s đã đặt lịch khám vào lúc %s ngày %s.",
+                    appointment.getPatient().getFullName(),
+                    appointment.getSchedule().getTimeSlot(),
+                    appointment.getSchedule().getDate()
+            );
+
+            // 2. Gửi thông báo Real-time cho bác sĩ
+            notificationService.sendNotification(
+                    doctorUserId,
+                    "Lịch hẹn mới từ bệnh nhân",
+                    doctorMessage,
+                    Notification.Type.SYSTEM // Hoặc một Type mới như NEW_APPOINTMENT
+            );
+
+            System.out.println("Đã bắn thông báo cho bác sĩ ID: " + doctorUserId);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi gửi thông báo cho bác sĩ: " + e.getMessage());
+        }
+
+        return AppointmentResponse.fromAppointment(savedAppointment);
     }
 
 //    @Override
@@ -165,5 +241,10 @@ public class AppointmentService implements IAppointmentService {
 //        return appointments.stream()
 //                .map(AppointmentResponse::fromAppointment)
 //                .collect(Collectors.toList());
+//    }
+//
+//    public boolean isOwner(Long appointmentId, Long userId) {
+//        Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
+//        return appointment != null && appointment
 //    }
 }

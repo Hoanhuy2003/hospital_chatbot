@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class AppointmentController {
     private final IAppointmentService appointmentService;
 
     @PostMapping
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<?> createAppointment(@Valid @RequestBody AppointmentDTO appointmentDTO){
         try {
             AppointmentResponse response = appointmentService.createAppointment(appointmentDTO);
@@ -32,6 +34,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<?> getAppointmentById(@PathVariable Long id) {
         try {
             AppointmentResponse response = appointmentService.getById(id);
@@ -43,6 +46,7 @@ public class AppointmentController {
 
     // 3. Lấy danh sách cuộc hẹn của một Bệnh nhân (Xem lịch sử khám)
     @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasRole('ADMIN') ")
     public ResponseEntity<List<AppointmentResponse>> getAppointmentsByPatient(@PathVariable Long patientId) {
         List<AppointmentResponse> responses = appointmentService.getByPatient(patientId);
         return ResponseEntity.ok(responses);
@@ -51,6 +55,7 @@ public class AppointmentController {
     // 4. Cập nhật trạng thái cuộc hẹn (Xác nhận, Hủy, Hoàn thành)
     // Ví dụ: PATCH /api/v1/appointments/1/status?status=CANCELLED
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long id,
             @RequestParam String status) {
@@ -61,6 +66,8 @@ public class AppointmentController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 
 //    @GetMapping("/doctor/{doctorId}")
 //    public ResponseEntity<List<AppointmentResponse>> getDoctorSchedule(

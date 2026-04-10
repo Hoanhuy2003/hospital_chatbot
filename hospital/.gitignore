@@ -1,9 +1,22 @@
+# ================== Maven / Spring Boot ==================
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
+
+# Ignore target folder nhưng giữ lại một số trường hợp đặc biệt
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# ================== Frontend (Vite / React) ==================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# ================== IDE ==================
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +44,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# ================== General ==================
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# ================== Environment files ==================
+.env
+.env.local
+.env.*.local

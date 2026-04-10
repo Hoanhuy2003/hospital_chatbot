@@ -8,6 +8,7 @@ import com.nguyenhuyhoan.hospital.models.User;
 import com.nguyenhuyhoan.hospital.repositoris.NotificationRepository;
 import com.nguyenhuyhoan.hospital.repositoris.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class NotificationService implements INotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     @Transactional
@@ -34,7 +36,26 @@ public class NotificationService implements INotificationService {
                 .isRead(false)
                 .name("Thông báo hệ thống")
                 .build();
-        notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        NotificationResponse response = NotificationResponse.builder()
+                .id(savedNotification.getId())
+                .title(title)
+                .message(message)
+                .type(type.name())
+                .isRead(false)
+                .sentAt(savedNotification.getSentAt())
+                .build();
+
+        simpMessagingTemplate.convertAndSendToUser(
+                user.getId().toString(),
+                "/queue/private",
+                response
+        );
+
+       // simpMessagingTemplate.convertAndSend("/topic/notifications", response);
+
+
     }
 
     @Override
