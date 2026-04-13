@@ -1,0 +1,294 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+
+.head {
+  background: #1565C0;
+  color: #fff;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.head h3 { font-size: 16px; font-weight: 700; margin: 0; }
+.headSub { font-size: 12px; opacity: .85; margin-top: 2px; }
+
+.closeBtn {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e8ecf0;
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 11px 6px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  color: #637381;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+  font-family: inherit;
+}
+
+.tab:hover { color: #1565C0; }
+.tabActive { color: #1565C0 !important; border-bottom-color: #1565C0 !important; }
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
+}
+
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2340;
+  margin: 14px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.sectionLabel:first-child { margin-top: 0; }
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #637381;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  border: 1.5px solid #e8ecf0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a2340;
+  outline: none;
+  transition: border-color .2s;
+  background: #fff;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus { border-color: #1565C0; }
+.field textarea { resize: vertical; min-height: 72px; }
+.field input[readonly] { background: #f5f7fa; color: #637381; }
+
+/* Drug table */
+.drugHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #637381;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 6px;
+  padding: 0 2px;
+}
+
+.drugRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.drugRow input {
+  border: 1.5px solid #e8ecf0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.drugRow input:focus { border-color: #1565C0; }
+
+.btnAdd {
+  width: 100%;
+  border: 1.5px dashed #e8ecf0;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 13px;
+  color: #1565C0;
+  background: none;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: border-color .2s;
+  font-family: inherit;
+}
+
+.btnAdd:hover { border-color: #1565C0; }
+
+.btnPrint {
+  background: #F0F7FF;
+  color: #1565C0;
+  border: 1.5px solid #E3F2FD;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 4px;
+  transition: all .2s;
+}
+
+.btnPrint:hover { background: #E3F2FD; }
+
+.infoBox {
+  background: #F0F7FF;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #0C447C;
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+/* Print preview */
+.printDoc {
+  border: 1px solid #e8ecf0;
+  border-radius: 8px;
+  padding: 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.printHeader {
+  text-align: center;
+  border-bottom: 2px solid #1565C0;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+
+.printTitle { font-size: 16px; font-weight: 700; color: #1565C0; }
+.printSub   { font-size: 12px; color: #637381; }
+
+.printRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.printKey { color: #637381; min-width: 130px; flex-shrink: 0; }
+
+.printSign {
+  text-align: right;
+  margin-top: 24px;
+  font-size: 13px;
+  color: #637381;
+  line-height: 1.8;
+}
+
+.drugTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.drugTable th {
+  background: #E3F2FD;
+  color: #0C447C;
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.drugTable td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+/* Footer */
+.footer {
+  padding: 14px 22px;
+  border-top: 1px solid #e8ecf0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  background: #f5f7fa;
+  flex-shrink: 0;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .2s;
+}
+
+.btnPrimary { background: #1565C0; color: #fff; }
+.btnPrimary:hover { background: #0D47A1; }
+.btnSuccess { background: #2E7D32; color: #fff; }
+.btnSuccess:hover { background: #1B5E20; }
+.btnDanger  { background: #C62828; color: #fff; }
+.btnDanger:hover  { background: #7f1818; }
+.btnOutline { background: #fff; color: #1a2340; border: 1.5px solid #e8ecf0; }
+.btnOutline:hover { border-color: #1565C0; color: #1565C0; }

@@ -1,0 +1,336 @@
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 24px 100px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.breadLink { cursor: pointer; color: var(--blue); }
+.breadLink:hover { text-decoration: underline; }
+.sep { color: var(--border); }
+.breadCurrent { color: var(--muted); }
+
+.clinicHeader {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.clinicAvatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  background: var(--blue-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.clinicInfo { flex: 1; }
+
+.clinicName {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.clinicMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.specTag {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.metaItem {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.btnFav {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.btnFav:hover { border-color: var(--blue); color: var(--blue); }
+
+/* Gallery */
+.gallery {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-radius: 14px;
+  overflow: hidden;
+  height: 260px;
+}
+
+.galleryMain {
+  background: var(--blue-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  border-radius: 14px 0 0 14px;
+}
+
+.galleryThumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.galleryThumb {
+  flex: 1;
+  background: var(--blue-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  border-radius: 0;
+}
+
+.galleryThumbs .galleryThumb:last-child { border-radius: 0 0 14px 0; }
+.galleryThumbs .galleryThumb:first-child { border-radius: 0 14px 0 0; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.tab {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.tab:hover { color: var(--blue); }
+
+.tabActive {
+  color: var(--blue) !important;
+  border-bottom-color: var(--blue) !important;
+}
+
+/* Tab content */
+.tabContent {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.infoSection {}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoItem {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+  align-items: flex-start;
+}
+
+.infoLabel {
+  color: var(--muted);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+/* Services */
+.serviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.serviceItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.serviceItem:last-child { border-bottom: none; }
+
+.serviceDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue);
+  flex-shrink: 0;
+}
+
+.servicePrice {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.btnBookSm {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.btnBookSm:hover { background: #0D47A1; }
+
+/* Doctors */
+.doctorList { display: flex; flex-direction: column; gap: 12px; }
+
+.doctorRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+.doctorRow:hover { border-color: var(--blue); }
+
+.docAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.docInfo { flex: 1; }
+.docName { font-size: 14px; font-weight: 600; color: var(--text); }
+.docMeta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+/* Sticky bar */
+.stickyBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+}
+
+.stickyLabel { font-size: 12px; color: var(--muted); }
+.stickyPhone { font-size: 15px; font-weight: 700; color: var(--blue); }
+
+.btnBookNow {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  padding: 13px 36px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.btnBookNow:hover { background: #0D47A1; }
+
+/* Not found */
+.notFound {
+  text-align: center;
+  padding: 100px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.notFound h2 { font-size: 22px; font-weight: 700; }
+.notFound button {
+  background: var(--blue); color: #fff; border: none;
+  padding: 10px 24px; border-radius: 10px; font-size: 15px; cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .clinicHeader { flex-direction: column; }
+  .gallery { height: 180px; }
+  .galleryMain { font-size: 52px; }
+  .stickyBar { padding: 12px 16px; }
+}

@@ -24,4 +24,6 @@ public interface IScheduleService {
     void createScheduleTemplate(ScheduleTemplateDTO scheduleTemplateDTO) ;
 
     void autoGenerateSchedules();
+
+    List<ScheduleResponse> getSchedulesBySpecialty(Long specialtyId, LocalDate date);
 }

@@ -1,0 +1,30 @@
+.statsRow { display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px }
+.statCard { background:#fff;border-radius:12px;border:1px solid #e8ecf0;padding:16px 18px }
+.statLabel { font-size:12px;color:#637381;margin-bottom:6px }
+.statNum { font-size:26px;font-weight:700 }
+.blue{color:#1565C0}.green{color:#2E7D32}.orange{color:#E65100}.red{color:#C62828}
+.grid2 { display:grid;grid-template-columns:1fr 1fr;gap:18px }
+.card { background:#fff;border-radius:12px;border:1px solid #e8ecf0;padding:18px 20px;box-shadow:0 2px 8px rgba(21,101,192,.07) }
+.cardTitle { font-size:15px;font-weight:700;color:#1a2340;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between }
+.cardTitle span { font-size:12px;font-weight:400;color:#1565C0;cursor:pointer }
+.apptItem { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #e8ecf0;cursor:pointer;transition:background .15s }
+.apptItem:last-child { border-bottom:none }
+.apptItem:hover { background:#F0F7FF;margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:8px }
+.apptTime { font-size:12px;font-weight:600;color:#1565C0;min-width:52px }
+.apptAva { width:34px;height:34px;border-radius:50%;background:#E3F2FD;color:#1565C0;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+.apptInfo { flex:1 }
+.apptName { font-size:13px;font-weight:600;color:#1a2340 }
+.apptReason { font-size:12px;color:#637381 }
+.badge { font-size:11px;font-weight:600;border-radius:12px;padding:3px 9px;white-space:nowrap }
+.badgeWait { background:#FFF3E0;color:#E65100 }
+.badgeDone { background:#E8F5E9;color:#2E7D32 }
+.badgeConfirm { background:#E3F2FD;color:#1565C0 }
+.badgeCancel { background:#FFEBEE;color:#C62828 }
+.nextRow { display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #e8ecf0 }
+.nextRow:last-child { border-bottom:none }
+.nextDate { font-size:12px;font-weight:600;color:#1565C0;min-width:100px;flex-shrink:0 }
+.empty { text-align:center;padding:40px;color:#637381 }
+.btn { border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s }
+.btnPrimary { background:#1565C0;color:#fff }
+.btnOutline { background:#fff;color:#1a2340;border:1.5px solid #e8ecf0;margin-right:6px }
+.btnOutline:hover { border-color:#1565C0;color:#1565C0 }

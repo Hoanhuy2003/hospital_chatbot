@@ -58,4 +58,13 @@ public class ScheduleController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/specialty/{specialtyId}")
+    public ResponseEntity<List<ScheduleResponse>> getBySpecialtyId(
+            @PathVariable Long specialtyId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        List<ScheduleResponse> scheduleResponses = scheduleService.getSchedulesBySpecialty(specialtyId, date);
+        return ResponseEntity.ok(scheduleResponses);
+    }
+
 }

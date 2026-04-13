@@ -167,6 +167,21 @@ public class ScheduleService implements IScheduleService {
 
     }
 
+    @Override
+    public List<ScheduleResponse> getSchedulesBySpecialty(Long specialtyId, LocalDate date) {
+        List<Schedule> schedules = scheduleRepository.findSchedulesBySpecialtyAndDate(specialtyId, date);
+        return schedules.stream()
+                .map(schedule -> {
+                    ScheduleResponse scheduleResponse = ScheduleResponse.fromSchedule(schedule);
+                    scheduleResponse.setDoctorName(schedule.getDoctor().getUser().getFullName());
+                    scheduleResponse.setClinicName(schedule.getClinic().getName());
+                    scheduleResponse.setSpecialtyName(schedule.getClinic().getSpecialty().getName());
+                    return scheduleResponse;
+
+                })
+                .collect(Collectors.toList());
+    }
+
     private void generateSlotsFromTemplate(ScheduleTemplate temp, LocalDate date){
         Clinic clinic = temp.getDoctor().getClinic();
 
@@ -198,6 +213,10 @@ public class ScheduleService implements IScheduleService {
             runner = slotEnd;
         }
     }
+
+
+    // ĐẶT LỊCH THEO KHOA
+
 
 
 

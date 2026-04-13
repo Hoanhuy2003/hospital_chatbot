@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test WebSocket Notification - Hospital</title>
+    <title>Test Private Notification - Backend Only</title>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        #messages { border: 1px solid #ccc; padding: 15px; height: 400px; overflow-y: auto; background: #f9f9f9; }
-        .message { margin: 10px 0; padding: 10px; border-radius: 5px; background: #e3f2fd; }
-        .info { color: #1976d2; }
+        #messages { border: 1px solid #ccc; padding: 15px; height: 500px; overflow-y: auto; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 12px; border-radius: 6px; background: #e3f2fd; }
+        .info { color: #1976d2; font-weight: bold; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-<h1>🔔 Test WebSocket Notification</h1>
+<h1>🔔 Test Private Notification (Backend Only - Port 8080)</h1>
 <p>Trạng thái: <strong id="status">Đang kết nối...</strong></p>
 <button onclick="disconnect()">Ngắt kết nối</button>
 <hr>
-<h3>Thông báo nhận được:</h3>
+<h3>Thông báo nhận được (Private):</h3>
 <div id="messages"></div>
 
 <script>
@@ -25,7 +26,7 @@
 
     function connect() {
         client = new StompJs.Client({
-            brokerURL: 'ws://localhost:8080/ws-hospital',
+            brokerURL: 'ws://localhost:8080/ws-hospital',   // ← Dùng trực tiếp backend
             reconnectDelay: 5000,
             debug: function(str) {
                 console.log(str);
@@ -35,44 +36,46 @@
         client.onConnect = function(frame) {
             document.getElementById('status').innerHTML = '✅ Đã kết nối thành công!';
             document.getElementById('status').classList.add('info');
-
             console.log('Connected to WebSocket');
 
-            // Subscribe vào topic thông báo chung
-            client.subscribe('/topic/notifications', function(message) {
-                const notification = JSON.parse(message.body);
-                console.log('Nhận được thông báo:', notification);
+            // Subscribe Private Notification
+            client.subscribe('/user/queue/notifications', function(message) {
+                try {
+                    const notification = JSON.parse(message.body);
+                    console.log('📨 Nhận được thông báo PRIVATE:', notification);
 
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'message';
-                msgDiv.innerHTML = `
-                    <strong>${notification.title}</strong><br>
-                    ${notification.message}<br>
-                    <small>Loại: ${notification.type} | Thời gian: ${notification.sentAt}</small>
-                `;
-                document.getElementById('messages').appendChild(msgDiv);
-
-                // Tự động scroll xuống dưới
-                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'message';
+                    msgDiv.innerHTML = `
+                        <strong>${notification.title}</strong><br>
+                        ${notification.message}<br>
+                        <small>Loại: ${notification.type} | ${notification.sentAt || ''}</small>
+                    `;
+                    document.getElementById('messages').appendChild(msgDiv);
+                    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+                } catch (e) {
+                    console.error('Lỗi parse thông báo:', e);
+                }
             });
         };
 
         client.onStompError = function(frame) {
-            document.getElementById('status').innerHTML = '❌ Lỗi STOMP: ' + frame.headers.message;
-            console.error('STOMP error:', frame);
+            document.getElementById('status').innerHTML = '❌ Lỗi STOMP: ' + (frame.headers.message || 'Unknown');
+            console.error('STOMP Error:', frame);
+        };
+
+        client.onWebSocketError = function(event) {
+            document.getElementById('status').innerHTML = '❌ Lỗi kết nối WebSocket';
+            console.error('WebSocket Error:', event);
         };
 
         client.activate();
     }
 
     function disconnect() {
-        if (client) {
-            client.deactivate();
-            document.getElementById('status').innerHTML = 'Đã ngắt kết nối';
-        }
+        if (client) client.deactivate();
     }
 
-    // Tự động kết nối khi mở trang
     window.onload = connect;
 </script>
 </body>

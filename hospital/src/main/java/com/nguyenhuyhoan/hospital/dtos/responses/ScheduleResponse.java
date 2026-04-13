@@ -14,6 +14,7 @@ public class ScheduleResponse {
     private Long id;
     private String doctorName;
     private String clinicName;
+    private String specialtyName;
     private LocalDate date;
     private String timeSlot;
     private Integer maxPatients;
@@ -32,6 +33,7 @@ public class ScheduleResponse {
                 .id(schedule.getId())
                 .doctorName(schedule.getDoctor().getUser().getFullName())
                 .clinicName(schedule.getClinic().getName())
+                .specialtyName(schedule.getClinic().getSpecialty().getName())
                 .date(schedule.getDate())
                 .timeSlot(schedule.getTimeSlot())
                 .maxPatients(schedule.getMaxPatients())

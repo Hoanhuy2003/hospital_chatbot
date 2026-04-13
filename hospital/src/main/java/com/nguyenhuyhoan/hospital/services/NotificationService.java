@@ -49,11 +49,14 @@ public class NotificationService implements INotificationService {
 
         simpMessagingTemplate.convertAndSendToUser(
                 user.getId().toString(),
-                "/queue/private",
+                "/queue/notifications",
                 response
+
         );
 
        // simpMessagingTemplate.convertAndSend("/topic/notifications", response);
+
+      //  System.out.println("Đang bắn thông báo cho User: " + userId + " tại kênh: /queue/notifications");
 
 
     }
