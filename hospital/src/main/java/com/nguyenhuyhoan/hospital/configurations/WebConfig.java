@@ -2,21 +2,32 @@ package com.nguyenhuyhoan.hospital.configurations;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+//    @Value("${file.upload-dir}")
+//    private String uploadDir;
+//
+//    @Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//
+//
+//
+//        registry.addResourceHandler("/uploads/**")
+//                .addResourceLocations("file:D:/hospital/uploads/" + uploadDir + "/");
+//    }
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
-
-
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file: /D:/hospital/hospital/" + uploadDir + "/");
+    public void addCorsMappings(CorsRegistry corsRegistry){
+        corsRegistry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS", "PATCH")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
+
 }

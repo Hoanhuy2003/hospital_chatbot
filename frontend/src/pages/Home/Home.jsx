@@ -1,17 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SPECIALTIES, DOCTORS } from '../../data/constants'
+import { DOCTORS } from '../../data/constants'
 import { CLINICS } from '../../data/constants'
 import DoctorCard from '../../components/DoctorCard/DoctorCard'
 import BookingModal from '../../components/BookingModal/BookingModal'
+import { specialtyService } from '../../services/api'
 import styles from './Home.module.css'
 
 
 export default function Home() {
   const navigate = useNavigate()
+  const [specialties, setSpecialties] = useState([])
   const [activeSpec, setActiveSpec] = useState(0)
   const [modalDoctor, setModalDoctor] = useState(null)
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+ 
+
+  // Fetch specialties from backend
+  useEffect(() => {
+    const fetchSpecialties = async () => {
+      try {
+        setLoading(true)
+        const data = await specialtyService.getAll()
+        setSpecialties(data || [])
+      } catch (err) {
+        console.error('Error fetching specialties:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSpecialties()
+  }, [])
 
   const filteredDoctors = DOCTORS.filter(d =>
     search === '' ||
@@ -28,12 +52,6 @@ export default function Home() {
     } else {
       navigate('/tim-kiem')
     }
-  }
-
-  // Click chuyên khoa → sang trang /tim-kiem?specialty=...
-  function handleSpecClick(s, i) {
-    setActiveSpec(i)
-    navigate(`/tim-kiem?specialty=${encodeURIComponent(s.name)}`)
   }
 
   return (
@@ -83,19 +101,50 @@ export default function Home() {
             Xem thêm
           </button>
         </div>
-        <div className={styles.specGrid}>
-          {SPECIALTIES.map((s, i) => (
-            <div
-              key={s.id}
-              className={`${styles.specCard} ${activeSpec === i ? styles.specActive : ''}`}
-              onClick={() => handleSpecClick(s, i)}
-            >
-              <div className={styles.specIcon}>{s.icon}</div>
-              <div className={styles.specName}>{s.name}</div>
-              <div className={styles.specCount}>{s.doctorCount} bác sĩ</div>
-            </div>
-          ))}
+        
+
+<div className={styles.specGrid}>
+  {loading ? (
+    <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px' }}>Đang tải chuyên khoa...</div>
+  ) : error ? (
+    <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px', color: 'red' }}>Lỗi: {error}</div>
+  ) : specialties.length === 0 ? (
+    <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px' }}>Chưa có chuyên khoa nào</div>
+  ) : (
+    specialties.map((s, i) => (
+      <div
+        key={s.id}
+        className={`${styles.specCard} ${activeSpec === i ? styles.specActive : ''}`}
+        onClick={() => {
+          setActiveSpec(i)
+          navigate(`/tim-kiem?specialty=${encodeURIComponent(s.name)}`)
+        }}
+      >
+        <div className={styles.specIcon}>
+          {/* Kiểm tra nếu iconUrl là link (có chứa http) thì hiện ảnh, không thì hiện icon mặc định */}
+          {s.iconUrl && s.iconUrl.startsWith('http') ? (
+            <img 
+              src={s.iconUrl} 
+              alt={s.name} 
+              className={styles.iconImg} // Hoàn có thể thêm class này vào CSS để chỉnh kích thước
+              style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+              onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = "https://cdn-icons-png.flaticon.com/512/3063/3063176.png"; // Ảnh dự phòng
+              }}
+            />
+          ) : (
+            '🏥'
+          )}
         </div>
+        <div className={styles.specName}>{s.name}</div>
+        <div className={styles.specCount}>{s.description || 'Chuyên khoa'}</div>
+      </div>
+    ))
+  )}
+</div>
+
+
 
         <div className={styles.sectionHeader}>
   <div>

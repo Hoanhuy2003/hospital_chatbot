@@ -26,15 +26,16 @@ public class DoctorService implements IDoctorService {
     private final SpecialtyRepository specialtyRepository;
     private final ClinicRepository clinicRepository;
     private final FileService fileService;
+    private final CloudinaryService cloudinaryService;
 
-    @Value("${file.doctor-dir}")
-    private String subDir;
+//    @Value("${file.doctor-dir}")
+//    private String subDir;
 
 
     @Override
     @Transactional
     public DoctorResponse createDoctor(DoctorDTO dto) throws IOException {
-        String fileName = fileService.storeFile(dto.getPhotoUrl(), subDir);
+        String photoUrl = cloudinaryService.uploadDoctorImage(dto.getPhotoUrl());
 
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(()-> new DataNotFoundException("User khoong tồn tại"));
@@ -56,8 +57,8 @@ public class DoctorService implements IDoctorService {
                 .qualification(dto.getQualification())
                 .experienceYears(dto.getExperienceYears())
                 .biography(dto.getBiography())
-                .photoUrl(fileName)
-                .photoThumbnailUrl("thumb_" + fileName)
+                .photoUrl(photoUrl)
+                .photoThumbnailUrl(null)
                 .isVerified(false)
                 .rating(dto.getRating())
                 .totalReviews(0)
@@ -95,13 +96,10 @@ public class DoctorService implements IDoctorService {
         doctor.setExperienceYears(doctorDTO.getExperienceYears());
         doctor.setRating(doctorDTO.getRating());
 
-        if(doctorDTO.getPhotoUrl() != null && !doctorDTO.getPhotoUrl().isEmpty()){
-            fileService.deleteFile(doctor.getPhotoUrl(), subDir);
-
-            String newFileName = fileService.storeFile(doctorDTO.getPhotoUrl(), subDir);
-
-            doctor.setPhotoUrl(newFileName);
-        }
+       if(doctorDTO.getPhotoUrl() != null && !doctorDTO.getPhotoUrl().isEmpty()){
+           String newPhotoUrl = cloudinaryService.uploadDoctorImage(doctorDTO.getPhotoUrl());
+           doctor.setPhotoUrl(newPhotoUrl);
+       }
         return mapToDoctor(doctorRepository.save(doctor));
     }
 
@@ -159,16 +157,16 @@ public class DoctorService implements IDoctorService {
     }
 
 
-    private DoctorResponse mapToDoctor(Doctor doctor){
+    private DoctorResponse mapToDoctor(Doctor doctor) {
         return DoctorResponse.builder()
                 .id(doctor.getId())
-                .fullName(doctor.getUser().getFullName())
-                .specialtyName(doctor.getSpecialty().getName())
-                .clinicName(doctor.getClinic().getName())
+                .fullName(doctor.getUser() != null ? doctor.getUser().getFullName() : null)
+                .specialtyName(doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : null)
+                .clinicName(doctor.getClinic() != null ? doctor.getClinic().getName() : null)
                 .qualification(doctor.getQualification())
                 .experienceYears(doctor.getExperienceYears())
                 .biography(doctor.getBiography())
-                .photoUrl("uploads/" + subDir + "/" +doctor.getPhotoUrl())
+                .photoUrl(doctor.getPhotoUrl())
                 .isVerified(doctor.getIsVerified())
                 .rating(doctor.getRating())
                 .build();

@@ -1,40 +1,40 @@
-import { createContext, useContext, useState } from 'react'
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-const AuthContext = createContext(null)
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null) // null = chưa đăng nhập
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
 
-  function login(data) {
-    // data: { email, name }
-    // TODO: gọi API POST /api/auth/login
-    setUser({ ...data, avatar: data.name?.charAt(0)?.toUpperCase() || 'U' })
-  }
+    // Kiểm tra xem đã đăng nhập chưa khi load trang
+    useEffect(() => {
+        const savedUserId = localStorage.getItem('userId');
+        const savedRole = localStorage.getItem('role');
+        const savedName = localStorage.getItem('fullName');
+        
+        if (savedUserId && savedRole) {
+            setUser({ id: savedUserId, role: savedRole, fullName: savedName });
+        }
+    }, []);
 
-  function register(data) {
-    // data: { ho, ten, email, phone, dob, gender }
-    // TODO: gọi API POST /api/auth/register
-    setUser({
-      name: `${data.ho} ${data.ten}`,
-      email: data.email,
-      phone: data.phone,
-      avatar: data.ho?.charAt(0)?.toUpperCase() || 'U',
-    })
-  }
+    const login = (userData) => {
+        setUser(userData);
+        // Lưu vào LocalStorage để không bị mất khi F5 trang
+        localStorage.setItem('userId', userData.id);
+        localStorage.setItem('role', userData.role);
+        localStorage.setItem('fullName', userData.fullName);
+    };
 
-  function logout() {
-    setUser(null)
-  }
+    const logout = () => {
+        setUser(null);
+        localStorage.clear();
+        window.location.href = '/dang-nhap';
+    };
 
-  return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
+    return (
+        <AuthContext.Provider value={{ user, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
 
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
-  return ctx
-}
+export const useAuth = () => useContext(AuthContext);

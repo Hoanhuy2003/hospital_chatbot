@@ -11,6 +11,7 @@ import SearchDoctors from './pages/SearchDoctors/SearchDoctors'
 import DoctorDashboard from './pages/DoctorDashboard/DoctorDashboard'
 import { BookingProvider } from './context/BookingContext'
 import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/Auth/ProtectedRoute';
 
 export default function App() {
   return (
@@ -20,7 +21,18 @@ export default function App() {
           {/* Auth pages - không có Navbar/Chatbot */}
           <Route path="/dang-nhap" element={<Login />} />
           <Route path="/dang-ky" element={<Register />} />
-          <Route path="/bac-si/dashboard" element={<DoctorDashboard />} />
+          {/* <Route path="/doctor/dashboard" element={<DoctorDashboard />} /> */}
+
+          
+           {/* TRANG BÁC SĨ (CÓ BẢO VỆ) */}
+          <Route path="/doctor/dashboard" element={
+            <ProtectedRoute allowedRoles={['DOCTOR']}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          } />
+
+          
+ 
 
           {/* App pages - có Layout (Navbar + Chatbot) */}
           <Route path="/*" element={

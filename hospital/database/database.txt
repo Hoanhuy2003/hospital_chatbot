@@ -87,6 +87,21 @@ CREATE TABLE specialties (
     icon_url VARCHAR(255) COMMENT 'Icon chuyên khoa (nếu có)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Dữ liệu mẫu cho specialties
+INSERT INTO specialties (name, description, is_active, icon_url) VALUES
+('Hô hấp', 'Chuyên khoa Hô hấp - Tim mạch', 1, '🫁'),
+('Thần kinh', 'Chuyên khoa Thần kinh', 1, '🧠'),
+('Tim mạch', 'Chuyên khoa Tim mạch', 1, '❤️'),
+('Răng hàm mặt', 'Chuyên khoa Nha khoa', 1, '🦷'),
+('Mắt', 'Chuyên khoa Nhãn khoa', 1, '👁️'),
+('Cơ xương khớp', 'Chuyên khoa Phục hồi chức năng', 1, '🦴'),
+('Nhi khoa', 'Chuyên khoa Nhi khoa', 1, '🩺'),
+('Y học cổ truyền', 'Chuyên khoa Y học cổ truyền', 1, '🌿'),
+('Dị ứng miễn dịch', 'Chuyên khoa Dị ứng miễn dịch', 1, '🧬'),
+('Nội tổng quát', 'Chuyên khoa Nội tổng quát', 1, '💊'),
+('Tiêu hoá', 'Chuyên khoa Tiêu hoá', 1, '🫀'),
+('Sản phụ khoa', 'Chuyên khoa Sản phụ khoa', 1, '🤰');
+
 -- ======================================
 -- 4. Bệnh viện
 -- ======================================

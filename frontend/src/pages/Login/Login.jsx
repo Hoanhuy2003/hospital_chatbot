@@ -6,6 +6,7 @@ import { validateLogin } from '../../utils/validators'
 import FormField from '../../components/UI/FormField'
 import PasswordInput from '../../components/UI/PasswordInput'
 import styles from './Login.module.css'
+import { authService } from '../../services/authService' // 1. Import service của bạn
 
 const GOOGLE_ICON = (
   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -20,20 +21,51 @@ export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const [done, setDone] = useState(false)
+  const [serverError, setServerError] = useState('') // Thêm state để hiện lỗi từ Java
 
   const { values, errors, loading, handleChange, handleSubmit } = useForm(
     { email: '', password: '' },
     validateLogin
   )
 
+  // 2. Sửa lại hàm onSubmit thực tế
   const onSubmit = handleSubmit(async (vals) => {
-    // TODO: thay bằng API call thực
-    // const res = await fetch('/api/auth/login', { method:'POST', body: JSON.stringify(vals), headers:{'Content-Type':'application/json'} })
-    // const data = await res.json()
-    await new Promise(r => setTimeout(r, 1200)) // simulate
-    login({ email: vals.email, name: vals.email.split('@')[0] })
-    setDone(true)
-    setTimeout(() => navigate('/'), 1500)
+    try {
+      setServerError(''); // Xóa lỗi cũ trước khi gửi
+
+      // Gọi API thực tế thông qua service
+      const data = await authService.login(vals.email, vals.password);
+
+      // Lưu token vào localStorage (Để Interceptor tự lấy dùng)
+      localStorage.setItem('token', data.accessToken);
+      
+      // Lưu thông tin vào Context (AuthContext)
+      login({ 
+        id: data.userId, 
+        fullName: data.fullName, 
+        role: data.role 
+      });
+
+      // Hiển thị màn hình thành công
+      setDone(true);
+
+      // Điều hướng dựa trên vai trò người dùng sau 1.5s
+      setTimeout(() => {
+        if (data.role === 'ADMIN') {
+          navigate('/admin');
+        } else if (data.role === 'DOCTOR') {
+          navigate('/doctor/dashboard');
+        } else {
+          navigate('/'); // Bệnh nhân về trang chủ
+        }
+      }, 1500);
+
+    } catch (err) {
+      // Bắt lỗi từ Backend (Sai mật khẩu, 401,...)
+      const message = err.response?.data?.message || "Số điện thoại hoặc mật khẩu không chính xác!";
+      setServerError(message);
+      console.error("Login failed:", err);
+    }
   })
 
   if (done) {
@@ -61,6 +93,13 @@ export default function Login() {
           <Link to="/dang-ky" className={styles.tab}>Đăng ký</Link>
         </div>
 
+        {/* Hiển thị lỗi từ server nếu có */}
+        {serverError && (
+          <p style={{ color: '#e74c3c', textAlign: 'center', fontSize: '14px', marginBottom: '10px' }}>
+            {serverError}
+          </p>
+        )}
+
         <form onSubmit={onSubmit} noValidate className={styles.form}>
           <FormField label="Email hoặc số điện thoại" error={errors.email}>
             <input
@@ -68,7 +107,7 @@ export default function Login() {
               type="text"
               value={values.email}
               onChange={handleChange}
-              placeholder="example@email.com"
+              placeholder="098xxx hoặc example@email.com"
               className={`${styles.input} ${errors.email ? styles.inputErr : ''}`}
               autoComplete="username"
             />
@@ -89,7 +128,7 @@ export default function Login() {
           </div>
 
           <button type="submit" className={styles.btnPrimary} disabled={loading}>
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            {loading ? 'Đang kiểm tra...' : 'Đăng nhập'}
           </button>
 
           <div className={styles.divider}><span>hoặc</span></div>

@@ -25,24 +25,27 @@ public class SpecialtyService implements ISpecialtyService {
 
     private final SpecialtyRepository specialtyRepository;
     private final FileService fileService;
+    private final CloudinaryService cloudinaryService;
 
 
 
-    @Value("${file.specialty-dir}")
-    private String subDir;
+
+//    @Value("${file.specialty-dir}")
+//    private String subDir;
 
 
 
     @Override
     public SpecialtyResponse createSpecialty(SpecialtyDTO specialtyDTO) throws IOException {
-        String fileName = fileService.storeFile(specialtyDTO.getIconUrl(), subDir);
+
+        String iconUrl = cloudinaryService.uploadDoctorImage(specialtyDTO.getIconUrl());
 
 
 
         Specialty specialty = Specialty.builder()
                 .name(specialtyDTO.getName())
                 .description(specialtyDTO.getDescription())
-                .iconUrl(fileName)
+                .iconUrl(iconUrl)
                 .isActive(true)
                 .build();
         Specialty save = specialtyRepository.save(specialty);
@@ -64,11 +67,10 @@ public class SpecialtyService implements ISpecialtyService {
 
         Specialty existingSpecialty = specialtyRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Khong tim thay"));
-        if(specialtyDTO.getIconUrl() != null && !specialtyDTO.getIconUrl().isEmpty()){
-            fileService.deleteFile(existingSpecialty.getIconUrl(), subDir);
 
-            String newFileName = fileService.storeFile(specialtyDTO.getIconUrl(), subDir);
-            existingSpecialty.setIconUrl(newFileName);
+        if(specialtyDTO.getIconUrl() != null && !specialtyDTO.getIconUrl().isEmpty()){
+            String newIconUrl = cloudinaryService.uploadDoctorImage(specialtyDTO.getIconUrl());
+            existingSpecialty.setIconUrl(newIconUrl);
         }
 
         existingSpecialty.setName(specialtyDTO.getName());
@@ -88,7 +90,7 @@ public class SpecialtyService implements ISpecialtyService {
                 .id(s.getId())
                 .name(s.getName())
                 .description(s.getDescription())
-                .iconUrl("uploads/"+subDir+"/" + s.getIconUrl())
+                .iconUrl(s.getIconUrl())
                 .isActive(s.getIsActive())
                 .build();
     }

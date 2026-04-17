@@ -1,12 +1,11 @@
 spring:
   datasource:
-    # Sửa serverTimezone thành Asia/Ho_Chi_Minh
     url: jdbc:mysql://localhost:3306/hospital_chatbot?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 1234
     hikari:
-      pool-name: TestHikariCP
+      pool-name: HospitalHikariCP
 
   jpa:
     show-sql: true
@@ -16,10 +15,9 @@ spring:
     properties:
       hibernate.format_sql: true
       hibernate.enable_lazy_load_no_trans: true
-      # Thêm dòng này để Hibernate hiểu múi giờ khi lưu/đọc
       hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
 
-  # Cấu hình Jackson để format JSON trả về đúng múi giờ VN
+  # Jackson config cho date/time
   jackson:
     time-zone: Asia/Ho_Chi_Minh
     date-format: yyyy-MM-dd HH:mm:ss
@@ -37,7 +35,14 @@ jwt:
   secretKey: "unRgKLqmtvb/9icGgNImphNA9WMs5qCVkrQtH4sKV2w="
   expiration: 86400
 
+# ================== Cloudinary Configuration ==================
+cloudinary:
+  cloud-name: dyugd6kok
+  api-key: 276566866461522
+  api-secret: O5PgWMF1JWmMEbJC30IbbiVMG3U
+
+# ================== File Upload (Local) ==================
 file:
   upload-dir: uploads
-  specialty-dir: specialties
   doctor-dir: doctors
+  specialty-dir: specialties
