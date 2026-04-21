@@ -1,5 +1,6 @@
 package com.nguyenhuyhoan.hospital.services;
 
+import com.nguyenhuyhoan.hospital.dtos.requests.DoctorScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleTemplateDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.GroupedScheduleResponse;
@@ -294,6 +295,31 @@ public class ScheduleService implements IScheduleService {
                 .durationMinutes(duration)
                 .morningSlots(morning)
                 .afternoonSlots(afternoon)
+                .build();
+    }
+
+    @Override
+    public DoctorScheduleDTO getAvailableTimeSlotsByDoctor(Long doctorId, LocalDate date) {
+        // 1. Lấy danh sách lịch từ Repository
+        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndDate(doctorId, date);
+
+        // 2. Lọc các slot thỏa mãn điều kiện
+        List<String> timeSlots = schedules.stream()
+                .filter(s ->
+                        // Kiểm tra slot có đang mở không
+                        Boolean.TRUE.equals(s.getIsActive()) &&
+                                // Kiểm tra xem đã đầy người đặt chưa (nếu maxPatients là null thì coi như vô hạn)
+                                (s.getMaxPatients() == null || s.getCurrentPatients() < s.getMaxPatients())
+                )
+                .map(Schedule::getTimeSlot) // Lấy chuỗi "08:00_08:30"
+                .sorted()
+                .collect(Collectors.toList());
+
+        // 3. Trả về DTO
+        return DoctorScheduleDTO.builder()
+                .doctorId(doctorId)
+                .date(date)
+                .availableTimeSlots(timeSlots)
                 .build();
     }
 

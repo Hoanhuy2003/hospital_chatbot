@@ -1,5 +1,6 @@
 package com.nguyenhuyhoan.hospital.controllers;
 
+import com.nguyenhuyhoan.hospital.dtos.requests.DoctorScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.GroupedScheduleResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleResponse;
@@ -88,6 +89,14 @@ public class ScheduleController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/doctor/{doctorId}/available-slots")
+    public ResponseEntity<DoctorScheduleDTO> getAvailableSlots(
+            @PathVariable Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        return ResponseEntity.ok(scheduleService.getAvailableTimeSlotsByDoctor(doctorId, date));
     }
 
 }

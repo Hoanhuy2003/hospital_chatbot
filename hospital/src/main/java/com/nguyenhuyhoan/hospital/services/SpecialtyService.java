@@ -1,10 +1,12 @@
 package com.nguyenhuyhoan.hospital.services;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.SpecialtyDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.DoctorResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.SpecialtyResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 import com.nguyenhuyhoan.hospital.iservices.ISpecialtyService;
 import com.nguyenhuyhoan.hospital.models.Specialty;
+import com.nguyenhuyhoan.hospital.repositoris.DoctorRepository;
 import com.nguyenhuyhoan.hospital.repositoris.SpecialtyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +28,7 @@ public class SpecialtyService implements ISpecialtyService {
     private final SpecialtyRepository specialtyRepository;
     private final FileService fileService;
     private final CloudinaryService cloudinaryService;
+    private final DoctorRepository doctorRepository;
 
 
 
@@ -82,6 +85,28 @@ public class SpecialtyService implements ISpecialtyService {
 
 
         return mapToResponse(save);
+    }
+
+    @Override
+    public List<DoctorResponse> getDoctorBySpecialty(Long specialtyId) {
+        // 1. Kiểm tra xem chuyên khoa có tồn tại không
+        if (!specialtyRepository.existsById(specialtyId)) {
+            throw new DataNotFoundException("Chuyên khoa không tồn tại");
+        }
+
+        // 2. Lấy danh sách bác sĩ và chuyển sang Response DTO
+        return doctorRepository.findBySpecialtyId(specialtyId)
+                .stream()
+                .map(doctor -> DoctorResponse.builder()
+                        .id(doctor.getId())
+                        .fullName(doctor.getUser().getFullName())
+                        .specialtyName(doctor.getSpecialty().getName())
+                        .clinicName(doctor.getClinic().getName())
+                        .photoUrl(doctor.getPhotoUrl())
+                        .price(doctor.getPrice())
+                        .experienceYears(doctor.getExperienceYears())
+                        .build())
+                .toList();
     }
 
 

@@ -1,5 +1,6 @@
 package com.nguyenhuyhoan.hospital.iservices;
 
+import com.nguyenhuyhoan.hospital.dtos.requests.DoctorScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleTemplateDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.GroupedScheduleResponse;
@@ -35,4 +36,6 @@ public interface IScheduleService {
     List<ScheduleTemplate> getTemplateByDoctorId(Long doctorId);
 
     ScheduleTemplateResponse toResponse(ScheduleTemplate template);
+
+    public DoctorScheduleDTO getAvailableTimeSlotsByDoctor(Long doctorId, LocalDate date);
 }

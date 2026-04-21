@@ -57,7 +57,13 @@ export const specialtyService = {
             console.error('Failed to fetch specialties:', error);
             throw error;
         }
+    },
+    getDoctorBySpecialty : async(specialtyId) =>{
+
+        const response = await api.get(`/v1/specialty/${specialtyId}/doctors`);
+        return response.data
     }
+
 };
 
 export default api;

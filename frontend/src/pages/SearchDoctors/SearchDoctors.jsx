@@ -1,34 +1,79 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { DOCTORS, SPECIALTIES } from '../../data/constants'
 import BookingModal from '../../components/BookingModal/BookingModal'
+import { specialtyService } from '../../services/api' 
 import styles from './SearchDoctors.module.css'
 
 export default function SearchDoctors() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
-  const [activeSpec, setActiveSpec] = useState(searchParams.get('specialty') || '')
+  const [activeSpecId, setActiveSpecId] = useState(searchParams.get('specialtyId') || '')
   const [modalDoctor, setModalDoctor] = useState(null)
 
+  // Khởi tạo là mảng rỗng để không bị lỗi .filter hay .map
+  const [allSpecialties, setAllSpecialties] = useState([])
+  const [doctors, setDoctors] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  // 1. Fetch danh sách chuyên khoa
+  useEffect(() => {
+    specialtyService.getAll()
+      .then(data => {
+        // Nếu Backend trả về object có content thì lấy data.content, không thì lấy data
+        const list = data?.content || data;
+        if (Array.isArray(list)) setAllSpecialties(list);
+      })
+      .catch(err => console.error("Lỗi fetch chuyên khoa:", err))
+  }, [])
+
+  // 2. Fetch danh sách bác sĩ (Xử lý bóc tách .content)
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setLoading(true)
+        let result = []
+        
+        if (activeSpecId) {
+          // Gọi API theo chuyên khoa
+          const data = await specialtyService.getDoctorBySpecialty(activeSpecId)
+          // Bóc tách nếu có .content (phân trang)
+          result = data?.content || data
+        } else {
+          // Gọi API lấy tất cả bác sĩ
+          const res = await fetch('http://localhost:8080/api/v1/doctors')
+          const data = await res.json()
+          // Dựa trên ảnh Hoàn gửi, dữ liệu nằm trong data.content
+          result = data?.content || data
+        }
+        
+        setDoctors(Array.isArray(result) ? result : [])
+      } catch (error) {
+        console.error('Lỗi fetch bác sĩ: ', error)
+        setDoctors([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDoctors()
+  }, [activeSpecId])
+
+  // 3. Filter tìm kiếm (Dùng optional chaining ?. để an toàn)
   const filtered = useMemo(() => {
+    if (!Array.isArray(doctors)) return []
+    
     const q = query.toLowerCase().trim()
-    return DOCTORS.filter(d => {
+    return doctors.filter(d => {
       const matchQ = !q
-        || d.name.toLowerCase().includes(q)
-        || d.specialty.toLowerCase().includes(q)
-        || d.hospital.toLowerCase().includes(q)
-      const matchS = !activeSpec || d.specialty.includes(activeSpec)
-      return matchQ && matchS
+        || d.fullName?.toLowerCase().includes(q)
+        || d.clinicName?.toLowerCase().includes(q)
+        || d.specialtyName?.toLowerCase().includes(q)
+      return matchQ
     })
-  }, [query, activeSpec])
+  }, [query, doctors])
 
-  function handleSpec(spec) {
-    setActiveSpec(spec)
-    setSearchParams(spec ? { specialty: spec } : {})
-  }
-
-  function handleSearch(e) {
-    setQuery(e.target.value)
+  function handleSpec(specId) {
+    setActiveSpecId(specId)
+    setSearchParams(specId ? { specialtyId: specId } : {})
   }
 
   return (
@@ -37,48 +82,44 @@ export default function SearchDoctors() {
       <div className={styles.searchWrap}>
         <input
           className={styles.searchInput}
-          placeholder="Tìm theo triệu chứng, bác sĩ, bệnh viện..."
+          placeholder="Tìm bác sĩ, phòng khám..."
           value={query}
-          onChange={handleSearch}
+          onChange={(e) => setQuery(e.target.value)}
         />
         <button className={styles.searchBtn}>🔍</button>
       </div>
 
-      {/* Filter row */}
-      <div className={styles.filters}>
-        <div className={styles.filterPill}>Nơi khám: Bác sĩ ▾</div>
-        <div className={styles.filterPill}>📍 Khu vực</div>
-        <div className={styles.filterPill}>🎯 Gần nhất</div>
-      </div>
-
       {/* Specialty chips */}
-      <div className={styles.specChips}>
-        <button
-          className={`${styles.chip} ${activeSpec === '' ? styles.chipActive : ''}`}
-          onClick={() => handleSpec('')}
-        >Tất cả</button>
-        {SPECIALTIES.map(s => (
-          <button
-            key={s.id}
-            className={`${styles.chip} ${activeSpec === s.name ? styles.chipActive : ''}`}
-            onClick={() => handleSpec(s.name)}
-          >
-            {s.icon} {s.name}
-          </button>
-        ))}
-      </div>
+      {/* <div className={styles.specChips}>
+  <button
+    className={`${styles.chip} ${activeSpecId === '' ? styles.chipActive : ''}`}
+    onClick={() => handleSpec('')}
+  >
+    Tất cả
+  </button>
 
-      {/* Result count */}
+  {allSpecialties.map(s => (
+    <button
+      key={s.id}
+      // Dùng == để so sánh vì ID từ URL có thể là chuỗi "1", ID từ mảng là số 1
+      className={`${styles.chip} ${activeSpecId == s.id ? styles.chipActive : ''}`}
+      onClick={() => handleSpec(s.id)} // Truyền ID vào đây!
+    >
+      {s.name}
+    </button>
+  ))}
+</div> */}
+
       <p className={styles.resultCount}>
         Tìm thấy <strong>{filtered.length}</strong> kết quả
-        {activeSpec && <> cho chuyên khoa <strong>{activeSpec}</strong></>}
       </p>
 
-      {/* Doctor list */}
-      {filtered.length === 0 ? (
+      {/* Danh sách bác sĩ */}
+      {loading ? (
+        <div className={styles.loading}>Đang tải...</div>
+      ) : filtered.length === 0 ? (
         <div className={styles.empty}>
-          <div style={{ fontSize: 52 }}>🔍</div>
-          <p>Không tìm thấy bác sĩ phù hợp</p>
+          <p>Không tìm thấy bác sĩ phù hợp.</p>
         </div>
       ) : (
         <div className={styles.list}>
@@ -88,7 +129,7 @@ export default function SearchDoctors() {
         </div>
       )}
 
-      {/* Booking modal */}
+      {/* Modal đặt lịch */}
       {modalDoctor && (
         <BookingModal doctor={modalDoctor} onClose={() => setModalDoctor(null)} />
       )}
@@ -99,16 +140,21 @@ export default function SearchDoctors() {
 function DoctorRow({ doctor, onBook }) {
   return (
     <div className={styles.doctorItem}>
-      <div className={styles.avatar}>{doctor.avatar}</div>
+      <div className={styles.avatar}>
+                  {doctor.photoUrl ? (
+                    <img src={doctor.photoUrl} alt={doctor.fullName} className={styles.avatar} />
+                  ) : (
+                    '👨‍⚕️'
+                  )}
+                </div>
       <div className={styles.docBody}>
-        <div className={styles.docName}>{doctor.name}</div>
+        <div className={styles.docName}>{doctor.fullName}</div>
         <div className={styles.docTags}>
-          <span className={styles.tag}>{doctor.specialty}</span>
+          <span className={styles.tag}>{doctor.specialtyName}</span>
         </div>
-        <div className={styles.docAddr}>📍 {doctor.hospital}</div>
+        <div className={styles.docAddr}>📍 {doctor.clinicName}</div>
         <div className={styles.docMeta}>
-          ⭐ {doctor.rating} ({doctor.reviewCount} đánh giá) · {doctor.price}/lượt
-          · {doctor.experience} năm kinh nghiệm
+          ⭐ 5.0 · {doctor.experienceYears} năm kinh nghiệm · <strong>{doctor.price?.toLocaleString()}đ</strong>
         </div>
       </div>
       <button className={styles.btnBook} onClick={() => onBook(doctor)}>

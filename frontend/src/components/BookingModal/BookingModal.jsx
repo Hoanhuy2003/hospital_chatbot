@@ -1,22 +1,66 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
-import { useDates }   from '../../hooks/useDates'
-import { useSlots }   from '../../hooks/useSlots'
+import { useDates } from '../../hooks/useDates'
+import { scheduleService } from '../../services/scheduleService' // Đảm bảo gọi đúng hàm getAvailableSlots
 import { appointmentService } from '../../services/appointmentService'
 import styles from './BookingModal.module.css'
 
 export default function BookingModal({ doctor, onClose }) {
-  const dates = useDates(7)
+
+  console.log("HELLO MODAL");
+  const dates = useDates(7) // Lấy danh sách 7 ngày tới
+  console.log("dates:", dates) 
   const [selDateIdx, setSelDateIdx] = useState(0)
-  const [selSlot, setSelSlot] = useState(null) // Lưu giá trị timeSlot (ví dụ: "08:00_08:30")
+  const [selSlot, setSelSlot] = useState(null)
+  const [slots, setSlots] = useState({ morning: [], afternoon: [] })
+  const [loading, setLoading] = useState(false)
   const [isBooking, setIsBooking] = useState(false)
 
-  const currentDateStr = dates[selDateIdx]?.fullDate
+  const currentDateStr = dates[selDateIdx]?.dateStr 
 
-  // Lấy dữ liệu từ Hook (Hook này cần trả về morning và afternoon là mảng Object)
-  const { morning, afternoon, loading, error } = useSlots(doctor.id, currentDateStr)
+  // 1. Fetch dữ liệu từ API và tự động phân loại Sáng/Chiều
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!doctor.id || !currentDateStr) {
+        console.log("❌ Thiếu doctorId hoặc date:", doctor.id, currentDateStr)
+        return
+      }
+      try {
+        setLoading(true)
+        console.log("📡 Gọi API:", doctor.id, currentDateStr)
+        
+        const data = await scheduleService.getAvailableSlots(doctor.id, currentDateStr)
+        console.log("✅ Data nhận được:", data)
+        console.log("✅ availableTimeSlots:", data.availableTimeSlots)
 
-  const totalSlots = (morning?.length || 0) + (afternoon?.length || 0)
+        const allSlots = data.availableTimeSlots || []
+        console.log("✅ allSlots length:", allSlots.length)
+
+        const morning = []
+        const afternoon = []
+        allSlots.forEach(slot => {
+          const hour = parseInt(slot.split('_')[0].split(':')[0])
+          console.log(`  slot: ${slot} → hour: ${hour} → ${hour < 12 ? 'sáng' : 'chiều'}`)
+          if (hour < 12) morning.push(slot)
+          else afternoon.push(slot)
+        })
+
+        console.log("🌅 morning:", morning)
+        console.log("🌆 afternoon:", afternoon)
+        setSlots({ morning, afternoon })
+
+      } catch (err) {
+        console.error("❌ Lỗi fetch:", err)
+        console.error("❌ Status:", err.response?.status)
+        console.error("❌ Message:", err.response?.data)
+        setSlots({ morning: [], afternoon: [] })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSlots()
+  }, [doctor.id, currentDateStr])
+  const totalSlots = slots.morning.length + slots.afternoon.length
 
   function handleSelectDate(i) {
     setSelDateIdx(i)
@@ -41,8 +85,8 @@ export default function BookingModal({ doctor, onClose }) {
         patient_id: userId,
         doctor_id: doctor.id,
         booking_date: currentDateStr,
-        time_slot: selSlot, // Gửi chuỗi gốc "08:00_08:30" lên Backend
-        reason: "Khám định kỳ"
+        time_slot: selSlot, // Gửi chuỗi "08:00_08:30"
+        reason: "Khám bệnh tại bệnh viện"
       }
 
       await appointmentService.create(appointmentData)
@@ -56,10 +100,7 @@ export default function BookingModal({ doctor, onClose }) {
   }
 
   return (
-    <div
-      className={styles.overlay}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
 
         {/* ── HEADER ── */}
@@ -67,25 +108,14 @@ export default function BookingModal({ doctor, onClose }) {
           <div className={styles.avatar}>
             {doctor.photoUrl ? (
               <img src={doctor.photoUrl} alt={doctor.fullName} className={styles.avatar} />
-            ) : (
-              '👨‍⚕️'
-            )}
+            ) : '👨‍⚕️'}
           </div>
           <div className={styles.headInfo}>
             <div className={styles.docName}>{doctor.fullName}</div>
-            <div className={styles.docMeta}>
-              {doctor.specialtyName} · {doctor.clinicName}
-            </div>
+            <div className={styles.docMeta}>{doctor.specialtyName} · {doctor.clinicName}</div>
             <div className={styles.tags}>
-              <span className={styles.tag}>
-                {doctor.experienceYears || 0} năm kinh nghiệm
-              </span>
-              <span className={`${styles.tag} ${styles.tagGreen}`}>
-                ✓ Đã xác minh
-              </span>
-              <span className={`${styles.tag} ${styles.tagOrange}`}>
-                {doctor.price?.toLocaleString()}đ
-              </span>
+              <span className={styles.tag}>{doctor.experienceYears || 0} năm kinh nghiệm</span>
+              <span className={`${styles.tag} ${styles.tagOrange}`}>{doctor.price?.toLocaleString()}đ</span>
             </div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>✕</button>
@@ -93,7 +123,6 @@ export default function BookingModal({ doctor, onClose }) {
 
         {/* ── BODY ── */}
         <div className={styles.body}>
-
           <div className={styles.sectionLabel}>CHỌN NGÀY KHÁM</div>
           <div className={styles.dateTabs}>
             {dates.map((d, i) => (
@@ -103,59 +132,47 @@ export default function BookingModal({ doctor, onClose }) {
                 onClick={() => handleSelectDate(i)}
               >
                 <div className={styles.dateLabel}>{d.label}</div>
-                <div className={styles.dateSlots}>
+                <div className={styles.dateSub}>
                   {loading ? '...' : `${totalSlots} khung giờ`}
                 </div>
               </div>
             ))}
           </div>
 
-          {loading && (
-            <div className={styles.loadingWrap}>
-              <div className={styles.spinner} />
-              <span>Đang tải khung giờ...</span>
-            </div>
-          )}
-
-          {error && !loading && (
-            <div className={styles.errorMsg}>
-              ⚠ Không tải được khung giờ khám.
-            </div>
-          )}
-
-          {!loading && !error && (
+          {loading ? (
+            <div className={styles.loadingWrap}>Đang tải khung giờ...</div>
+          ) : (
             <>
-              {/* Buổi sáng - Trỏ vào t.timeSlot */}
-              {morning?.length > 0 && (
+              {/* Render Buổi sáng */}
+              {slots.morning.length > 0 && (
                 <>
                   <div className={styles.timeGroupLabel}>🌅 Buổi sáng</div>
                   <div className={styles.timeGrid}>
-                    {morning.map((t, idx) => (
+                    {slots.morning.map((slot, idx) => (
                       <div
                         key={idx}
-                        className={`${styles.slot} ${selSlot === t.timeSlot ? styles.slotActive : ''}`}
-                        onClick={() => setSelSlot(t.timeSlot)}
+                        className={`${styles.slot} ${selSlot === slot ? styles.slotActive : ''}`}
+                        onClick={() => setSelSlot(slot)}
                       >
-                        {/* Hiển thị đẹp hơn: 08:00 - 08:30 */}
-                        {t.timeSlot.replace('_', ' - ')}
+                        {slot.replace('_', ' - ')}
                       </div>
                     ))}
                   </div>
                 </>
               )}
 
-              {/* Buổi chiều - Trỏ vào t.timeSlot */}
-              {afternoon?.length > 0 && (
+              {/* Render Buổi chiều */}
+              {slots.afternoon.length > 0 && (
                 <>
                   <div className={styles.timeGroupLabel}>🌆 Buổi chiều</div>
                   <div className={styles.timeGrid}>
-                    {afternoon.map((t, idx) => (
+                    {slots.afternoon.map((slot, idx) => (
                       <div
                         key={idx}
-                        className={`${styles.slot} ${selSlot === t.timeSlot ? styles.slotActive : ''}`}
-                        onClick={() => setSelSlot(t.timeSlot)}
+                        className={`${styles.slot} ${selSlot === slot ? styles.slotActive : ''}`}
+                        onClick={() => setSelSlot(slot)}
                       >
-                        {t.timeSlot.replace('_', ' - ')}
+                        {slot.replace('_', ' - ')}
                       </div>
                     ))}
                   </div>
@@ -164,8 +181,7 @@ export default function BookingModal({ doctor, onClose }) {
 
               {totalSlots === 0 && (
                 <div className={styles.emptySlots}>
-                  <div style={{ fontSize: 36, marginBottom: 8 }}>📅</div>
-                  <div>Không có khung giờ trống cho ngày này</div>
+                  📅 Không có khung giờ trống cho ngày này
                 </div>
               )}
             </>
@@ -176,7 +192,7 @@ export default function BookingModal({ doctor, onClose }) {
         <div className={styles.footer}>
           <div className={styles.footerLeft}>
             {selSlot
-              ? <span>Đã chọn: <strong>{dates[selDateIdx].label} · {selSlot.replace('_', ' - ')}</strong></span>
+              ? <span>Đã chọn: <strong>{selSlot.replace('_', ' - ')}</strong></span>
               : <span className={styles.footerHint}>Chọn khung giờ để đặt khám</span>
             }
           </div>

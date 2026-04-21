@@ -1,6 +1,7 @@
 package com.nguyenhuyhoan.hospital.controllers;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.SpecialtyDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.DoctorResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.SpecialtyResponse;
 import com.nguyenhuyhoan.hospital.iservices.ISpecialtyService;
 import jakarta.validation.Valid;
@@ -69,5 +70,10 @@ public class SpecialtyController {
     public ResponseEntity<SpecialtyResponse> updateSpecialty(@PathVariable Long id, @ModelAttribute SpecialtyDTO specialtyDTO) throws IOException{
         return ResponseEntity.ok(specialtyService.updateSpecialty(id,specialtyDTO));
 
+    }
+
+    @GetMapping("/{id}/doctors")
+    public ResponseEntity<List<DoctorResponse>> getDoctorsBySpecialty(@PathVariable Long id) {
+        return ResponseEntity.ok(specialtyService.getDoctorBySpecialty(id));
     }
 }

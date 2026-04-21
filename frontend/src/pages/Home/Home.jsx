@@ -113,17 +113,18 @@ export default function Home() {
 
       <main className={styles.main}>
 
-        {/* CHUYÊN KHOA */}
-        <div className={styles.sectionHeader}>
-          <div>
-            <div className={styles.sectionTitle}>Đặt lịch theo chuyên khoa</div>
-            <div className={styles.sectionSub}>Thuận tiện, an toàn và nhanh chóng trong việc đặt lịch</div>
-          </div>
-          <button className={styles.btnMore} onClick={() => navigate('/tim-kiem')}>
-            Xem thêm
-          </button>
-        </div>
         
+        {/* CHUYÊN KHOA */}
+<div className={styles.sectionHeader}>
+  <div>
+    <div className={styles.sectionTitle}>Đặt lịch theo chuyên khoa</div>
+    <div className={styles.sectionSub}>Thuận tiện, an toàn và nhanh chóng trong việc đặt lịch</div>
+  </div>
+  {/* Sửa lại: Xem thêm thì sang trang tìm kiếm chung, không cần truyền ID cụ thể */}
+  <button className={styles.btnMore} onClick={() => navigate('/tim-kiem')}>
+    Xem thêm
+  </button>
+</div>
 
 <div className={styles.specGrid}>
   {loading ? (
@@ -138,21 +139,20 @@ export default function Home() {
         key={s.id}
         className={`${styles.specCard} ${activeSpec === i ? styles.specActive : ''}`}
         onClick={() => {
-          setActiveSpec(i)
-          navigate(`/tim-kiem?specialty=${encodeURIComponent(s.name)}`)
+          setActiveSpec(i);
+          navigate(`/tim-kiem?specialtyId=${s.id}&q=${encodeURIComponent(s.name)}`);
         }}
       >
         <div className={styles.specIcon}>
-          {/* Kiểm tra nếu iconUrl là link (có chứa http) thì hiện ảnh, không thì hiện icon mặc định */}
           {s.iconUrl && s.iconUrl.startsWith('http') ? (
             <img 
               src={s.iconUrl} 
               alt={s.name} 
-              className={styles.iconImg} // Hoàn có thể thêm class này vào CSS để chỉnh kích thước
+              className={styles.iconImg}
               style={{ width: '40px', height: '40px', objectFit: 'contain' }}
               onError={(e) => {
                 e.target.onerror = null; 
-                e.target.src = "https://cdn-icons-png.flaticon.com/512/3063/3063176.png"; // Ảnh dự phòng
+                e.target.src = "https://cdn-icons-png.flaticon.com/512/3063/3063176.png"; 
               }}
             />
           ) : (
@@ -165,6 +165,8 @@ export default function Home() {
     ))
   )}
 </div>
+
+
 
 
 
