@@ -59,6 +59,7 @@ public class SecurityConfig {
                         // ── Appointment ──
                         .requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/appointments/**").permitAll()
 
                         // ── Chatbot ──
                         .requestMatchers("/api/v1/chatbots/**").permitAll()

@@ -15,6 +15,7 @@ export default function BookingModal({ doctor, onClose }) {
   const [slots, setSlots] = useState({ morning: [], afternoon: [] })
   const [loading, setLoading] = useState(false)
   const [isBooking, setIsBooking] = useState(false)
+  const [allSchedules, setAllSchedules] = useState([])
 
   const currentDateStr = dates[selDateIdx]?.dateStr 
 
@@ -30,11 +31,15 @@ export default function BookingModal({ doctor, onClose }) {
         console.log("📡 Gọi API:", doctor.id, currentDateStr)
         
         const data = await scheduleService.getAvailableSlots(doctor.id, currentDateStr)
+
         console.log("✅ Data nhận được:", data)
         console.log("✅ availableTimeSlots:", data.availableTimeSlots)
 
         const allSlots = data.availableTimeSlots || []
         console.log("✅ allSlots length:", allSlots.length)
+
+        const fullData = await scheduleService.getScheduleByDoctorAndDate(doctor.id, currentDateStr)
+        setAllSchedules(fullData)
 
         const morning = []
         const afternoon = []
@@ -66,38 +71,65 @@ export default function BookingModal({ doctor, onClose }) {
     setSelDateIdx(i)
     setSelSlot(null) 
   }
-
+  // đặt lịch
   async function handleBook() {
-    if (!selSlot) {
-      toast.warning('Vui lòng chọn khung giờ khám!')
-      return
-    }
-
-    const userId = localStorage.getItem('userId')
-    if (!userId) {
-      toast.error('Vui lòng đăng nhập để đặt lịch!')
-      return
-    }
-
-    try {
-      setIsBooking(true)
-      const appointmentData = {
-        patient_id: userId,
-        doctor_id: doctor.id,
-        booking_date: currentDateStr,
-        time_slot: selSlot, // Gửi chuỗi "08:00_08:30"
-        reason: "Khám bệnh tại bệnh viện"
-      }
-
-      await appointmentService.create(appointmentData)
-      toast.success('Đặt lịch thành công!')
-      onClose()
-    } catch (err) {
-      toast.error('Lỗi hệ thống, vui lòng thử lại sau!')
-    } finally {
-      setIsBooking(false)
-    }
+  if (!selSlot) {
+    toast.warning('Vui lòng chọn khung giờ khám!');
+    return;
   }
+
+  const matchSchedule = allSchedules.find(s => {
+    const formattedDbSlot = s.timeSlot.replace('_', ' - ');
+    return formattedDbSlot === selSlot || s.timeSlot === selSlot;
+  });
+
+  if (!matchSchedule) {
+    console.error("❌ Không tìm thấy schedule cho slot:", selSlot);
+    toast.error('Không tìm thấy ID lịch khám phù hợp!');
+    return;
+  }
+
+  const userId = localStorage.getItem('userId');
+  if (!userId) {
+    toast.error('Vui lòng đăng nhập để đặt lịch!');
+    return;
+  }
+
+  try {
+    setIsBooking(true);
+    const appointmentData = {
+      patient_id: userId,
+      schedule_id: matchSchedule.id,
+      name: localStorage.getItem("fullName") || "Bệnh nhân",
+      reason: "Khám định kỳ hàng tuần",
+      type: "IN_PERSON" 
+    };
+
+    // Gán kết quả trả về vào biến 'response'
+    const response = await appointmentService.create(appointmentData);
+
+    // Bây giờ log 'response' sẽ không còn bị lỗi nữa
+    console.log("✅ ĐẶT KHÁM THÀNH CÔNG!", response);
+    toast.success('Đặt lịch thành công!');
+    
+    // Đóng Modal trước khi chuyển trang
+    if (onClose) onClose();
+
+    // Chuyển hướng
+    setTimeout(() => {
+      // Hoàn kiểm tra lại router của bạn là '/my-bookings' hay '/lich-kham-cua-toi' nhé
+      window.location.href = '/lich-kham-cua-toi'; 
+    }, 1000);
+
+  } catch (err) {
+    console.error("❌ Lỗi đặt khám:", err);
+    // Log chi tiết lỗi từ server nếu có
+    const errorMsg = err.response?.data || 'Lỗi hệ thống, vui lòng thử lại sau!';
+    toast.error(errorMsg);
+  } finally {
+    setIsBooking(false);
+  }
+}
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>

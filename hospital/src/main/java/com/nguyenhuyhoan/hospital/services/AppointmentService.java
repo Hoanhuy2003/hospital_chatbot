@@ -39,6 +39,11 @@ public class AppointmentService implements IAppointmentService {
         Schedule schedule = scheduleRepository.findById(appointmentDTO.getScheduleId())
                 .orElseThrow(()-> new DataNotFoundException("Không co lịch khám này"));
 
+//        Schedule schedule1 = scheduleRepository.findByDoctorIdAndDateAndTimeSlot(
+//                appointmentDTO.getDoctorId(),
+//                appointmentDTO.getAppointmentTime().toLocalDate(),
+//        )
+
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
@@ -110,6 +115,24 @@ public class AppointmentService implements IAppointmentService {
             System.err.println("Lỗi gửi thông báo: " + e.getMessage());
         }
 
+        try{
+            Long doctorId = schedule.getDoctor().getUser().getId();
+            String doctorMsg = String.format(
+                    "Bác sĩ có lịch hẹn mới! Bệnh nhân %s đã đặt lịch khám vào lúc %s ngày %s.",
+                    patient.getFullName(),
+                    schedule.getTimeSlot().replace("_", " - "),
+                    schedule.getDate()
+            );
+            notificationService.sendNotification(
+                    doctorId,
+                    "Lịch hẹn mơi",
+                    doctorMsg,
+                    Notification.Type.SYSTEM
+            );
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi thông báo BS: " + e.getMessage());
+        }
+
 
         return AppointmentResponse.fromAppointment(appointmentRepository.save(appointment));
     }
@@ -139,13 +162,13 @@ public class AppointmentService implements IAppointmentService {
     @Override
     @Transactional
     public AppointmentResponse updateStatus(Long id, String status) throws DataNotFoundException {
-
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(()-> new DataNotFoundException("Không tồn tại cuộc hẹn này"));
+
         Appointment.Status newStatus = Appointment.Status.valueOf(status.toUpperCase());
         Appointment.Status oldStatus = appointment.getStatus();
 
-        // nếu hủy lịch phải trả lại slot
+        // Hủy lịch trả lại slot
         if(newStatus == Appointment.Status.CANCELLED && oldStatus != Appointment.Status.CANCELLED){
             Schedule schedule = appointment.getSchedule();
             if(schedule.getCurrentPatients() > 0){
@@ -157,19 +180,14 @@ public class AppointmentService implements IAppointmentService {
         appointment.setStatus(newStatus);
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
-        // thông báo cho bênh nhân
-
-        try{
+        // THÔNG BÁO KẾT QUẢ XỬ LÝ CHO BỆNH NHÂN
+        try {
             String title = "Cập nhật trạng thái lịch khám";
             String message = "";
-            Notification.Type notifyType = Notification.Type.SYSTEM;
-
-            if(newStatus == Appointment.Status.CONFIRMED){
+            if(newStatus == Appointment.Status.CONFIRMED) {
                 message = "Lịch khám của bạn đã được bác sĩ xác nhận. Hãy đến đúng giờ nhé!";
-                notifyType = Notification.Type.APPOINTMENT_CONFIRMED;
-
-            } else if(newStatus == Appointment.Status.CANCELLED){
-                message = "Rất tiếc, lịch khám của bạn đã bị hủy. Vui lòng chọn khung giờ khác.";
+            } else if(newStatus == Appointment.Status.CANCELLED) {
+                message = "Rất tiếc, lịch khám của bạn đã bị bác sĩ hủy. Vui lòng chọn khung giờ khác.";
             }
 
             if(!message.isEmpty()){
@@ -177,63 +195,15 @@ public class AppointmentService implements IAppointmentService {
                         appointment.getPatient().getId(),
                         title,
                         message,
-                        notifyType
+                        Notification.Type.SYSTEM
                 );
             }
-        }catch (Exception e){
-            System.err.println("Không thể gửi thông báo Real-time: " + e.getMessage());
-        }
-
-        try {
-            String doctorMsg = String.format(
-                    "Bạn có một lịch hẹn mới từ bệnh nhân %s vào lúc %s ngày %s.",
-                    appointment.getPatient().getFullName(),
-                    appointment.getSchedule().getTimeSlot(),
-                    appointment.getSchedule().getDate()
-            );
-
-            Long doctorId = appointment.getDoctor().getUser().getId();
-
-            notificationService.sendNotification(
-                    doctorId,
-                    "Lịch hẹn mới",
-                    doctorMsg,
-                    Notification.Type.SYSTEM
-            );
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi gửi thông báo cho bác sĩ: " + e.getMessage());
-        }
-
-
-        // thông báo cho bác sỹ khi đặt lịch khám thành coong
-
-        try{
-            Long doctorUserId = appointment.getDoctor().getUser().getId();
-
-            String doctorMessage = String.format(
-                    "Bạn có lịch hẹn mới: Bệnh nhân %s đã đặt lịch khám vào lúc %s ngày %s.",
-                    appointment.getPatient().getFullName(),
-                    appointment.getSchedule().getTimeSlot(),
-                    appointment.getSchedule().getDate()
-            );
-
-            // 2. Gửi thông báo Real-time cho bác sĩ
-            notificationService.sendNotification(
-                    doctorUserId,
-                    "Lịch hẹn mới từ bệnh nhân",
-                    doctorMessage,
-                    Notification.Type.SYSTEM // Hoặc một Type mới như NEW_APPOINTMENT
-            );
-
-            System.out.println("Đã bắn thông báo cho bác sĩ ID: " + doctorUserId);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi gửi thông báo cho bác sĩ: " + e.getMessage());
+            System.err.println("Lỗi gửi thông báo cập nhật: " + e.getMessage());
         }
 
         return AppointmentResponse.fromAppointment(savedAppointment);
     }
-
 //    @Override
 //    public List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date) {
 //        List<Appointment> appointments = appointmentRepository.findByDoctorIdAndDate(doctorId, date);

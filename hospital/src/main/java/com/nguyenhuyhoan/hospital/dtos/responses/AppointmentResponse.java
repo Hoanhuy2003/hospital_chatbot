@@ -17,6 +17,7 @@ public class AppointmentResponse {
     private String doctorName;
     private String clinicName;
     private String specialtyName;
+    private String photoUrl;
 
     private String date;
     private String timeSlot;
@@ -37,6 +38,7 @@ public class AppointmentResponse {
                 .doctorName(appointment.getSchedule().getDoctor().getUser().getFullName())
                 .clinicName(appointment.getSchedule().getClinic().getName())
                 .specialtyName(appointment.getSchedule().getClinic().getSpecialty().getName())
+                .photoUrl(appointment.getDoctor().getPhotoUrl())
                 .date(appointment.getSchedule().getDate().toString())
                 .timeSlot(appointment.getSchedule().getTimeSlot())
 

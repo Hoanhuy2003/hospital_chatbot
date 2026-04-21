@@ -46,7 +46,7 @@ public class AppointmentController {
 
     // 3. Lấy danh sách cuộc hẹn của một Bệnh nhân (Xem lịch sử khám)
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasRole('ADMIN') ")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<List<AppointmentResponse>> getAppointmentsByPatient(@PathVariable Long patientId) {
         List<AppointmentResponse> responses = appointmentService.getByPatient(patientId);
         return ResponseEntity.ok(responses);

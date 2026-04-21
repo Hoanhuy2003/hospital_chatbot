@@ -3,24 +3,50 @@ import api from './api';
 export const appointmentService = {
 
 
-    creat: async(appointmentData) =>{
+    create: async (appointmentData) => {
         try {
-            const response = await api.post('/appointments', appointmentData);
+            // Chuẩn bị payload khớp 100% với Postman Hoàn đã test
+            const payload = {
+                patient_id: appointmentData.patient_id,
+                schedule_id: appointmentData.schedule_id,
+                name: appointmentData.name,
+                reason: appointmentData.reason,
+                type: appointmentData.type || "IN_PERSON" // Dùng giá trị Postman đã chạy
+            };
+
+            console.log("🚀 Payload gửi đi:", payload);
+            
+            const response = await api.post('/v1/appointments', payload);
             return response.data;
-            
         } catch (error) {
-            console.error('Lỗi đặt lịch: ',error);
+            // In ra chi tiết lỗi từ Backend để debug
+            console.error('Lỗi chi tiết từ Server:', error.response?.data);
             throw error;
-            
-            
         }
     },
-
     getByPatient: async(patientId) => {
         
-        const response = await api.get(`/appointments/patient/${patientId}`);
+        const response = await api.get(`/v1/appointments/patient/${patientId}`);
         return response.data;
 
+    },
+    getById : async(id) =>{
+        const response = await api.get(`/v1/appointments/${id}`);
+        return response.data;
+    },
+
+    updateStatus: async(id, status) => {
+        const response = await api.put(`/v1/appointments/${id}/status`, null, {
+            params : {status: status.toUpperCaae()}
+        });
+        return response.data;
+    },
+    getByDoctorAndDate: async (doctorId, date) => {
+        const response = await api.get(`/v1/appointments/doctor/${doctorId}`, {
+            params: { date }
+        });
+        return response.data;
     }
+
 }
 
