@@ -69,4 +69,9 @@ public class DoctorController {
         doctorService.assignDoctorsToClinic(clinicId, doctorIds);
         return ResponseEntity.ok("Gán bác sỹ thành công");
     }
+
+    @PutMapping("/clinic/{id}")
+    public ResponseEntity<?> changeClinic(@PathVariable Long id, @RequestParam Long clinicId){
+        return ResponseEntity.ok(doctorService.updateDoctorClinic(id, clinicId));
+    }
 }

@@ -17,4 +17,5 @@ public interface IDoctorService {
     Page<DoctorResponse> getAllDoctors(String keyword, Long specialtyId, Pageable pageable);
 
     void assignDoctorsToClinic(Long clinicId, List<Long> doctorIds);
+    DoctorResponse updateDoctorClinic(Long doctorId, Long newClinicId);
 }

@@ -46,6 +46,9 @@ public class Doctor {
     @JoinColumn(name = "clinic_id")
     private Clinic clinic;
 
+    @Column(name = "price")
+    private Double price;
+
     @Column(name = "supports_online")
     private Boolean supportsOnline = true; // hỗ trọe trực tuyến
 

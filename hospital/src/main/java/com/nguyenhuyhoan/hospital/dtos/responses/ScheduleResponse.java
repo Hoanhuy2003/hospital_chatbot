@@ -1,5 +1,6 @@
 package com.nguyenhuyhoan.hospital.dtos.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nguyenhuyhoan.hospital.models.Schedule;
 import lombok.*;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ScheduleResponse {
     private Long id;
     private String doctorName;
@@ -24,10 +26,10 @@ public class ScheduleResponse {
 
     public static ScheduleResponse fromSchedule(Schedule schedule){
         int available = schedule.getMaxPatients() - schedule.getCurrentPatients();
-        String statusText = "Còn chỗ";
+        String statusText = "AVAILABLE";// còn chỗ
 
-        if(!schedule.getIsActive()) statusText = "Ngừng nhận";
-        else if(available <= 0) statusText = "Hết chỗ";
+        if(!schedule.getIsActive()) statusText = "LOCKED";// ngừng nhaan
+        else if(available <= 0) statusText = "FULL";// hết chỗ
 
         return ScheduleResponse.builder()
                 .id(schedule.getId())

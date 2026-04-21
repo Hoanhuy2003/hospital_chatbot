@@ -56,10 +56,11 @@ public class DoctorService implements IDoctorService {
                 .clinic(clinic)
                 .qualification(dto.getQualification())
                 .experienceYears(dto.getExperienceYears())
+                .price(dto.getPrice())
                 .biography(dto.getBiography())
                 .photoUrl(photoUrl)
                 .photoThumbnailUrl(null)
-                .isVerified(false)
+                .isVerified(dto.getIsVerified())
                 .rating(dto.getRating())
                 .totalReviews(0)
                 .supportsOnline(true)
@@ -90,11 +91,13 @@ public class DoctorService implements IDoctorService {
                     .orElseThrow(()-> new DataNotFoundException("Phòng khám không tồn tại"));
             doctor.setClinic(clinic);
         }
+        doctor.setPrice(doctorDTO.getPrice());
 
         doctor.setQualification(doctorDTO.getQualification());
         doctor.setBiography(doctorDTO.getBiography());
         doctor.setExperienceYears(doctorDTO.getExperienceYears());
         doctor.setRating(doctorDTO.getRating());
+        doctor.setIsVerified(doctorDTO.getIsVerified());
 
        if(doctorDTO.getPhotoUrl() != null && !doctorDTO.getPhotoUrl().isEmpty()){
            String newPhotoUrl = cloudinaryService.uploadDoctorImage(doctorDTO.getPhotoUrl());
@@ -156,6 +159,19 @@ public class DoctorService implements IDoctorService {
         doctorRepository.saveAll(newDoctors);
     }
 
+    @Override
+    public DoctorResponse updateDoctorClinic(Long doctorId, Long newClinicId){
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(()-> new RuntimeException("Không tìm thaays bác sỹ"));
+        Clinic clinic = clinicRepository.findById(newClinicId)
+                .orElseThrow(()-> new RuntimeException("Không tìm thấy phòng khám này"));
+
+        doctor.setClinic(clinic);
+        Doctor updateDoctor = doctorRepository.save(doctor);
+
+        return mapToDoctor(updateDoctor);
+    }
+
 
     private DoctorResponse mapToDoctor(Doctor doctor) {
         return DoctorResponse.builder()
@@ -163,6 +179,7 @@ public class DoctorService implements IDoctorService {
                 .fullName(doctor.getUser() != null ? doctor.getUser().getFullName() : null)
                 .specialtyName(doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : null)
                 .clinicName(doctor.getClinic() != null ? doctor.getClinic().getName() : null)
+                .price(doctor.getPrice())
                 .qualification(doctor.getQualification())
                 .experienceYears(doctor.getExperienceYears())
                 .biography(doctor.getBiography())

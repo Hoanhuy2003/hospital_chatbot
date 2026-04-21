@@ -47,12 +47,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/specialty/**").permitAll()
                         .requestMatchers("/api/v1/doctors/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/api/v1/chatbots/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
+                        .requestMatchers("/api/v1/chatbots/**").permitAll().requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
 
 // 2. Cho phép Admin/Bác sĩ duyệt lịch (Cái API PATCH Hoàn đang test)
                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("ADMIN", "DOCTOR")
-                        .requestMatchers("/api/v1/schedules/**").hasAnyRole("DOCTOR","ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").permitAll()
+
+// 2. Chỉ ADMIN hoặc DOCTOR mới được TẠO hoặc XÓA lịch
+                                .requestMatchers(HttpMethod.POST, "/api/v1/schedules/**").hasAnyRole("ADMIN", "DOCTOR")
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/schedules/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/register/admin").hasRole("ADMIN")
                         .requestMatchers("/ws-hospital/**").permitAll()
                         .anyRequest().authenticated()

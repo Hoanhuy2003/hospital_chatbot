@@ -16,8 +16,10 @@ public class DoctorResponse {
     private String fullName;
     private String specialtyName;
     private String clinicName;
+    private Double price;
     private String qualification;
     private Integer experienceYears;
+    private Integer totalReviews;
     private Double rating;
     private String photoUrl;
     private Boolean isVerified;

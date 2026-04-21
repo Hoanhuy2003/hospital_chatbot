@@ -1,8 +1,11 @@
 package com.nguyenhuyhoan.hospital.controllers;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.GroupedScheduleResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleResponse;
+import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleTemplateResponse;
 import com.nguyenhuyhoan.hospital.iservices.IScheduleService;
+import com.nguyenhuyhoan.hospital.models.ScheduleTemplate;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/schedules")
 @RequiredArgsConstructor
@@ -22,7 +27,7 @@ public class ScheduleController {
     private final IScheduleService scheduleService;
 
     @PostMapping("")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('DOCTOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<?> createSchedules(@Valid @RequestBody ScheduleDTO scheduleDTO) {
         try {
             scheduleService.createSchedules(scheduleDTO);
@@ -41,7 +46,6 @@ public class ScheduleController {
     }
 
     @GetMapping("/clinic/{clinicId}")
-    @PreAuthorize("permitAll()")
     public ResponseEntity<List<ScheduleResponse>> getByClinic(
             @PathVariable Long clinicId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -65,6 +69,25 @@ public class ScheduleController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
         List<ScheduleResponse> scheduleResponses = scheduleService.getSchedulesBySpecialty(specialtyId, date);
         return ResponseEntity.ok(scheduleResponses);
+    }
+
+    @GetMapping("/doctorsch/{doctorId}")
+    public ResponseEntity<List<GroupedScheduleResponse>> getByDoctorch(
+            @PathVariable Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date ){
+        return ResponseEntity.ok(scheduleService.getSchedule(doctorId, date));
+    }
+
+    @GetMapping("/templates/doctor/{doctorId}")
+    public ResponseEntity<List<ScheduleTemplateResponse>> getTemplatesByDoctor(@PathVariable Long doctorId) {
+        List<ScheduleTemplate> templates = scheduleService.getTemplateByDoctorId(doctorId);
+
+        // Convert danh sách Entity sang danh sách Response
+        List<ScheduleTemplateResponse> responses = templates.stream()
+                .map(scheduleService::toResponse)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responses);
     }
 
 }

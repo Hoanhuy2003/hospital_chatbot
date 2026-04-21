@@ -33,7 +33,7 @@ server:
 
 jwt:
   secretKey: "unRgKLqmtvb/9icGgNImphNA9WMs5qCVkrQtH4sKV2w="
-  expiration: 86400
+  expiration: 2592000
 
 # ================== Cloudinary Configuration ==================
 cloudinary:

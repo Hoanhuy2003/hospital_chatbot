@@ -2,7 +2,9 @@ package com.nguyenhuyhoan.hospital.services;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleTemplateDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.GroupedScheduleResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleResponse;
+import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleTemplateResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 import com.nguyenhuyhoan.hospital.iservices.IScheduleService;
 import com.nguyenhuyhoan.hospital.models.Clinic;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -92,8 +95,10 @@ public class ScheduleService implements IScheduleService {
 
             return ScheduleResponse.builder()
                     .id(s.getId())
+                    .doctorName(s.getDoctor().getUser().getFullName())
                     .timeSlot(s.getTimeSlot())
                     .date(s.getDate())
+                    .maxPatients(s.getMaxPatients())
                     .status(status)
                     .build();
 
@@ -156,7 +161,7 @@ public class ScheduleService implements IScheduleService {
     @Transactional
     public void autoGenerateSchedules(){
 
-        LocalDate targetDate = LocalDate.now().plusDays(7);
+        LocalDate targetDate = LocalDate.now().plusDays(0);
         List<ScheduleTemplate> templates = scheduleTemplateRepository.findByIsActiveTrue();
 
         for (ScheduleTemplate template : templates){
@@ -180,6 +185,54 @@ public class ScheduleService implements IScheduleService {
 
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GroupedScheduleResponse> getSchedule(Long doctorId, LocalDate date) {
+        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndDateOrderByTimeSlotAsc(doctorId, date);
+
+        List<GroupedScheduleResponse.ScheduleItem> morning = new ArrayList<>();
+        List<GroupedScheduleResponse.ScheduleItem> afternoon = new ArrayList<>();
+
+        LocalTime now = LocalTime.now();
+        LocalDate today = LocalDate.now();
+
+        for (Schedule s : schedules) {
+            String startTimeStr = s.getTimeSlot().split("_")[0];
+            LocalTime slotStart = LocalTime.parse(startTimeStr);
+
+            String status = "AVAILABLE";
+            boolean isExpired = date.isBefore(today) || (date.equals(today) && slotStart.isBefore(now));
+
+            if (isExpired) status = "EXPIRED";
+            else if (s.getCurrentPatients() >= s.getMaxPatients()) status = "FULL";
+            else if (!s.getIsActive()) status = "LOCKED";
+
+            GroupedScheduleResponse.ScheduleItem item = GroupedScheduleResponse.ScheduleItem.builder()
+                    .id(s.getId())
+                    .time(startTimeStr)
+                    .status(status)
+                    .build();
+
+            if (slotStart.isBefore(LocalTime.NOON)) {
+                morning.add(item);
+            } else {
+                afternoon.add(item);
+            }
+        }
+
+        // Sửa ở đây: Trả về List thay vì 1 object
+        GroupedScheduleResponse grouped = GroupedScheduleResponse.builder()
+                .morning(morning)
+                .afternoon(afternoon)
+                .build();
+
+        return List.of(grouped);        // ← Sửa ở đây
+    }
+
+    @Override
+    public List<ScheduleTemplate> getTemplateByDoctorId(Long doctorId) {
+        return scheduleTemplateRepository.findByDoctorId(doctorId);
     }
 
     private void generateSlotsFromTemplate(ScheduleTemplate temp, LocalDate date){
@@ -212,6 +265,36 @@ public class ScheduleService implements IScheduleService {
             }
             runner = slotEnd;
         }
+    }
+
+
+    public ScheduleTemplateResponse toResponse(ScheduleTemplate template) {
+        List<String> morning = new ArrayList<>();
+        List<String> afternoon = new ArrayList<>();
+
+        LocalTime runner = template.getStartTime();
+        LocalTime end = template.getEndTime();
+        int duration = template.getDurationMinutes();
+
+        while (runner.plusMinutes(duration).isBefore(end) || runner.plusMinutes(duration).equals(end)) {
+            String timeLabel = runner.toString().substring(0, 5); // Lấy "08:00"
+            if (runner.isBefore(LocalTime.NOON)) {
+                morning.add(timeLabel);
+            } else {
+                afternoon.add(timeLabel);
+            }
+            runner = runner.plusMinutes(duration);
+        }
+
+        return ScheduleTemplateResponse.builder()
+                .id(template.getId())
+                .doctorId(template.getDoctor().getId())
+                .startTime(template.getStartTime().toString())
+                .endTime(template.getEndTime().toString())
+                .durationMinutes(duration)
+                .morningSlots(morning)
+                .afternoonSlots(afternoon)
+                .build();
     }
 
 

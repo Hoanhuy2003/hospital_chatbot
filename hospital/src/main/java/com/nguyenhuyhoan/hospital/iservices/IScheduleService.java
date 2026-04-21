@@ -2,8 +2,11 @@ package com.nguyenhuyhoan.hospital.iservices;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleDTO;
 import com.nguyenhuyhoan.hospital.dtos.requests.ScheduleTemplateDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.GroupedScheduleResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleResponse;
+import com.nguyenhuyhoan.hospital.dtos.responses.ScheduleTemplateResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
+import com.nguyenhuyhoan.hospital.models.ScheduleTemplate;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -26,4 +29,10 @@ public interface IScheduleService {
     void autoGenerateSchedules();
 
     List<ScheduleResponse> getSchedulesBySpecialty(Long specialtyId, LocalDate date);
+
+    List<GroupedScheduleResponse> getSchedule(Long doctorId, LocalDate date);
+
+    List<ScheduleTemplate> getTemplateByDoctorId(Long doctorId);
+
+    ScheduleTemplateResponse toResponse(ScheduleTemplate template);
 }

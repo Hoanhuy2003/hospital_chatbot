@@ -2,6 +2,7 @@ package com.nguyenhuyhoan.hospital.components;
 
 import com.nguyenhuyhoan.hospital.components.JwtTokenUtils;
 import com.nguyenhuyhoan.hospital.securitis.UserDetailsServiceImpl;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,17 +39,31 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = header.substring(7);
 
-        String phone = jwtTokenUtils.extractPhone(token);
+        try {
+            String phone = jwtTokenUtils.extractPhone(token); // dòng 41 đang crash ở đây
 
-        if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
+            if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
 
-            if (jwtTokenUtils.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtTokenUtils.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+
+        } catch (ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"message\":\"Token hết hạn, vui lòng đăng nhập lại\"}");
+            return;
+
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"message\":\"Token không hợp lệ\"}");
+            return;
         }
 
         filterChain.doFilter(request, response);

@@ -5,12 +5,14 @@ import { CLINICS } from '../../data/constants'
 import DoctorCard from '../../components/DoctorCard/DoctorCard'
 import BookingModal from '../../components/BookingModal/BookingModal'
 import { specialtyService } from '../../services/api'
+import { doctorService } from '../../services/doctorService'
 import styles from './Home.module.css'
 
 
 export default function Home() {
   const navigate = useNavigate()
   const [specialties, setSpecialties] = useState([])
+  const [ doctors, setDoctors] = useState([])
   const [activeSpec, setActiveSpec] = useState(0)
   const [modalDoctor, setModalDoctor] = useState(null)
   const [search, setSearch] = useState('')
@@ -21,6 +23,7 @@ export default function Home() {
 
   // Fetch specialties from backend
   useEffect(() => {
+    // chuyên khoa
     const fetchSpecialties = async () => {
       try {
         setLoading(true)
@@ -34,10 +37,29 @@ export default function Home() {
       }
     }
 
+    // bác sỹ
+    const fetchDoctor = async () =>{
+
+      try{
+        setLoading(true)
+        const data = await doctorService.getAll()
+        setDoctors(data.content || data || [])
+         
+      }catch(err){
+        console.error("Errow", err)
+        setError(err.message)
+
+      }finally{
+        setLoading(false)
+      }
+    }
+
+
     fetchSpecialties()
+    fetchDoctor()
   }, [])
 
-  const filteredDoctors = DOCTORS.filter(d =>
+  const filteredDoctors = doctors.filter(d =>
     search === '' ||
     d.name.toLowerCase().includes(search.toLowerCase()) ||
     d.specialty.toLowerCase().includes(search.toLowerCase()) ||

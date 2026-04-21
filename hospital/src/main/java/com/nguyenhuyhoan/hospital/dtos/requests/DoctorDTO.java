@@ -50,6 +50,9 @@ public class DoctorDTO {
     @JsonProperty("clinic_id")
     private Long clinicId;
 
+    @JsonProperty("price")
+    private Double price;
+
     // Media & Hỗ trợ
     @JsonProperty("supports_online")
     private Boolean supportsOnline;
