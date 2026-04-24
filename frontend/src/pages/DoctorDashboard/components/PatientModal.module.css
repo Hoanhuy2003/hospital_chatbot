@@ -284,6 +284,118 @@
   transition: all .2s;
 }
 
+/* --- GIỮ NGUYÊN CÁC PHẦN OVERLAY, MODAL, HEAD, TABS, FOOTER CỦA BẠN --- */
+
+/* --- PHẦN SỬA ĐỔI RIÊNG CHO BỆNH ÁN (TAB 2) --- */
+
+.recordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Nhãn đề mục có vạch màu xanh đặc trưng của ngành y */
+.sectionLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1565C0;
+  margin: 10px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #E3F2FD;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Thêm icon giả bằng CSS cho chuyên nghiệp */
+.sectionLabel::before {
+  content: '✚';
+  font-size: 12px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px; /* Tăng khoảng cách cho thoáng */
+  margin-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1565C0; /* Chuyển màu label sang xanh cho đồng bộ */
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.field textarea {
+  min-height: 90px; /* Tăng chiều cao cho ô Triệu chứng và Điều trị */
+  line-height: 1.5;
+  background-color: #fafafa;
+}
+
+.field input:focus,
+.field textarea:focus {
+  background-color: #fff;
+  border-color: #1565C0;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+/* Ô thông báo (Ghi chú hệ thống) */
+.infoBox {
+  background: #E3F2FD;
+  border-left: 4px solid #1565C0; /* Thêm vạch trái cho đậm nét */
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #0D47A1;
+  margin-top: 10px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Tùy chỉnh riêng cho ô nhập ngày tháng */
+.field input[type="date"] {
+  cursor: pointer;
+  color: #1565C0;
+  font-weight: 500;
+}
+
+/* Nút lưu bệnh án đặc biệt ở Footer */
+.btnPrimary {
+  background: #1565C0;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(21, 101, 192, 0.2);
+}
+
+.btnPrimary:hover {
+  background: #0D47A1;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(21, 101, 192, 0.3);
+}
+
+/* Trạng thái đang lưu */
+.btnPrimary:disabled {
+  background: #90caf9;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --- GIỮ NGUYÊN DRUG TABLE, PRINT PREVIEW VÀ CÁC PHẦN CÒN LẠI --- */
+
 .btnPrimary { background: #1565C0; color: #fff; }
 .btnPrimary:hover { background: #0D47A1; }
 .btnSuccess { background: #2E7D32; color: #fff; }

@@ -7,7 +7,7 @@ const STATUS_MAP = {
   PENDING: { label: 'Chờ xác nhận', color: '#F57C00', bg: '#FFF3E0' },
   CONFIRMED: { label: 'Đã xác nhận', color: '#2E7D32', bg: '#E8F5E9' },
   CANCELLED: { label: 'Đã huỷ',      color: '#C62828', bg: '#FFEBEE' },
-  DONE:      { label: 'Hoàn thành',  color: '#1565C0', bg: '#E3F2FD' },
+  COMPLETED:      { label: 'Hoàn thành',  color: '#1565C0', bg: '#E3F2FD' },
 };
 
 export default function MyBookings() {

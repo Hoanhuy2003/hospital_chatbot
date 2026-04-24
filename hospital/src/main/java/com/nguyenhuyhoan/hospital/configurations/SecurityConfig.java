@@ -55,14 +55,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/schedules/**").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/schedules/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/schedule-templates/**").hasAnyRole("ADMIN", "DOCTOR")
 
                         // ── Appointment ──
                         .requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.GET,"/api/v1/appointments/**").permitAll()
+                        //.requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("DOCTOR","ADMIN")
 
                         // ── Chatbot ──
                         .requestMatchers("/api/v1/chatbots/**").permitAll()
+                        .requestMatchers("/api/v1/medical_records/**").hasAnyRole("ADMIN","DOCTOR")
 
                         // ── Static files ──
                         .requestMatchers("/uploads/**").permitAll()

@@ -36,17 +36,15 @@ export const appointmentService = {
     },
 
     updateStatus: async(id, status) => {
-        const response = await api.put(`/v1/appointments/${id}/status`, null, {
-            params : {status: status.toUpperCaae()}
+        const response = await api.patch(`/v1/appointments/${id}/status`, null, {
+            params : {status: status.toUpperCase()}
         });
         return response.data;
     },
-    getByDoctorAndDate: async (doctorId, date) => {
-        const response = await api.get(`/v1/appointments/doctor/${doctorId}`, {
-            params: { date }
-        });
-        return response.data;
-    }
+   getByDoctor: async(doctorId) =>{
+    const response = await api.get(`/v1/appointments/doctor/${doctorId}`);
+    return response.data;
+   }
 
 }
 

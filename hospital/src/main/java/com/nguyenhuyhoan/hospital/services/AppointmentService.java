@@ -204,6 +204,14 @@ public class AppointmentService implements IAppointmentService {
 
         return AppointmentResponse.fromAppointment(savedAppointment);
     }
+
+    @Override
+    public List<AppointmentResponse> getByDoctor(Long doctorId) {
+        return appointmentRepository.findByDoctorUserId(doctorId)
+                .stream()
+                .map(AppointmentResponse::fromAppointment)
+                .collect(Collectors.toList());
+    }
 //    @Override
 //    public List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date) {
 //        List<Appointment> appointments = appointmentRepository.findByDoctorIdAndDate(doctorId, date);
@@ -217,4 +225,6 @@ public class AppointmentService implements IAppointmentService {
 //        Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
 //        return appointment != null && appointment
 //    }
+
+
 }

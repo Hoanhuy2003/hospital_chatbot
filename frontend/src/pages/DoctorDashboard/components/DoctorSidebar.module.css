@@ -70,3 +70,61 @@
 
 .docName { font-size: 13px; font-weight: 600; color: #1a2340; }
 .docRole { font-size: 11px; color: #637381; }
+
+.doctorWrapper {
+  margin-top: auto; /* Đẩy xuống dưới cùng sidebar */
+  padding: 15px;
+  border-top: 1px solid #eee;
+}
+
+.doctor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ava {
+  width: 40px;
+  height: 40px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.docName {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.docRole {
+  font-size: 11px;
+  color: #888;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ffcdd2;
+  color: #d32f2f;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.logoutBtn:hover {
+  background: #ffebee;
+  border-color: #d32f2f;
+}
