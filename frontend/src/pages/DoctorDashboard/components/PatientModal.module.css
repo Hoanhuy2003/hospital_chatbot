@@ -393,6 +393,116 @@
   cursor: not-allowed;
   transform: none;
 }
+/* --- PHẦN CSS CHO ĐƠN THUỐC (TAB 3) --- */
+
+.drugList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  max-height: 300px; /* Giới hạn chiều cao nếu quá nhiều thuốc */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Thanh cuộn cho danh sách thuốc */
+.drugList::-webkit-scrollbar {
+  width: 5px;
+}
+.drugList::-webkit-scrollbar-thumb {
+  background: #e8ecf0;
+  border-radius: 10px;
+}
+
+.drugHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr; /* Chia tỉ lệ: Tên thuốc(40%) - SL(20%) - Cách dùng(40%) */
+  gap: 12px;
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #e8ecf0;
+}
+
+.drugHeader span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #637381;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.drugRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 12px;
+  align-items: center;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.drugRow input {
+  width: 100%;
+  border: 1.5px solid #e8ecf0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.drugRow input:focus {
+  border-color: #1565C0;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.05);
+}
+
+/* Nút thêm thuốc kiểu dashed nhìn rất chuyên nghiệp */
+.btnAdd {
+  width: 100%;
+  border: 2px dashed #D1D5DB;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1565C0;
+  background: #F8FAFC;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btnAdd:hover {
+  border-color: #1565C0;
+  background: #F0F7FF;
+  color: #0D47A1;
+}
+
+/* Nút xóa thuốc */
+.btnDanger {
+  background: #FFEBEE;
+  color: #D32F2F;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnDanger:hover {
+  background: #D32F2F;
+  color: #fff;
+}
 
 /* --- GIỮ NGUYÊN DRUG TABLE, PRINT PREVIEW VÀ CÁC PHẦN CÒN LẠI --- */
 

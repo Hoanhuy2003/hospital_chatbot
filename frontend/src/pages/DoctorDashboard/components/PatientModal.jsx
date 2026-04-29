@@ -1,16 +1,39 @@
 import { useState } from 'react'
 import { appointmentService } from '../../../services/appointmentService' 
 import { medicalRecordService } from '../../../services/medicalRecordService'
+import { medicineService } from '../../../services/medicineService'
 import { toast } from 'react-toastify'
 import styles from './PatientModal.module.css'
 
 const TABS = ['Thông tin', 'Xác nhận khám', 'Bệnh án', 'Đơn thuốc', 'Hẹn lần sau']
+
 
 export default function PatientModal({ patient: p, initialTab = 0, onClose, onConfirm }) {
   const [tab, setTab] = useState(initialTab)
   const [vitals, setVitals] = useState({ temp: '', bp: '', pulse: '', weight: '' })
   const [record, setRecord] = useState({ diagnosis: '', history: '' })
   const [isSubmitting, setIsSubmitting] = useState(false) // Thêm trạng thái loading cho nút bấm
+  const [drugs, setDrugs] = useState([
+  { medicine: '', quantity: '', note: '' }
+]);
+
+   const addDrug = () => {
+  setDrugs([...drugs, { medicine: '', quantity: '', note: '' }]);
+};
+
+// Hàm xóa dòng thuốc
+const removeDrug = (index) => {
+  if (drugs.length > 1) {
+    setDrugs(drugs.filter((_, i) => i !== index));
+  }
+};
+
+// Hàm cập nhật giá trị từng ô
+const updateDrug = (index, field, value) => {
+  const newDrugs = [...drugs];
+  newDrugs[index][field] = value;
+  setDrugs(newDrugs);
+};
 
 
   const [medRecord, setMedRecord] = useState({
@@ -56,13 +79,14 @@ export default function PatientModal({ patient: p, initialTab = 0, onClose, onCo
 
     try {
       setIsSubmitting(true);
+      const validDrugs = drugs.filter(d => d.medicine && d.medicine.trim() !== '');
       
       const payload = {
         appointment_id: p.id,
         symptoms: medRecord.symptoms,
         diagnosis: medRecord.diagnosis,
         treatment: medRecord.treatment,
-        prescription: "[]", 
+        prescription: JSON.stringify(validDrugs),
         follow_up_date: medRecord.followUpDate || null // Sửa lỗi: follow_up_ate -> follow_up_date
       };
 
@@ -214,9 +238,76 @@ export default function PatientModal({ patient: p, initialTab = 0, onClose, onCo
               </div>
             </div>
           )}
+
+          {tab === 3 && (
+  <div className={styles.recordForm}>
+    <div className={styles.sectionLabel}>Kê đơn thuốc điện tử</div>
+    
+    <div className={styles.drugHeader}>
+      <span>Tên thuốc / Hàm lượng</span>
+      <span>Số lượng</span>
+      <span>Cách dùng & Ghi chú</span>
+    </div>
+
+    <div className={styles.drugList}>
+      {drugs.map((drug, index) => (
+        <div key={index} className={styles.drugRow}>
+          <input 
+            placeholder="Ví dụ: Paracetamol 500mg" 
+            value={drug.medicine}
+            onChange={(e) => updateDrug(index, 'medicine', e.target.value)}
+          />
+          <input 
+            placeholder="Số lượng (vỉ/viên...)" 
+            value={drug.quantity}
+            onChange={(e) => updateDrug(index, 'quantity', e.target.value)}
+          />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              placeholder="Sáng 1, chiều 1 sau ăn..." 
+              value={drug.note}
+              onChange={(e) => updateDrug(index, 'note', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            {drugs.length > 1 && (
+              <button 
+                type="button"
+                className={styles.btnDanger} 
+                onClick={() => removeDrug(index)}
+                style={{ padding: '0 10px', borderRadius: '8px' }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <button className={styles.btnAdd} onClick={addDrug}>
+      + Thêm loại thuốc
+    </button>
+    <div className={styles.tabActions}>
+      <button 
+        type="button" 
+        className={`${styles.btn} ${styles.btnPrimary}`} 
+        onClick={() => setTab(2)} // Chuyển về Tab Bệnh án (index = 2)
+      >
+        Tiếp tục: Xác nhận bệnh án →
+      </button>
+      <p className={styles.hintText}>
+        Lưu ý: Đơn thuốc sẽ được lưu cùng với bệnh án ở tab tiếp theo.
+      </p>
+    </div>
+
+    <div className={styles.infoBox}>
+      <b>Lưu ý:</b> Sau khi kê đơn xong, bác sĩ vui lòng quay lại tab <b>Bệnh án</b> để kiểm tra chẩn đoán và nhấn <b>Lưu bệnh án</b>.
+    </div>
+  </div>
+)}
           
           {/* Các tab khác (Bệnh án, Đơn thuốc...) Hoàn có thể phát triển thêm sau */}
-          {[ 3, 4].includes(tab) && (
+          {[ 4].includes(tab) && (
             <div className={styles.emptyTab}>Tính năng đang được phát triển đồng bộ với hồ sơ bệnh án.</div>
           )}
         </div>
