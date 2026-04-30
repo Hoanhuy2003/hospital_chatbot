@@ -3,6 +3,7 @@ package com.nguyenhuyhoan.hospital.controllers;
 import com.nguyenhuyhoan.hospital.dtos.requests.MedicalRecordDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.MedicalRecordResponse;
 import com.nguyenhuyhoan.hospital.iservices.IMedicalRecordService;
+import com.nguyenhuyhoan.hospital.services.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +22,7 @@ import java.util.List;
 public class MedicalRecordController {
 
     private final IMedicalRecordService medicalRecordService;
+    private final CloudinaryService cloudinaryService;
 
     @PostMapping("")
     public ResponseEntity<?> createMedical(@Valid @RequestBody MedicalRecordDTO medicalRecordDTO){
@@ -42,6 +45,16 @@ public class MedicalRecordController {
             return ResponseEntity.ok(medicalRecordService.getDetail(id));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/upload-photo")
+    public ResponseEntity<?> uploadPhoto(@RequestParam("file")MultipartFile file){
+        try {
+            String url = cloudinaryService.uploadMedicalImage(file);
+            return ResponseEntity.ok(url);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("Không thể upload ảnh: " + e.getMessage());
         }
     }
 }

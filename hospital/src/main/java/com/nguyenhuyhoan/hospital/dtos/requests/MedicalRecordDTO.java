@@ -3,6 +3,7 @@ package com.nguyenhuyhoan.hospital.dtos.requests;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,6 +43,11 @@ public class MedicalRecordDTO {
 
     @JsonProperty("attachments")
     private String attachments; // Nhận/Xuất chuỗi JSON các link file đính kèm
+
+
+    @JsonProperty("photo_url")
+    private String photoUrl;
+
 
     @JsonProperty("follow_up_date")
     @JsonFormat(pattern = "yyyy-MM-dd")

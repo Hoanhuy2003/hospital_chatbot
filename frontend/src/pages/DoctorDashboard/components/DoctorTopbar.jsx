@@ -7,7 +7,7 @@ export default function DoctorTopbar({ title }) {
   return (
     <div className={styles.topbar}>
       <div className={styles.title}>{title}</div>
-      <div className={styles.date}>{dateStr} · Ca sáng</div>
+      <div className={styles.date}>{dateStr}</div>
     </div>
   )
 }

@@ -25,6 +25,7 @@ export default function DoctorDashboard() {
   const [selectedPatient, setSelPt] = useState(null)
   const [modalTab, setModalTab]     = useState(0)
   const [loading, setLoading]       = useState(true)
+  const [currentDoctor, setCurrentDoctor] = useState(null);
 
   // 1. Hàm load dữ liệu tách riêng để có thể gọi lại sau khi confirm
   const loadData = async () => {
@@ -42,7 +43,12 @@ export default function DoctorDashboard() {
         reason: item.reason,
         status: item.status.toLowerCase(), 
         date: item.date,
-        queueNumber: item.queueNumber
+        queueNumber: item.queueNumber,
+        specialtyId: item.doctor?.specialtyId || null
+        
+
+        
+        
       }));
 
       setAppts(formattedData);
@@ -53,6 +59,20 @@ export default function DoctorDashboard() {
       setLoading(false)
     }
   };
+
+  function openPatient(id, tab = 0) {
+  const selected = appointments.find(a => a.id === id);
+  if (selected) {
+    console.log("📋 Bệnh nhân được chọn:", selected);
+    
+    setSelPt({
+      ...selected,
+      specialtyId: selected.specialtyId   // Lấy từ doctor
+    });
+    
+    setModalTab(tab);
+  }
+}
 
   useEffect(() => {
     loadData();
@@ -106,7 +126,7 @@ export default function DoctorDashboard() {
 
       {selectedPatient && (
         <PatientModal
-          patient={selectedPatient}
+         patient={selectedPatient}
           initialTab={modalTab}
           onClose={() => setSelPt(null)}
           // onConfirm={() => confirmExam(selectedPatient.id)}

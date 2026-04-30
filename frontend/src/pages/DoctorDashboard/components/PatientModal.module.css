@@ -147,8 +147,9 @@
 
 .drugRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  gap: 8px;
+  grid-template-columns: 2.5fr 80px 3fr 40px;   /* Tên thuốc - SL - Ghi chú - Nút xóa */
+  gap: 10px;
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -501,6 +502,76 @@
 
 .btnDanger:hover {
   background: #D32F2F;
+  color: #fff;
+}
+/* Layout cho dòng thuốc */
+.drugRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+/* Style cho Dropdown chọn thuốc */
+.medicineSelect {
+  flex: 1.5; /* Rộng hơn ô SL */
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.medicineSelect:focus {
+  border-color: #007bff;
+}
+
+/* Ô số lượng */
+.quantityInput {
+  width: 70px !important;
+  text-align: center;
+}
+
+/* Ô ghi chú */
+.noteInput {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* Phần Upload ảnh */
+.uploadBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  border: 2px dashed #eee;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.previewImg {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.btnDanger {
+  background: #fff5f5;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+  padding: 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnDanger:hover {
+  background: #ff4d4f;
   color: #fff;
 }
 

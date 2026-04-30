@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useForm } from '../../hooks/useForm'
 import { validateRegister, getPasswordStrength } from '../../utils/validators'
 import FormField from '../../components/UI/FormField'
 import PasswordInput from '../../components/UI/PasswordInput'
+import { authService } from '../../services/authService'
 import styles from './Register.module.css'
 
 const GOOGLE_ICON = (
@@ -22,30 +24,28 @@ export default function Register() {
   const [done, setDone] = useState(false)
 
   const { values, errors, loading, handleChange, handleSubmit } = useForm(
-    { ho: '', ten: '', email: '', phone: '', dob: '', gender: '', password: '', confirmPassword: '', agree: false },
+    { fullName: '',
+       email: '',
+       phone: '',
+       dateOfBirth: '',
+       address: '',
+       gender: '',
+       password: '',
+       retypePassword: '',
+       agree: false },
     validateRegister
   )
 
   const strength = getPasswordStrength(values.password)
 
   const onSubmit = handleSubmit(async (vals) => {
-    // TODO: thay bằng API call thực
-    // const res = await fetch('/api/auth/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     firstName: vals.ho,
-    //     lastName: vals.ten,
-    //     email: vals.email,
-    //     phone: vals.phone,
-    //     dateOfBirth: vals.dob,
-    //     gender: vals.gender,
-    //     password: vals.password,
-    //   })
-    // })
-    await new Promise(r => setTimeout(r, 1400)) // simulate
-    register({ ho: vals.ho, ten: vals.ten, email: vals.email, phone: vals.phone })
-    setDone(true)
+    try {
+      await authService.register(vals)
+      toast.success("Đăng ký thành công!")
+      setDone(true)
+    } catch (error) {
+      toast.error(error.message || "Đăng ký thất bại")
+    }
   })
 
   if (done) {
@@ -78,52 +78,86 @@ export default function Register() {
           <span className={`${styles.tab} ${styles.tabActive}`}>Đăng ký</span>
         </div>
 
-        <form onSubmit={onSubmit} noValidate className={styles.form}>
+        <form onSubmit={onSubmit} noValidate className={styles.form} autoComplete="off">
 
-          {/* Họ & Tên */}
-          <div className={styles.row2}>
-            <FormField label="Họ" error={errors.ho}>
-              <input name="ho" value={values.ho} onChange={handleChange} placeholder="Nguyễn"
-                className={`${styles.input} ${errors.ho ? styles.inputErr : ''}`} />
-            </FormField>
-            <FormField label="Tên" error={errors.ten}>
-              <input name="ten" value={values.ten} onChange={handleChange} placeholder="Văn An"
-                className={`${styles.input} ${errors.ten ? styles.inputErr : ''}`} />
-            </FormField>
-          </div>
-
-          <FormField label="Email" error={errors.email}>
-            <input name="email" type="email" value={values.email} onChange={handleChange}
-              placeholder="example@email.com" autoComplete="email"
-              className={`${styles.input} ${errors.email ? styles.inputErr : ''}`} />
+          <FormField label="Họ và tên" error={errors.fullName}>
+            <input
+              name="fullName"
+              value={values.fullName}
+              onChange={handleChange}
+              placeholder=""
+              autoComplete="new-password"
+              className={`${styles.input} ${errors.fullName ? styles.inputErr : ''}`}
+            />
           </FormField>
 
           <FormField label="Số điện thoại" error={errors.phone}>
-            <input name="phone" type="tel" value={values.phone} onChange={handleChange}
-              placeholder="0901 234 567"
-              className={`${styles.input} ${errors.phone ? styles.inputErr : ''}`} />
+            <input
+              name="phone"
+              type="tel"
+              value={values.phone}
+              onChange={handleChange}
+              placeholder=""
+              autoComplete="username"
+              className={`${styles.input} ${errors.phone ? styles.inputErr : ''}`}
+            />
+          </FormField>
+
+          <FormField label="Email" error={errors.email}>
+            <input
+              name="email"
+              type="email"
+              value={values.email}
+              onChange={handleChange}
+              placeholder=""
+              autoComplete="off"
+              className={`${styles.input} ${errors.email ? styles.inputErr : ''}`}
+            />
+          </FormField>
+
+          <FormField label="Địa chỉ" error={errors.address}>
+            <input
+              name="address"
+              value={values.address}
+              onChange={handleChange}
+              placeholder="Ví dụ: Hà Đông, Hà Nội"
+              autoComplete="new-password"
+              className={`${styles.input} ${errors.address ? styles.inputErr : ''}`}
+            />
           </FormField>
 
           {/* Ngày sinh & Giới tính */}
           <div className={styles.row2}>
             <FormField label="Ngày sinh">
-              <input name="dob" type="date" value={values.dob} onChange={handleChange}
-                className={styles.input} />
+              <input
+                name="dateOfBirth"
+                type="date"
+                value={values.dateOfBirth}
+                onChange={handleChange}
+                autoComplete="off"
+                className={styles.input}
+              />
             </FormField>
             <FormField label="Giới tính">
               <select name="gender" value={values.gender} onChange={handleChange} className={styles.input}>
-                <option value="">Chọn</option>
-                <option value="nam">Nam</option>
-                <option value="nu">Nữ</option>
-                <option value="khac">Khác</option>
+                   <option value="">Chọn</option>
+                   <option value="MALE">Nam</option>   {/* CHỮ IN HOA MỚI ĐÚNG */}
+                   <option value="FEMALE">Nữ</option>
+                   <option value="OTHER">Khác</option>
               </select>
             </FormField>
           </div>
 
           {/* Password */}
           <FormField label="Mật khẩu" error={errors.password}>
-            <PasswordInput name="password" value={values.password} onChange={handleChange}
-              placeholder="Ít nhất 8 ký tự" error={errors.password} />
+            <PasswordInput
+              name="password"
+              value={values.password}
+              onChange={handleChange}
+              autoComplete="new-password"
+              placeholder="Ít nhất 8 ký tự"
+              error={errors.password}
+            />
             {values.password && (
               <>
                 <div className={styles.strengthBar}>
@@ -134,16 +168,27 @@ export default function Register() {
             )}
           </FormField>
 
-          <FormField label="Xác nhận mật khẩu" error={errors.confirmPassword}>
-            <PasswordInput name="confirmPassword" value={values.confirmPassword} onChange={handleChange}
-              placeholder="Nhập lại mật khẩu" error={errors.confirmPassword} />
+          <FormField label="Xác nhận mật khẩu" error={errors.retypePassword}>
+            <PasswordInput
+              name="retypePassword"
+              value={values.retypePassword}
+              onChange={handleChange}
+              autoComplete="new-password"
+              placeholder="Nhập lại mật khẩu"
+              error={errors.retypePassword}
+            />
           </FormField>
 
           {/* Agree */}
           <div>
             <label className={styles.checkRow}>
-              <input type="checkbox" name="agree" checked={values.agree} onChange={handleChange}
-                className={styles.checkbox} />
+              <input
+                type="checkbox"
+                name="agree"
+                checked={values.agree}
+                onChange={handleChange}
+                className={styles.checkbox}
+              />
               <span>
                 Tôi đồng ý với{' '}
                 <Link to="/dieu-khoan" className={styles.link}>Điều khoản dịch vụ</Link> và{' '}

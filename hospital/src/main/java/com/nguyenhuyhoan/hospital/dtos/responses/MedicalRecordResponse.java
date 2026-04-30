@@ -27,6 +27,8 @@ public class MedicalRecordResponse {
     private String treatment;   // Hướng điều trị
     private String prescription; // Đơn thuốc (JSON String)
 
+    private String photoUrl;
+
     @JsonProperty("follow_up_date")
     private LocalDate followUpDate;
 
@@ -43,6 +45,7 @@ public class MedicalRecordResponse {
                 .diagnosis(record.getDiagnosis())
                 .treatment(record.getTreatment())
                 .prescription(record.getPrescription())
+                .photoUrl(record.getPhotoUrl())
                 .followUpDate(record.getFollowUpDate())
                 .createdAt(record.getCreatedAt())
                 .build();

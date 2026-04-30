@@ -50,6 +50,12 @@ public class SecurityConfig {
 
                         // ── Doctor ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").permitAll()
+                        // Medicine
+                        .requestMatchers("/api/v1/medicines/**").permitAll()
+                        // Sửa từ .hasRole("DOCTOR") thành:
+                        //.requestMatchers(HttpMethod.GET, "/api/v1/medicines/**").hasAnyAuthority("DOCTOR", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST,"/api/v1/medicines/**").hasRole("ADMIN")
 
                         // ── Schedule ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").permitAll()
@@ -66,6 +72,7 @@ public class SecurityConfig {
                         // ── Chatbot ──
                         .requestMatchers("/api/v1/chatbots/**").permitAll()
                         .requestMatchers("/api/v1/medical_records/**").hasAnyRole("ADMIN","DOCTOR")
+                        .requestMatchers("/api/v1/medical-records/upload-photo").permitAll()
 
                         // ── Static files ──
                         .requestMatchers("/uploads/**").permitAll()

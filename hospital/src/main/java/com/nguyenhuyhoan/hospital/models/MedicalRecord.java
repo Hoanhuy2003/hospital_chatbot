@@ -49,6 +49,9 @@ public class MedicalRecord { // ho so benh an
     @Column(name = "attachments", columnDefinition = "JSON")
     private String attachments;
 
+    @Column(name = "photo_url")
+    private String photoUrl;
+
     @Column(name = "follow_up_date")
     private LocalDate followUpDate;
 

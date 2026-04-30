@@ -24,7 +24,7 @@ export default function Login() {
   const [serverError, setServerError] = useState('') // Thêm state để hiện lỗi từ Java
 
   const { values, errors, loading, handleChange, handleSubmit } = useForm(
-    { email: '', password: '' },
+    { phone: '', password: '' },
     validateLogin
   )
 
@@ -34,7 +34,7 @@ export default function Login() {
       setServerError(''); // Xóa lỗi cũ trước khi gửi
 
       // Gọi API thực tế thông qua service
-      const data = await authService.login(vals.email, vals.password);
+      const data = await authService.login(vals.phone, vals.password);
 
       // Lưu token vào localStorage (Để Interceptor tự lấy dùng)
       localStorage.setItem('token', data.accessToken);
@@ -101,14 +101,14 @@ export default function Login() {
         )}
 
         <form onSubmit={onSubmit} noValidate className={styles.form}>
-          <FormField label="Email hoặc số điện thoại" error={errors.email}>
+          <FormField label="Email hoặc số điện thoại" error={errors.phone}>
             <input
-              name="email"
+              name="phone"
               type="text"
-              value={values.email}
+              value={values.phone}
               onChange={handleChange}
-              placeholder="098xxx hoặc example@email.com"
-              className={`${styles.input} ${errors.email ? styles.inputErr : ''}`}
+              placeholder="098xxx "
+              className={`${styles.input} ${errors.phone ? styles.inputErr : ''}`}
               autoComplete="username"
             />
           </FormField>

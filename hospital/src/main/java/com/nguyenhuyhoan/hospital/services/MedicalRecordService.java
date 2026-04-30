@@ -22,6 +22,7 @@ public class MedicalRecordService implements IMedicalRecordService {
 
     private final MedicalRecordRepository medicalRecordRepository;
     private final AppointmentRepository appointmentRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     @Transactional
@@ -37,6 +38,7 @@ public class MedicalRecordService implements IMedicalRecordService {
                 .diagnosis(medicalRecordDTO.getDiagnosis())
                 .treatment(medicalRecordDTO.getTreatment())
                 .prescription(medicalRecordDTO.getPrescription())
+                .photoUrl(medicalRecordDTO.getPhotoUrl())
                 .followUpDate(medicalRecordDTO.getFollowUpDate())
                 .name("Bệnh án ngày: " + LocalDate.now())
 
