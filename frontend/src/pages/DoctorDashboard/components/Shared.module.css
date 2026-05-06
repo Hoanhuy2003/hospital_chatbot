@@ -28,3 +28,155 @@
 .btnPrimary { background:#1565C0;color:#fff }
 .btnOutline { background:#fff;color:#1a2340;border:1.5px solid #e8ecf0;margin-right:6px }
 .btnOutline:hover { border-color:#1565C0;color:#1565C0 }
+
+/* ================== RECORD LIST ================== */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.card h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: #1f2937;
+  font-weight: 600;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 12px;
+}
+
+.apptItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+}
+
+.apptItem:last-child {
+  border-bottom: none;
+}
+
+.apptItem:hover {
+  background: #f8fafc;
+  border-radius: 12px;
+  margin: 0 -12px;
+  padding: 16px 12px;
+}
+
+.apptInfo {
+  flex: 1;
+}
+
+.apptInfo strong {
+  font-size: 15px;
+  color: #1f2937;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.apptInfo small {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.apptInfo p {
+  margin: 6px 0 0 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.apptActions {
+  display: flex;
+  gap: 8px;
+}
+
+.btnOutline {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnOutline:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btnPrimary {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnPrimary:hover {
+  background: #2563eb;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.error {
+  color: #ef4444;
+  text-align: center;
+  padding: 30px;
+  background: #fef2f2;
+  border-radius: 12px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Nền mờ phía sau */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Luôn nằm trên cùng */
+  backdrop-filter: blur(2px); /* Hiệu ứng mờ nền chuyên nghiệp */
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.btnOutline {
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btnOutline:hover {
+  background: #f5f5f5;
+}
+
+/* Hiệu ứng trượt xuống khi mở */
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

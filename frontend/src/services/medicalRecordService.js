@@ -10,8 +10,8 @@ export const medicalRecordService = {
         const response = await api.get(`/v1/medical_records/patient/${patientId}`);
         return response.data;
     },
-    getId : async(id) =>{
-        const response = await api.get(`/v1/medical_record/${id}`);
+    getById : async(id) =>{
+        const response = await api.get(`/v1/medical_records/${id}`);
         return response.data;
     },
     uploadPhoto: async (file) => {
@@ -23,6 +23,11 @@ export const medicalRecordService = {
             },
         });
         return response.data; // Trả về link string của ảnh
+    },
+    getByDoctor : async(doctorId) =>{
+        const response = await api.get(`/v1/medical_records/doctor/${doctorId}`);
+        return response.data;
     }
+
 
 }

@@ -39,6 +39,10 @@ export default function Login() {
       // Lưu token vào localStorage (Để Interceptor tự lấy dùng)
       localStorage.setItem('token', data.accessToken);
       
+      // localStorage.setItem('userId', data.userId);       // Ví dụ: 11
+      // if (data.doctorId) {
+      //   localStorage.setItem('doctorId', data.doctorId); // Ví dụ: 8
+      // }
       // Lưu thông tin vào Context (AuthContext)
       login({ 
         id: data.userId, 

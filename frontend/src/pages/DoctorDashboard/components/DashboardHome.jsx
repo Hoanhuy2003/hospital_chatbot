@@ -89,7 +89,7 @@ export default function DashboardHome({ appointments = [], nextAppts = [], openP
           ) : (
             nextAppts.map((n, i) => (
               <div key={i} className={styles.nextRow}>
-                <div className={styles.nextDate}>📅 {n.date}</div>
+                <div className={styles.nextDate}>📅 {n.follow_up_date}</div>
                 <div>
                   <div className={styles.apptName}>{n.name}</div>
                   <div className={styles.apptReason}>{n.note}</div>

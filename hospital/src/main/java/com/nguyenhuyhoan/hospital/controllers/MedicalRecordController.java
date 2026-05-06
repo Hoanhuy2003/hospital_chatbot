@@ -57,4 +57,14 @@ public class MedicalRecordController {
             return ResponseEntity.badRequest().body("Không thể upload ảnh: " + e.getMessage());
         }
     }
+
+    @GetMapping("/doctor/{doctorId}/patients")
+    public ResponseEntity<?> getPatientsByDoctor(@PathVariable Long doctorId) {
+        return ResponseEntity.ok(medicalRecordService.getPatientsByDoctor(doctorId));
+    }
+
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<?> getRecordsByDoctor(@PathVariable Long doctorId){
+        return ResponseEntity.ok(medicalRecordService.getRecordByDoctor(doctorId));
+    }
 }
