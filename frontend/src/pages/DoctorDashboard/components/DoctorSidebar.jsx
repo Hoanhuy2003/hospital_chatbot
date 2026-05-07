@@ -55,11 +55,12 @@ export default function DoctorSidebar({ page, setPage }) {
           <div>
             <div className={styles.docName}>BS. {fullName}</div>
             <div className={styles.docRole}>{role === 'DOCTOR' ? 'Bác sĩ chuyên khoa' : role}</div>
+            
           </div>
         </div>
         
         <button className={styles.logoutBtn} onClick={handleLogout}>
-          <span className={styles.logoutIcon}>🚪</span> Đăng xuất
+          <span className={styles.logoutIcon}></span> Đăng xuất
         </button>
       </div>
     </div>

@@ -7,7 +7,8 @@ import PatientModal from './components/PatientModal'
 import RecordList from './components/RecordList'
 import NextAppointments from './components/NextAppointments'
 import { appointmentService } from '../../services/appointmentService'
-import { toast } from 'react-toastify' // QUAN TRỌNG: Nhớ thêm dòng này
+import { medicalRecordService } from '../../services/medicalRecordService' // Thêm service này
+import { toast } from 'react-toastify'
 import styles from './DoctorDashboard.module.css'
 
 const PAGE_TITLES = {
@@ -21,85 +22,80 @@ const PAGE_TITLES = {
 export default function DoctorDashboard() {
   const [page, setPage]             = useState('dashboard')
   const [appointments, setAppts]    = useState([])
-  const [nextAppts, setNextAppts]   = useState([])
+  const [nextAppts, setNextAppts]   = useState([]) // Dữ liệu lịch tái khám
   const [selectedPatient, setSelPt] = useState(null)
   const [modalTab, setModalTab]     = useState(0)
   const [loading, setLoading]       = useState(true)
-  const [currentDoctor, setCurrentDoctor] = useState(null);
 
-  // 1. Hàm load dữ liệu tách riêng để có thể gọi lại sau khi confirm
+  // 1. Load lịch khám hôm nay và lịch hẹn tái khám
   const loadData = async () => {
     const doctorId = localStorage.getItem('userId');
     if (!doctorId) return;
 
     try {
       setLoading(true);
-      const data = await appointmentService.getByDoctor(doctorId);
+      // Gọi song song cả 2 API để tối ưu tốc độ
+      const [resToday, resNext] = await Promise.all([
+        appointmentService.getByDoctor(doctorId),
+        medicalRecordService.getNextAppointment(doctorId)
+      ]);
 
-      const formattedData = data.map(item => ({
+      // Format lịch hôm nay
+      const formattedToday = resToday.map(item => ({
         id: item.id,
         time: item.timeSlot?.split('_')[0] || '00:00',
-        name: item.patientName, // Khớp với trường patientName ở Backend
+        name: item.patientName,
         reason: item.reason,
         status: item.status.toLowerCase(), 
         date: item.date,
         queueNumber: item.queueNumber,
         specialtyId: item.doctor?.specialtyId || null
-        
-
-        
-        
       }));
 
-      setAppts(formattedData);
-    } catch (err) { // Đã sửa từ error thành err cho khớp console.log
-      console.error("Lỗi load lịch bác sĩ:", err);
-      toast.error("Không thể tải danh sách lịch khám");
+      setAppts(formattedToday);
+      setNextAppts(resNext); // Gán dữ liệu tái khám từ API vào đây
+      
+    } catch (err) {
+      console.error("Lỗi load dữ liệu:", err);
+      toast.error("Không thể tải dữ liệu Dashboard");
     } finally {
       setLoading(false)
     }
   };
 
-  function openPatient(id, tab = 0) {
-  const selected = appointments.find(a => a.id === id);
-  if (selected) {
-    console.log("📋 Bệnh nhân được chọn:", selected);
-    
-    setSelPt({
-      ...selected,
-      specialtyId: selected.specialtyId   // Lấy từ doctor
-    });
-    
-    setModalTab(tab);
-  }
-}
-
   useEffect(() => {
     loadData();
   }, []);
 
+  // CHỈ GIỮ LẠI 1 HÀM openPatient NÀY
   function openPatient(id, tab = 0) {
-    setSelPt(appointments.find(a => a.id === id))
-    setModalTab(tab)
-  }
-
-  // 2. Hàm xác nhận khám CẦN GỌI BACKEND
-  async function confirmExam(id) {
-    try {
-      // Gửi yêu cầu lên server để đổi trạng thái thành CONFIRMED hoặc DONE
-      await appointmentService.updateStatus(id, 'CONFIRMED'); 
-      toast.success("Xác nhận khám thành công!");
-      
-      // Load lại toàn bộ dữ liệu mới nhất từ Backend
-      await loadData(); 
-      setSelPt(null);
-    } catch (err) {
-      toast.error("Lỗi khi cập nhật trạng thái khám!");
+    const selected = appointments.find(a => a.id === id);
+    if (selected) {
+      setSelPt({
+        ...selected,
+        specialtyId: selected.specialtyId
+      });
+      setModalTab(tab);
     }
   }
 
+  // Xác nhận khám
+  async function confirmExam(id) {
+    try {
+      await appointmentService.updateStatus(id, 'CONFIRMED'); 
+      toast.success("Xác nhận khám thành công!");
+      await loadData(); 
+      setSelPt(null);
+    } catch (err) {
+      toast.error("Lỗi khi cập nhật trạng thái!");
+    }
+  }
+
+  // Hàm này dùng khi bác sĩ vừa lập bệnh án xong và muốn thấy lịch hẹn mới hiện lên ngay
   function addNextAppt(appt) {
-    setNextAppts(prev => [...prev, appt])
+    setNextAppts(prev => [appt, ...prev]);
+    // Hoặc tốt nhất là gọi lại loadData() để đảm bảo đồng bộ DB
+    // loadData(); 
   }
 
   const pageProps = { appointments, nextAppts, openPatient, setPage }
@@ -116,9 +112,9 @@ export default function DoctorDashboard() {
             <>
               {page === 'dashboard' && <DashboardHome {...pageProps} />}
               {page === 'schedule'  && <ScheduleList  {...pageProps} />}
-              {page === 'patients'  && <PatientModal  {...pageProps} />}
+              {/* {page === 'patients'  && <RecordList    {...pageProps} />}  */}
               {page === 'records'   && <RecordList    {...pageProps} />}
-              {page === 'next'      && <NextAppointments nextAppts={nextAppts} />}
+              {page === 'next' && <NextAppointments list={nextAppts} />}
             </>
           )}
         </div>
@@ -126,14 +122,11 @@ export default function DoctorDashboard() {
 
       {selectedPatient && (
         <PatientModal
-         patient={selectedPatient}
+          patient={selectedPatient}
           initialTab={modalTab}
           onClose={() => setSelPt(null)}
-          // onConfirm={() => confirmExam(selectedPatient.id)}
-          // onAddNext={addNextAppt}
           onConfirm={loadData}
           onAddNext={addNextAppt} 
-          
         />
       )}
     </div>

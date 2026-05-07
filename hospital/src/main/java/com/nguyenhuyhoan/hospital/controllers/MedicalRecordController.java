@@ -67,4 +67,8 @@ public class MedicalRecordController {
     public ResponseEntity<?> getRecordsByDoctor(@PathVariable Long doctorId){
         return ResponseEntity.ok(medicalRecordService.getRecordByDoctor(doctorId));
     }
+    @GetMapping("/doctor/{doctorId}/next-appointments")
+    public ResponseEntity<?> getNextAppointments(@PathVariable Long doctorId){
+        return ResponseEntity.ok(medicalRecordService.getNextAppointments(doctorId));
+    }
 }
