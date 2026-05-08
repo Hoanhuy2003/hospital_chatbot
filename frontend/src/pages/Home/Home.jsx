@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DOCTORS } from '../../data/constants'
-import { CLINICS } from '../../data/constants'
 import DoctorCard from '../../components/DoctorCard/DoctorCard'
 import BookingModal from '../../components/BookingModal/BookingModal'
 import { specialtyService } from '../../services/api'
+import { clinicService } from '../../services/clinicService'
 import { doctorService } from '../../services/doctorService'
 import styles from './Home.module.css'
 
@@ -12,12 +11,15 @@ import styles from './Home.module.css'
 export default function Home() {
   const navigate = useNavigate()
   const [specialties, setSpecialties] = useState([])
-  const [ doctors, setDoctors] = useState([])
+  const [doctors, setDoctors] = useState([])
+  const [clinics, setClinics] = useState([])
   const [activeSpec, setActiveSpec] = useState(0)
   const [modalDoctor, setModalDoctor] = useState(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [clinicsLoading, setClinicsLoading] = useState(true)
+  const [clinicError, setClinicError] = useState(null)
 
  
 
@@ -57,6 +59,23 @@ export default function Home() {
 
     fetchSpecialties()
     fetchDoctor()
+  }, [])
+
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        setClinicsLoading(true)
+        const data = await clinicService.getAll()
+        setClinics(data?.content || data || [])
+      } catch (err) {
+        console.error('Error fetching clinics:', err)
+        setClinicError(err.message || 'Không thể tải phòng khám')
+      } finally {
+        setClinicsLoading(false)
+      }
+    }
+
+    fetchClinics()
   }, [])
 
   const filteredDoctors = doctors.filter(d =>
@@ -182,17 +201,37 @@ export default function Home() {
   </button>
 </div>
 <div className={styles.clinicGrid}>
-  {CLINICS.slice(0, 4).map(clinic => (
-    <div
-      key={clinic.id}
-      className={styles.clinicCard}
-      onClick={() => navigate(`/phong-kham/${clinic.id}`)}
-    >
-      <div className={styles.clinicImg}>{clinic.avatar}</div>
-      <div className={styles.clinicName}>{clinic.name}</div>
-      <div className={styles.clinicAddr}>{clinic.address}</div>
+  {clinicsLoading ? (
+    <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px' }}>
+      Đang tải phòng khám...
     </div>
-  ))}
+  ) : clinicError ? (
+    <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px', color: 'red' }}>
+      Lỗi: {clinicError}
+    </div>
+  ) : clinics.length === 0 ? (
+    <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px' }}>
+      Chưa có phòng khám nào
+    </div>
+  ) : (
+    clinics.map(clinic => (
+      <div
+        key={clinic.id}
+        className={styles.clinicCard}
+        onClick={() => navigate(`/phong-kham/${clinic.id}`)}
+      >
+        <div className={styles.clinicImg}>
+          {clinic.photoUrl ? (
+            <img src={clinic.photoUrl} alt={clinic.name} />
+          ) : (
+            clinic.avatar || '🏥'
+          )}
+        </div>
+        <div className={styles.clinicName}>{clinic.name}</div>
+        <div className={styles.clinicAddr}>{clinic.address}</div>
+      </div>
+    ))
+  )}
 </div>
 
         

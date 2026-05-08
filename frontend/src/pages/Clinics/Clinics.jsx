@@ -1,67 +1,51 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CLINICS, SPECIALTIES } from '../../data/constants'
+import { clinicService } from '../../services/clinicService' // Import service
 import styles from './Clinics.module.css'
 
 export default function Clinics() {
   const navigate = useNavigate()
+  const [clinics, setClinics] = useState([]) // State lưu danh sách phòng khám từ DB
+  const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [activeSpec, setActiveSpec] = useState('')
 
+  // 1. Fetch dữ liệu từ Backend khi component mount
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        setLoading(true);
+        const data = await clinicService.getAll();
+        setClinics(data || []);
+      } catch (err) {
+        console.error("Lỗi lấy danh sách phòng khám:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClinics();
+  }, []);
+
+  // 2. Lọc dữ liệu (Sửa CLINICS thành clinics lấy từ state)
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
-    return CLINICS.filter(c => {
+    return clinics.filter(c => {
       const matchQ = !q
         || c.name.toLowerCase().includes(q)
-        || c.specialty.toLowerCase().includes(q)
-        || c.address.toLowerCase().includes(q)
+        || (c.specialty && c.specialty.toLowerCase().includes(q))
+        || (c.address && c.address.toLowerCase().includes(q))
       const matchS = !activeSpec || c.specialty === activeSpec
       return matchQ && matchS
     })
-  }, [query, activeSpec])
+  }, [query, activeSpec, clinics]) // Thêm clinics vào dependency
+
+  if (loading) return <div className={styles.loading}>Đang tải danh sách phòng khám...</div>
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Đặt khám phòng khám</h1>
-          <p className={styles.sub}>
-            Đa dạng phòng khám với nhiều chuyên khoa như Sản - Nhi, Tai Mũi Họng, Da Liễu, Tiêu Hoá...
-          </p>
-        </div>
-      </div>
+      {/* ... Phần Header và Search giữ nguyên ... */}
 
-      {/* Search */}
-      <div className={styles.searchWrap}>
-        <input
-          className={styles.searchInput}
-          placeholder="Tìm tên phòng khám, chuyên khoa, địa chỉ..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-        <span className={styles.searchIcon}>🔍</span>
-      </div>
-
-      {/* Specialty filter chips */}
-      <div className={styles.chips}>
-        <button
-          className={`${styles.chip} ${activeSpec === '' ? styles.chipActive : ''}`}
-          onClick={() => setActiveSpec('')}
-        >Tất cả</button>
-        {['Sản phụ khoa','Nhi khoa','Da liễu','Tai mũi họng','Răng hàm mặt','Đa khoa'].map(s => (
-          <button
-            key={s}
-            className={`${styles.chip} ${activeSpec === s ? styles.chipActive : ''}`}
-            onClick={() => setActiveSpec(s)}
-          >{s}</button>
-        ))}
-      </div>
-
-      {/* Result count */}
-      <p className={styles.count}>Tìm thấy <strong>{filtered.length}</strong> phòng khám</p>
-
-      {/* Grid */}
+      {/* Grid hiển thị */}
       {filtered.length === 0 ? (
         <div className={styles.empty}>
           <div style={{ fontSize: 52 }}>🏥</div>
@@ -75,13 +59,16 @@ export default function Clinics() {
               className={styles.card}
               onClick={() => navigate(`/phong-kham/${clinic.id}`)}
             >
-              <div className={styles.cardImg}>{clinic.avatar}</div>
+              {/* Nếu DB có link ảnh thì dùng, không thì dùng icon mặc định */}
+              <div className={styles.cardImg}>
+                {clinic.avatarUrl ? <img src={clinic.avatarUrl} alt={clinic.name} /> : '🏥'}
+              </div>
               <div className={styles.cardBody}>
                 <div className={styles.cardName}>{clinic.name}</div>
                 <div className={styles.cardSpec}>{clinic.specialty}</div>
                 <div className={styles.cardAddr}>{clinic.address}</div>
                 <div className={styles.cardMeta}>
-                  ⭐ {clinic.rating} · {clinic.price}/lượt
+                  ⭐ {clinic.rating || '5.0'} · {clinic.price ? `${clinic.price.toLocaleString()}đ` : 'Miễn phí'}/lượt
                 </div>
               </div>
             </div>

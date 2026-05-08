@@ -1,0 +1,136 @@
+/* Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+
+.modalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #e8ecf0;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.modalHead h3 { font-size: 16px; font-weight: 700; color: #1a2340; }
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #637381;
+  transition: color .2s;
+}
+.closeBtn:hover { color: #1a2340; }
+
+.modalForm {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.btnCancel {
+  background: #fff;
+  color: #1a2340;
+  border: 1.5px solid #e8ecf0;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Form fields */
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #637381;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  border: 1.5px solid #e8ecf0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a2340;
+  outline: none;
+  transition: border-color .2s;
+  background: #fff;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-color: #1565C0; }
+.field textarea { resize: vertical; }
+
+.req { color: #C62828; }
+
+/* Detail view */
+.detailRow {
+  display: flex;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #e8ecf0;
+  font-size: 13px;
+}
+.detailRow:last-of-type { border-bottom: none; }
+.detailKey { color: #637381; min-width: 110px; flex-shrink: 0; }
+.detailVal { color: #1a2340; flex: 1; }
+
+/* Photo grid in detail */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.photoThumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e8ecf0;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.photoThumb:hover { opacity: .85; }

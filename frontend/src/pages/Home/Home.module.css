@@ -309,6 +309,14 @@
   font-size: 48px;
 }
 
+.clinicImg img {
+    width: 100%;
+    height: 100%;
+    /* Cực kỳ quan trọng: Giữ tỉ lệ ảnh, cắt bớt phần thừa */
+    object-fit: cover; 
+    object-position: center;
+}
+
 .clinicName {
   font-size: 14px;
   font-weight: 700;

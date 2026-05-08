@@ -25,6 +25,10 @@
             throw error;
         }
 
+    },
+    getDoctorByClinic: async(clinicId) =>{
+        const response = await api.get(`/v1/doctors/clinic/${clinicId}`);
+        return response.data;
     }
     
  }

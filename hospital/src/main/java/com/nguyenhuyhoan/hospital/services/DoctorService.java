@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -170,6 +171,14 @@ public class DoctorService implements IDoctorService {
         Doctor updateDoctor = doctorRepository.save(doctor);
 
         return mapToDoctor(updateDoctor);
+    }
+
+    @Override
+    public List<DoctorResponse> getDoctorByClinic(Long clinicId) {
+        return doctorRepository.findByClinicId(clinicId)
+                .stream()
+                .map(this::mapToDoctor)
+                .collect(Collectors.toList());
     }
 
 

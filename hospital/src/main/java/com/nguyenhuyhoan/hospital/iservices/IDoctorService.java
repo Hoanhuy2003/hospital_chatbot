@@ -18,4 +18,5 @@ public interface IDoctorService {
 
     void assignDoctorsToClinic(Long clinicId, List<Long> doctorIds);
     DoctorResponse updateDoctorClinic(Long doctorId, Long newClinicId);
+    List<DoctorResponse> getDoctorByClinic(Long clinicId);
 }

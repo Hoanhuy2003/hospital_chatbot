@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +21,8 @@ public class ClinicController {
 
     private final IClinicService clinicService;
 
-    @PostMapping("")
-    public ResponseEntity<?> createClinic(@Valid @RequestBody ClinicDTO clinicDTO){
+    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createClinic(@Valid @ModelAttribute ClinicDTO clinicDTO){
         try {
             ClinicResponse clinicResponse = clinicService.createClinic(clinicDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(clinicResponse);
@@ -34,7 +35,7 @@ public class ClinicController {
 
     @GetMapping("")
     public ResponseEntity<Page<ClinicResponse>> getAllClinics(@RequestParam(defaultValue = "0") int page,
-                                                              @RequestParam(defaultValue = "10")int size){
+                                                              @RequestParam(defaultValue = "100")int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         Page<ClinicResponse> clinicResponses = clinicService.getAllClinics(pageable);
@@ -53,8 +54,8 @@ public class ClinicController {
 
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateClinic(@PathVariable Long id, @Valid @RequestBody ClinicDTO clinicDTO){
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateClinic(@PathVariable Long id, @Valid @ModelAttribute ClinicDTO clinicDTO){
         try {
             ClinicResponse clinicResponse = clinicService.updateClinic(id, clinicDTO);
             return ResponseEntity.ok(clinicResponse);

@@ -3,6 +3,7 @@ package com.nguyenhuyhoan.hospital.dtos.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -30,6 +31,8 @@ public class ClinicDTO {
     // Thông tin Bác sĩ phụ trách
 
    // private Long doctorId;
+
+    private MultipartFile photoUrl;
 
 
     @JsonProperty("is_active")

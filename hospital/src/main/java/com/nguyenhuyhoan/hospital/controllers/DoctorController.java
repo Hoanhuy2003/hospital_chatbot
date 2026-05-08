@@ -74,4 +74,10 @@ public class DoctorController {
     public ResponseEntity<?> changeClinic(@PathVariable Long id, @RequestParam Long clinicId){
         return ResponseEntity.ok(doctorService.updateDoctorClinic(id, clinicId));
     }
+
+    @GetMapping("/clinic/{clinicId}")
+    public ResponseEntity<List<DoctorResponse>> getDoctorByClinic(@PathVariable Long clinicId){
+        List<DoctorResponse> doctorResponses = doctorService.getDoctorByClinic(clinicId);
+        return ResponseEntity.ok(doctorResponses);
+    }
 }

@@ -1,0 +1,13 @@
+.card {
+  background: #f5f7fa;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.label { font-size: 12px; color: #637381; margin-bottom: 6px; }
+.value { font-size: 24px; font-weight: 700; }
+.sub   { font-size: 11px; color: #637381; margin-top: 4px; }
+.blue   { color: #1565C0; }
+.green  { color: #2E7D32; }
+.amber  { color: #E65100; }
+.red    { color: #C62828; }
+.teal   { color: #00897B; }

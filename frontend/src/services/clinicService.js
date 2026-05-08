@@ -4,7 +4,7 @@ export const clinicService = {
 
     getAll: async () => {
         try {
-            const response = await api.get('/v1/clinics')
+            const response = await api.get(`/v1/clinics`)
             return response.data;
             
             
@@ -14,5 +14,11 @@ export const clinicService = {
             
         }
 
+    },
+    getById : async(id) =>{
+        const response = await api.get(`/v1/clinics/${id}`)
+        return response.data;
+
     }
+
 }

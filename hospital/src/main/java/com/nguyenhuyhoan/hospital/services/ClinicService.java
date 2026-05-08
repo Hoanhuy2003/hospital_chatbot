@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 public class ClinicService implements IClinicService {
@@ -23,11 +25,16 @@ public class ClinicService implements IClinicService {
     private final ClinicRepository clinicRepository;
     private final SpecialtyRepository specialtyRepository;
     private final DoctorRepository doctorRepository;
+    private final CloudinaryService cloudinaryService;
 
 
     @Override
     @Transactional
-    public ClinicResponse createClinic(ClinicDTO clinicDTO) throws DataNotFoundException {
+    public ClinicResponse createClinic(ClinicDTO clinicDTO) throws IOException {
+
+        String photoUrl = cloudinaryService.uploadClinicImage(clinicDTO.getPhotoUrl());
+
+
 
         Specialty specialty = specialtyRepository.findById(clinicDTO.getSpecialtyId())
                 .orElseThrow(()-> new DataNotFoundException("Không tồn tại chuyên khoa này"));
@@ -42,6 +49,7 @@ public class ClinicService implements IClinicService {
                 .phone(clinicDTO.getPhone())
                 .address(clinicDTO.getAddress())
                 .specialty(specialty)
+                .photoUrl(photoUrl)
                 .isActive(clinicDTO.getIsActive())
                 .build();
         return ClinicResponse.fromClinic(clinicRepository.save(clinic));
@@ -60,7 +68,7 @@ public class ClinicService implements IClinicService {
     }
 
     @Override
-    public ClinicResponse updateClinic(Long id, ClinicDTO clinicDTO) throws DataNotFoundException {
+    public ClinicResponse updateClinic(Long id, ClinicDTO clinicDTO) throws IOException {
         Clinic clinic = clinicRepository.findById(id)
                 .orElseThrow(()-> new DataNotFoundException("Phòng khám không tồn tại"));
 
@@ -69,9 +77,14 @@ public class ClinicService implements IClinicService {
         if(clinicDTO.getAddress()!= null) clinic.setAddress(clinic.getAddress());
 
         if(clinicDTO.getSpecialtyId() != null){
-            Specialty specialty = specialtyRepository.findById(id)
+            Specialty specialty = specialtyRepository.findById(clinicDTO.getSpecialtyId())
                     .orElseThrow(()-> new DataNotFoundException("Chuyên khoa không tồn tại"));
             clinic.setSpecialty(specialty);
+        }
+
+        if(clinicDTO.getPhotoUrl()!=null && !clinicDTO.getPhotoUrl().isEmpty()){
+            String newPhotoUrl = cloudinaryService.uploadClinicImage(clinicDTO.getPhotoUrl());
+            clinic.setPhotoUrl(newPhotoUrl);
         }
 
 //        if(clinicDTO.getDoctorId() != null){

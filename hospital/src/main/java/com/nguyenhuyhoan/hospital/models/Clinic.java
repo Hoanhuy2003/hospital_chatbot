@@ -28,6 +28,9 @@ public class Clinic {
     @JoinColumn(name = "specialty_id")
     private Specialty specialty;
 
+    @Column(name = "photo_url")
+    private String photoUrl;
+
 //    @ManyToOne
 //    @JoinColumn(name = "doctor_id")
 //    private Doctor doctor;

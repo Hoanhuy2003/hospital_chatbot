@@ -16,6 +16,7 @@ export default function DoctorSidebar({ page, setPage }) {
   // 1. Lấy thông tin bác sĩ từ localStorage đã lưu khi Login
   const fullName = localStorage.getItem('fullName') || 'Bác sĩ';
   const role = localStorage.getItem('role') || 'DOCTOR';
+ // const specialty = localStorage.getItem('specialtyName') || 'Đang cập nhật';
   
   // Hàm xử lý lấy chữ cái đầu của tên để làm Avatar (Ví dụ: Hoàn -> H)
   const getInitial = (name) => {
