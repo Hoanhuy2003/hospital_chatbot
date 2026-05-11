@@ -47,6 +47,15 @@ public class User  {
     @Column(name = "address", columnDefinition = "TEXT")
     private String address;
 
+    @Column(name = "health_insurance_number", length = 15)
+    private String healthInsuranceNumber;
+
+    @Column(name = "insurance_expiry_date")
+    private LocalDate insuranceExpiryDate; // Nên dùng LocalDate để dễ so sánh ngày hết hạn
+
+    @Column(name = "insurance_benefit_level")
+    private Integer insuranceBenefitLevel; // Lưu mức hưởng (ví dụ: 80, 95, 100)
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;

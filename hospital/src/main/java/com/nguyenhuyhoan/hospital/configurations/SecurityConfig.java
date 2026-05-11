@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").permitAll()
                         // Medicine
                         .requestMatchers("/api/v1/medicines/**").permitAll()
+                        .requestMatchers("/api/v1/invoices/**").permitAll()
                         // Sửa từ .hasRole("DOCTOR") thành:
                         //.requestMatchers(HttpMethod.GET, "/api/v1/medicines/**").hasAnyAuthority("DOCTOR", "ADMIN")
 
