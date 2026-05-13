@@ -171,6 +171,30 @@
 .btnBack:hover {
   background: #0D47A1;
 }
+.actions {
+  margin-top: 15px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.btnDetail {
+  background-color: #1565C0;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnDetail:hover {
+  background-color: #0d47a1;
+  transform: translateY(-1px);
+}
 
 @media (max-width: 600px) {
   .card { flex-direction: column; }

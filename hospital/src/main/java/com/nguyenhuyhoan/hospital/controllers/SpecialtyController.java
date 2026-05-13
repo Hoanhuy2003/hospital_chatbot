@@ -76,4 +76,9 @@ public class SpecialtyController {
     public ResponseEntity<List<DoctorResponse>> getDoctorsBySpecialty(@PathVariable Long id) {
         return ResponseEntity.ok(specialtyService.getDoctorBySpecialty(id));
     }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getStatistics(){
+        return ResponseEntity.ok(specialtyService.getSpecialtyStatistics());
+    }
 }

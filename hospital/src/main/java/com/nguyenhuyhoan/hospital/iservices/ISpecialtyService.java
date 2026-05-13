@@ -14,4 +14,6 @@ public interface ISpecialtyService {
     SpecialtyResponse updateSpecialty(Long id, SpecialtyDTO specialtyDTO) throws IOException;
 
     List<DoctorResponse> getDoctorBySpecialty(Long specialtyId);
+
+    List<SpecialtyDTO.SpecialtyStatDTO> getSpecialtyStatistics();
 }

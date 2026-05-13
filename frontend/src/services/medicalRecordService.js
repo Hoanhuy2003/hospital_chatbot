@@ -32,6 +32,10 @@ export const medicalRecordService = {
         const response = await api.get(`/v1/medical_records/doctor/${doctorId}/next-appointments`);
         return response.data;
 
+    }, 
+    getByAppointment : async(appointmentId) =>{
+        const response = await api.get(`/v1/medical_records/appointment/${appointmentId}`);
+        return response.data;
     }
 
 

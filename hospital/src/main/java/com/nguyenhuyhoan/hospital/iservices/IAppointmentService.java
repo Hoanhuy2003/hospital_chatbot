@@ -19,6 +19,8 @@ public interface IAppointmentService {
 
     List<AppointmentResponse> getByDoctor(Long doctorId);
 
+    List<AppointmentResponse> getAllAppointment();
+
 
     //List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date);
 }

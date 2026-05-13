@@ -20,5 +20,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a WHERE a.schedule.doctor.user.id = :userId")
     List<Appointment> findByDoctorUserId(@Param("userId") Long userId);
 
+    List<Appointment> findAllByOrderByCreatedAtDesc();
+
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE CAST(a.appointmentTime AS date) = :date")
+    long countByDate(@Param("date") LocalDate date);
+
+    // Lấy 5 bản ghi mới nhất dựa trên thời gian tạo
+    List<Appointment> findTop5ByOrderByCreatedAtDesc();
+
     // lấy lịch tái khám
 }

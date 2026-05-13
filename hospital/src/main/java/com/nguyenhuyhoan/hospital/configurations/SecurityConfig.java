@@ -50,6 +50,7 @@ public class SecurityConfig {
 
                         // ── Doctor ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").permitAll()
                         // Medicine
                         .requestMatchers("/api/v1/medicines/**").permitAll()
                         .requestMatchers("/api/v1/invoices/**").permitAll()
@@ -66,13 +67,14 @@ public class SecurityConfig {
 
                         // ── Appointment ──
                         .requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/appointments/all").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.GET,"/api/v1/appointments/**").permitAll()
                         //.requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("DOCTOR","ADMIN")
 
                         // ── Chatbot ──
                         .requestMatchers("/api/v1/chatbots/**").permitAll()
-                        .requestMatchers("/api/v1/medical_records/**").hasAnyRole("ADMIN","DOCTOR")
+                        .requestMatchers("/api/v1/medical_records/**").permitAll()
                         .requestMatchers("/api/v1/medical-records/upload-photo").permitAll()
 
                         // ── Static files ──

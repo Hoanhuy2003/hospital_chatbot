@@ -134,3 +134,112 @@
   transition: opacity .2s;
 }
 .photoThumb:hover { opacity: .85; }
+
+/* Toolbar & Input */
+.toolbar {
+  display: flex; gap: 15px; margin-bottom: 25px; align-items: center;
+}
+.searchInput, .select {
+  padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; outline: none;
+}
+.searchInput { flex: 1; }
+
+/* Table & Card */
+.card {
+  background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Button & Badges */
+.btnSm {
+  padding: 8px 16px; background: #1565C0; color: #fff; border: none; border-radius: 6px; cursor: pointer;
+}
+.btnSm:hover { background: #0d47a1; }
+
+.specBadge {
+  background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: 600;
+}
+
+/* Modal Overlay */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal {
+  background: #fff; padding: 25px; border-radius: 15px; width: 500px; max-width: 90%;
+}
+/* Nút thêm mới chính */
+.btnAdd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #10b981; /* Màu xanh lá (Emerald) */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  white-space: nowrap;
+}
+
+.btnAdd:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+}
+
+.btnAdd:active {
+  transform: translateY(0);
+}
+
+/* Icon cộng (+) giả lập nếu không dùng thư viện icon */
+.plusIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Đẩy nút sang bên phải của toolbar */
+.toolbarRight {
+  margin-left: auto;
+}
+
+/* Style cho ô chọn ngày */
+.dateInput {
+  padding: 9px 12px;
+  border: 1.5px solid #e8ecf0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a2340;
+  outline: none;
+  background: #fff;
+  transition: all 0.2s;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+/* Hiệu ứng khi nhấn vào hoặc hover */
+.dateInput:hover {
+  border-color: #cbd5e1;
+}
+
+.dateInput:focus {
+  border-color: #1565C0;
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+/* Tùy chỉnh cái icon lịch (chỉ hoạt động trên Chrome/Edge/Safari) */
+.dateInput::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(40%) sepia(10%) saturate(1000%) hue-rotate(180deg) brightness(90%) contrast(90%);
+  /* Đoạn filter trên giúp đổi màu icon lịch sang màu hơi xanh xám cho tiệp với màu text */
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.dateInput::-webkit-calendar-picker-indicator:hover {
+  background: #f1f5f9;
+}

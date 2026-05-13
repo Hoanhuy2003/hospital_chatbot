@@ -1,14 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable, { StatusBadge } from '../components/AdminTable'
+import { specialtyService } from '../../../services/api'
 import styles from '../AdminCommon.module.css'
 import api from '../../../services/api'
 
 const clinicService = {
   getAll:  async (params) => (await api.get('/v1/clinics', { params })).data,
+  getClinicStat: async (params) => (await api.get(`/v1/clinics/statistics`,{params})).data,
   create:  async (data)   => (await api.post('/v1/clinics', data)).data,
   update:  async (id, d)  => (await api.put(`/v1/clinics/${id}`, d)).data,
   delete:  async (id)     => (await api.delete(`/v1/clinics/${id}`)).data,
+  getSpecialties: async() => (await api.get(`/v1/specialty`)).data
 }
 
 const EMPTY = { name: '', address: '', phone: '', specialtyId: '', description: '' }
@@ -21,17 +24,34 @@ export default function ClinicManager() {
   const [editTarget,setEditTarget]= useState(null)
   const [form,      setForm]      = useState(EMPTY)
   const [saving,    setSaving]    = useState(false)
+  const [specialties, setSpecialties] = useState([]);
 
   const load = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await clinicService.getAll({ keyword })
+      const res = await clinicService.getClinicStat({ keyword })
       setData(Array.isArray(res) ? res : res.content || [])
     } catch { toast.error('Không tải được phòng khám') }
     finally  { setLoading(false) }
   }, [keyword])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+     load();
+     const fetchSpecilties = async () =>{
+      try {
+        const res = await specialtyService.getAll();
+        setSpecialties(Array.isArray(res) ? res : res.content || [])
+        
+      } catch (error) {
+        console.error("Không thể tải");
+        
+      }
+     };
+     fetchSpecilties();
+
+
+
+   }, [load])
 
   function openCreate() { setEditTarget(null); setForm(EMPTY); setShowModal(true) }
   function openEdit(row) {
@@ -86,7 +106,7 @@ export default function ClinicManager() {
       <div className={styles.toolbar}>
         <input className={styles.searchInput} placeholder="Tìm tên, địa chỉ..."
           value={keyword} onChange={e => setKeyword(e.target.value)} />
-        <button className={styles.btnPrimary} onClick={openCreate}>+ Thêm phòng khám</button>
+        <button className={styles.btnAdd} onClick={openCreate}>+ Thêm phòng khám</button>
       </div>
 
       <div className={styles.card}>
@@ -116,9 +136,19 @@ export default function ClinicManager() {
                     value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} />
                 </div>
                 <div className={styles.field}>
-                  <label>ID Chuyên khoa</label>
-                  <input placeholder="Nhập ID chuyên khoa"
-                    value={form.specialtyId} onChange={e => setForm(f => ({...f, specialtyId: e.target.value}))} />
+                 <label>Chuyên khoa <span className={styles.req}>*</span></label>
+    <select 
+        className={styles.select} // Hoàn có thể dùng class styles.select hoặc styles.input
+        value={form.specialtyId} 
+        onChange={e => setForm({...form, specialtyId: e.target.value})}
+    >
+        <option value="">-- Chọn chuyên khoa --</option>
+        {specialties.map(s => (
+            <option key={s.id} value={s.id}>
+                {s.name}
+            </option>
+        ))}
+    </select>
                 </div>
               </div>
               <div className={styles.field}>

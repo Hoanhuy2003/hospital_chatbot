@@ -23,4 +23,9 @@ public class InvoiceController {
     public ResponseEntity<InvoiceDetailResponse> getInvoice(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceService.getInvoice(id));
     }
+
+    @GetMapping("/medical_record/{medicalRecordId}")
+    public ResponseEntity<InvoiceDetailResponse> getByMedicalRecord(@PathVariable Long medicalRecordId){
+        return ResponseEntity.ok(invoiceService.getByMedicalRecord(medicalRecordId));
+    }
 }

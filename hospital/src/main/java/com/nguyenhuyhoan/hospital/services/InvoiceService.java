@@ -102,6 +102,30 @@ public class InvoiceService implements IInvoiceService {
                 .build();
     }
 
+    @Override
+    public InvoiceDetailResponse getByMedicalRecord(Long medicalId) {
+
+        Invoice invoice = invoiceRepository.findByMedicalRecordId(medicalId)
+                .orElseThrow(()-> new DataNotFoundException("Khong tìm thấy hóa đơn"));
+        List<InvoiceDetailResponse.MedicineLineItem> lineItems = parsePrescription(invoice.getMedicalRecord().getPrescription());
+
+
+        return InvoiceDetailResponse.builder()
+                .invoiceID(invoice.getId())
+                .patientName(invoice.getMedicalRecord().getPatient().getFullName())
+                .healthInsuranceNumber(invoice.getMedicalRecord().getPatient().getHealthInsuranceNumber())
+                .doctorName(invoice.getMedicalRecord().getDoctor().getUser().getFullName())
+                .diagnosis(invoice.getMedicalRecord().getDiagnosis())
+                .createAt(invoice.getCreatedAt())
+                .items(lineItems)
+                .examinationFee(invoice.getExaminationFee())
+                .totalMedicineCost(invoice.getTotalMedicineCost())
+                .insuranceDiscount(invoice.getInsuranceDiscount())
+                .finalAmount(invoice.getFinalAmount())
+                .status(invoice.getStatus())
+                .build();
+    }
+
     private List<InvoiceDetailResponse.MedicineLineItem> parsePrescription(String json) {
         if (json == null || json.isEmpty()) {
             return new ArrayList<>();

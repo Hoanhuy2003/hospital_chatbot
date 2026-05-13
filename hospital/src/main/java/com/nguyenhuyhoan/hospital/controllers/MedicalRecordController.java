@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/medical_records")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
 public class MedicalRecordController {
 
     private final IMedicalRecordService medicalRecordService;
@@ -71,4 +71,10 @@ public class MedicalRecordController {
     public ResponseEntity<?> getNextAppointments(@PathVariable Long doctorId){
         return ResponseEntity.ok(medicalRecordService.getNextAppointments(doctorId));
     }
+
+    @GetMapping("/appointment/{appointmentId}")
+    public ResponseEntity<?> getByAppointment(@PathVariable Long appointmentId){
+        return ResponseEntity.ok(medicalRecordService.getByAppointment(appointmentId));
+    }
+
 }

@@ -6,7 +6,7 @@ import { validateLogin } from '../../utils/validators'
 import FormField from '../../components/UI/FormField'
 import PasswordInput from '../../components/UI/PasswordInput'
 import styles from './Login.module.css'
-import { authService } from '../../services/authService' // 1. Import service của bạn
+import { authService } from '../../services/authService'
 
 const GOOGLE_ICON = (
   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -21,54 +21,53 @@ export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const [done, setDone] = useState(false)
-  const [serverError, setServerError] = useState('') // Thêm state để hiện lỗi từ Java
+  const [serverError, setServerError] = useState('')
 
   const { values, errors, loading, handleChange, handleSubmit } = useForm(
     { phone: '', password: '' },
     validateLogin
   )
 
-  // 2. Sửa lại hàm onSubmit thực tế
   const onSubmit = handleSubmit(async (vals) => {
     try {
-      setServerError(''); // Xóa lỗi cũ trước khi gửi
+      setServerError('')
 
-      // Gọi API thực tế thông qua service
-      const data = await authService.login(vals.phone, vals.password);
+      const data = await authService.login(vals.phone, vals.password)
 
-      // Lưu token vào localStorage (Để Interceptor tự lấy dùng)
-      localStorage.setItem('token', data.accessToken);
-      
-      // localStorage.setItem('userId', data.userId);       // Ví dụ: 11
-      // if (data.doctorId) {
-      //   localStorage.setItem('doctorId', data.doctorId); // Ví dụ: 8
-      // }
-      // Lưu thông tin vào Context (AuthContext)
-      login({ 
-        id: data.userId, 
-        fullName: data.fullName, 
-        role: data.role 
-      });
+      // Lưu token
+      localStorage.setItem('token', data.accessToken)
 
-      // Hiển thị màn hình thành công
-      setDone(true);
+      // ✅ Lưu thêm doctorId nếu là DOCTOR
+      if (data.doctorId) {
+        localStorage.setItem('doctorId', data.doctorId)
+      }
 
-      // Điều hướng dựa trên vai trò người dùng sau 1.5s
+      // Lưu vào AuthContext
+      login({
+        id:       data.userId,
+        fullName: data.fullName,
+        role:     data.role,
+        avatar:   (data.fullName || 'U').charAt(0).toUpperCase(),
+      })
+
+      setDone(true)
+
+      // ✅ Sửa timeout từ 1500 → 1000 cho nhanh hơn
       setTimeout(() => {
+        // ✅ Dùng data.role (từ API) thay vì user.role (từ context chưa cập nhật kịp)
         if (data.role === 'ADMIN') {
-          navigate('/admin');
+          navigate('/admin', { replace: true })
         } else if (data.role === 'DOCTOR') {
-          navigate('/doctor/dashboard');
+          navigate('/bac-si/dashboard', { replace: true })
         } else {
-          navigate('/'); // Bệnh nhân về trang chủ
+          navigate('/', { replace: true })
         }
-      }, 1500);
+      }, 1000)
 
     } catch (err) {
-      // Bắt lỗi từ Backend (Sai mật khẩu, 401,...)
-      const message = err.response?.data?.message || "Số điện thoại hoặc mật khẩu không chính xác!";
-      setServerError(message);
-      console.error("Login failed:", err);
+      const message = err.response?.data?.message || 'Số điện thoại hoặc mật khẩu không chính xác!'
+      setServerError(message)
+      console.error('Login failed:', err)
     }
   })
 
@@ -78,7 +77,15 @@ export default function Login() {
         <div className={styles.card}>
           <div className={styles.successIcon}>✓</div>
           <h2 className={styles.successTitle}>Đăng nhập thành công!</h2>
-          <p className={styles.successSub}>Chào mừng bạn quay trở lại MedCare. Đang chuyển về trang chủ...</p>
+          <p className={styles.successSub}>
+            {/* ✅ Hiện đúng trang đang chuyển đến */}
+            Đang chuyển đến{' '}
+            {localStorage.getItem('role') === 'ADMIN'
+              ? 'trang Admin...'
+              : localStorage.getItem('role') === 'DOCTOR'
+              ? 'Dashboard bác sĩ...'
+              : 'trang chủ...'}
+          </p>
         </div>
       </div>
     )
@@ -87,31 +94,26 @@ export default function Login() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        {/* Logo */}
         <Link to="/" className={styles.logo}>Med<span>Care</span></Link>
         <p className={styles.subtitle}>Hệ thống đặt lịch khám bệnh viện trực tuyến</p>
 
-        {/* Tabs */}
         <div className={styles.tabs}>
           <span className={`${styles.tab} ${styles.tabActive}`}>Đăng nhập</span>
           <Link to="/dang-ky" className={styles.tab}>Đăng ký</Link>
         </div>
 
-        {/* Hiển thị lỗi từ server nếu có */}
         {serverError && (
-          <p style={{ color: '#e74c3c', textAlign: 'center', fontSize: '14px', marginBottom: '10px' }}>
-            {serverError}
-          </p>
+          <div className={styles.serverError}>{serverError}</div>
         )}
 
         <form onSubmit={onSubmit} noValidate className={styles.form}>
-          <FormField label="Email hoặc số điện thoại" error={errors.phone}>
+          <FormField label="Số điện thoại" error={errors.phone}>
             <input
               name="phone"
               type="text"
               value={values.phone}
               onChange={handleChange}
-              placeholder="098xxx "
+              placeholder="0901234567"
               className={`${styles.input} ${errors.phone ? styles.inputErr : ''}`}
               autoComplete="username"
             />
@@ -143,7 +145,8 @@ export default function Login() {
           </button>
 
           <p className={styles.switchText}>
-            Chưa có tài khoản? <Link to="/dang-ky" className={styles.switchLink}>Đăng ký ngay</Link>
+            Chưa có tài khoản?{' '}
+            <Link to="/dang-ky" className={styles.switchLink}>Đăng ký ngay</Link>
           </p>
         </form>
       </div>

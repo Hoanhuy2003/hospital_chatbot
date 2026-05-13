@@ -115,4 +115,23 @@ public class MedicalRecordService implements IMedicalRecordService {
         }).toList();
 
     }
+
+    @Override
+    public MedicalRecordResponse getByAppointment(Long appointmentId) {
+        MedicalRecord record = medicalRecordRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(()-> new DataNotFoundException("Không tìm thấy bệnh án"));
+        return MedicalRecordResponse.builder()
+                .id(record.getId())
+                .appointmentId(record.getAppointment().getId())
+                .patientName(record.getPatient().getFullName())
+                .doctorName(record.getDoctor().getUser().getFullName())
+                .symptoms(record.getSymptoms())
+                .diagnosis(record.getDiagnosis())
+                .treatment(record.getTreatment())
+                .prescription(record.getPrescription()) // Chuỗi JSON đơn thuốc
+                .photoUrl(record.getPhotoUrl())
+                .followUpDate(record.getFollowUpDate())
+                .createdAt(record.getCreatedAt())
+                .build();
+    }
 }

@@ -65,7 +65,7 @@ export default function UserManager() {
           <option value="DOCTOR">Bác sĩ</option>
           <option value="ADMIN">Admin</option>
         </select>
-        <button className={styles.btnPrimary}>+ Thêm người dùng</button>
+        <button className={styles.btnAdd}>+ Thêm người dùng</button>
       </div>
       <div className={styles.card}>
         {loading

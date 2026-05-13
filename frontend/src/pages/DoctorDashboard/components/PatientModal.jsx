@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { appointmentService } from '../../../services/appointmentService' 
 import { medicalRecordService } from '../../../services/medicalRecordService'
 import { medicineService } from '../../../services/medicineService' // Đảm bảo đã import service này
+import { invoiceService } from '../../../services/invoiceService'
 import { toast } from 'react-toastify'
 import styles from './PatientModal.module.css'
 
-const TABS = ['Thông tin', 'Xác nhận khám', 'Bệnh án', 'Đơn thuốc', 'Hẹn lần sau']
+const TABS = ['Thông tin', 'Xác nhận khám', 'Bệnh án', 'Đơn thuốc', 'Hóa đơn']
 
 export default function PatientModal({ patient: p, initialTab = 0, onClose, onConfirm }) {
   const [tab, setTab] = useState(initialTab)
@@ -17,6 +18,9 @@ export default function PatientModal({ patient: p, initialTab = 0, onClose, onCo
   const [dbMedicines, setDbMedicines] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
+
+  const [invoiceData, setInvoiceData] = useState(null);
+
 
   // Cấu trúc drugs mới có medicine_id
   const [drugs, setDrugs] = useState([
@@ -78,6 +82,8 @@ useEffect(() => {
   fetchMedicines();
 }, [tab, p?.specialtyId]);   // Phụ thuộc vào tab và specialtyId // Quan trọng: phụ thuộc vào tab và specialtyId// Quan trọng: theo dõi tab và specialtyId
   if (!p) return null;
+
+
 
   // --- LOGIC ĐƠN THUỐC ---
   const addDrug = () => {
@@ -156,16 +162,32 @@ useEffect(() => {
         follow_up_date: medRecord.followUpDate || null
       };
 
-      await medicalRecordService.create(payload);
+      // 1. Lưu bệnh án
+      const savedRecord = await medicalRecordService.create(payload);
       toast.success("Đã lưu bệnh án thành công");
+
+      // 2. Tạo hóa đơn (Truyền ID bệnh án vừa tạo)
+      const invoiceResponse = await invoiceService.create({ medicalRecordId: savedRecord.id });
+
+      // 3. Lấy chi tiết hóa đơn theo đúng cấu trúc JSON mẫu
+      // Dùng invoiceResponse.id (hoặc invoiceResponse.invoiceID tùy vào Backend trả về cái nào)
+      const fullInvoice = await invoiceService.getById(invoiceResponse.id || invoiceResponse.invoiceID);
+      
+      // 4. Gán data và chuyển Tab
+      setInvoiceData(fullInvoice);
+      setTab(4); 
+
+      // Quan trọng: KHÔNG gọi onClose() ở đây để bác sĩ còn xem hóa đơn
       if (onConfirm) await onConfirm(); 
-      onClose();
+      
     } catch (error) {
-      toast.error("Lỗi lưu bệnh án");
+      console.error(error);
+      toast.error("Lỗi quy trình lưu bệnh án hoặc tạo hóa đơn");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
+  const formatVND = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -294,14 +316,99 @@ useEffect(() => {
               </div>
             </div>
           )}
-        </div>
+        
+        {tab === 4 && invoiceData && (
+  <div className={styles.invoiceContent}>
+    <div className={styles.invoiceHeader}>
+      <h4>HÓA ĐƠN THANH TOÁN</h4>
+      <p>Số hóa đơn: #INV-{invoiceData.invoiceID}</p>
+      <small>Ngày tạo: {new Date(invoiceData.createAt).toLocaleString('vi-VN')}</small>
+    </div>
 
-        <div className={styles.footer}>
-          <button className={`${styles.btn} ${styles.btnOutline}`} onClick={onClose}>Đóng</button>
-          {tab === 1 && <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={handleConfirm} disabled={isSubmitting}>Xác nhận khám</button>}
-          {tab === 2 && <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSaveMedicalRecord} disabled={isSubmitting}>Lưu bệnh án</button>}
-        </div>
+    <div className={styles.invoiceInfo}>
+      <p><strong>Bệnh nhân:</strong> {invoiceData.patientName}</p>
+      <p><strong>Bác sĩ:</strong> {invoiceData.doctorName}</p>
+      <p><strong>Chẩn đoán:</strong> {invoiceData.diagnosis}</p>
+      {invoiceData.healthInsuranceNumber && (
+        <p><strong>Mã BHYT:</strong> {invoiceData.healthInsuranceNumber}</p>
+      )}
+    </div>
+
+    <table className={styles.invoiceTable}>
+      <thead>
+        <tr>
+          <th>Tên thuốc / Cách dùng</th>
+          <th style={{ textAlign: 'center' }}>SL</th>
+          <th style={{ textAlign: 'right' }}>Đơn giá</th>
+          <th style={{ textAlign: 'right' }}>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        {invoiceData.items && invoiceData.items.map((item, idx) => (
+          <tr key={idx}>
+            <td>
+              <div><strong>{item.medicine.name}</strong></div>
+              <small style={{ color: '#666' }}>{item.medicine.dosage_instruction}</small>
+            </td>
+            <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+            <td style={{ textAlign: 'right' }}>{formatVND(item.medicine.price)}</td>
+            <td style={{ textAlign: 'right' }}>{formatVND(item.subTotal)}</td>
+          </tr>
+        ))}
+        <tr className={styles.feeRow}>
+          <td colSpan="3">Phí khám bệnh</td>
+          <td style={{ textAlign: 'right' }}>{formatVND(invoiceData.examinationFee)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div className={styles.invoiceSummary}>
+      <div className={styles.summaryLine}>
+        <span>Tiền thuốc:</span>
+        <span>{formatVND(invoiceData.totalMedicineCost)}</span>
+      </div>
+      <div className={styles.summaryLine}>
+        <span>Tổng chi phí:</span>
+        <span>{formatVND(invoiceData.examinationFee + invoiceData.totalMedicineCost)}</span>
+      </div>
+      <div className={styles.summaryLine}>
+        <span>BHYT chi trả:</span>
+        <span className={styles.discount}>-{formatVND(invoiceData.insuranceDiscount)}</span>
+      </div>
+      <div className={`${styles.summaryLine} ${styles.finalAmount}`}>
+        <span>Thực trả:</span>
+        <span>{formatVND(invoiceData.finalAmount)}</span>
       </div>
     </div>
-  )
+    
+    <div className={styles.invoiceNote}>
+      <p>Trạng thái: <span className={styles.statusBadge}>{invoiceData.status}</span></p>
+      <p><i>Lưu ý: Phiếu này chỉ có giá trị thanh toán trong ngày.</i></p>
+    </div>
+  </div>
+       )} </div>
+
+        
+
+        <div className={styles.footer}>
+  <button className={`${styles.btn} ${styles.btnOutline}`} onClick={onClose}>Đóng</button>
+  
+  {tab === 1 && <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={handleConfirm} disabled={isSubmitting}>Xác nhận khám</button>}
+  
+  {/* Sửa tab === 2 (Bệnh án) hoặc tab === 3 (Đơn thuốc) tùy theo Hoàn muốn hiện nút Lưu ở đâu */}
+  {(tab === 2 || tab === 3) && (
+    <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSaveMedicalRecord} disabled={isSubmitting}>
+      Lưu bệnh án & Tính tiền
+    </button>
+  )}
+
+  {tab === 4 && (
+    <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={() => window.print()}>
+      In phiếu thu tạm thời
+    </button>
+  )}
+</div>
+      </div>
+    </div>
+  );
 }

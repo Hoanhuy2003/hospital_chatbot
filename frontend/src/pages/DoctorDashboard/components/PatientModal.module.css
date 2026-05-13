@@ -574,6 +574,161 @@
   background: #ff4d4f;
   color: #fff;
 }
+/* --- Khung nội dung hóa đơn --- */
+.invoiceContent {
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+/* --- Tiêu đề hóa đơn --- */
+.invoiceHeader {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px dashed #dcdde1;
+}
+
+.invoiceHeader h4 {
+    font-size: 24px;
+    color: #2f3640;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.invoiceHeader p {
+    color: #7f8c8d;
+    margin: 5px 0;
+    font-weight: 600;
+}
+
+.invoiceHeader small {
+    color: #95a5a6;
+}
+
+/* --- Thông tin hành chính (Bệnh nhân/Bác sĩ) --- */
+.invoiceInfo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.invoiceInfo p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.invoiceInfo strong {
+    color: #34495e;
+    min-width: 100px;
+    display: inline-block;
+}
+
+/* --- Bảng thuốc --- */
+.invoiceTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.invoiceTable th {
+    background-color: #f1f2f6;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #3498db;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.invoiceTable td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #f1f2f6;
+}
+
+.invoiceTable tr:hover {
+    background-color: #fafafa;
+}
+
+/* Dòng phí khám bệnh */
+.feeRow td {
+    background-color: #fffdf0;
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+/* --- Phần tổng kết tiền --- */
+.invoiceSummary {
+    margin-left: auto;
+    width: 320px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.summaryLine {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 15px;
+}
+
+.discount {
+    color: #e84118;
+    font-weight: 700;
+}
+
+/* --- Số tiền cuối cùng (Cực kỳ quan trọng) --- */
+.finalAmount {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid #2f3640;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #44bd32; /* Màu xanh lá đặc trưng cho thanh toán thành công */
+}
+
+/* --- Trạng thái & Badge --- */
+.invoiceNote {
+    margin-top: 40px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.statusBadge {
+    padding: 4px 12px;
+    background-color: #f1c40f;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* --- Tối ưu khi bấm IN --- */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .invoiceContent, .invoiceContent * {
+        visibility: visible;
+    }
+    .invoiceContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+}
 
 /* --- GIỮ NGUYÊN DRUG TABLE, PRINT PREVIEW VÀ CÁC PHẦN CÒN LẠI --- */
 

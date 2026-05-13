@@ -2,32 +2,55 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatCard from './components/StatCard'
 import { StatusBadge } from './components/AdminTable'
-import { appointmentService } from '../../services/appointmentService'
+import { toast } from 'react-toastify'
 import styles from './AdminDashboard.module.css'
+import api from '../../services/api'// Đảm bảo sử dụng instance axios đã cấu hình của bạn
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
-  const [stats,     setStats]     = useState({ users: 0, doctors: 0, appointments: 0, revenue: 0 })
+  const [stats, setStats] = useState({ users: 0, doctors: 0, appointments: 0, revenue: '0 đ' })
   const [recentApt, setRecentApt] = useState([])
-  const [loading,   setLoading]   = useState(true)
+  const [specialtyStats, setSpecialtyStats] = useState([]) // State cho biểu đồ chuyên khoa
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function load() {
+    async function loadDashboard() {
       try {
-        // TODO: thay bằng adminService.getStats()
-        setStats({ users: 1248, doctors: 86, appointments: 143, revenue: '48.6M đ' })
-        setRecentApt([
-          { id: 1, patientName: 'Nguyễn Văn An',  specialtyName: 'Nhi khoa',   timeSlot: '07:30', status: 'PENDING'    },
-          { id: 2, patientName: 'Trần Thị Bích',   specialtyName: 'Tim mạch',   timeSlot: '08:00', status: 'CONFIRMED'  },
-          { id: 3, patientName: 'Lê Minh Khoa',    specialtyName: 'Da liễu',    timeSlot: '08:30', status: 'DONE'       },
-          { id: 4, patientName: 'Phạm Thị Dung',   specialtyName: 'Nội',        timeSlot: '09:00', status: 'DONE'       },
-          { id: 5, patientName: 'Hoàng Văn Em',    specialtyName: 'Ung bướu',   timeSlot: '09:30', status: 'CANCELLED'  },
-        ])
+        setLoading(true)
+        
+        // 1. Gọi API lấy thông số tổng hợp (AdminController/AdminService)
+        const statsRes = await api.get('/v1/admin/dashboard-stats')
+        const data = statsRes.data
+        
+        setStats({
+          users: data.totalUsers,
+          doctors: data.totalDoctors,
+          appointments: data.todayAppointments,
+          revenue: data.monthlyRevenue || '0 đ'
+        })
+        setRecentApt(data.recentAppointments || [])
+
+        // 2. Tận dụng API thống kê chuyên khoa đã làm để vẽ biểu đồ
+        const specRes = await api.get('/v1/specialty/statistics')
+        // Tính toán % đơn giản (ví dụ: lấy số lượt khám làm % để hiển thị)
+        const formattedSpecs = specRes.data
+          .map(s => ({
+            name: s.name,
+            pct: s.totalAppointments > 0 ? Math.min(s.totalAppointments, 100) : 0 
+          }))
+          .sort((a, b) => b.pct - a.pct) // Sắp xếp phổ biến nhất lên đầu
+          .slice(0, 5) // Chỉ lấy top 5
+
+        setSpecialtyStats(formattedSpecs)
+        
+      } catch (err) {
+        toast.error('Không thể cập nhật dữ liệu thống kê')
+        console.error(err)
       } finally {
         setLoading(false)
       }
     }
-    load()
+    loadDashboard()
   }, [])
 
   const QUICK = [
@@ -39,22 +62,16 @@ export default function AdminDashboard() {
     { icon: '◈', label: 'Thanh toán',      path: '/admin/payments'     },
   ]
 
-  const SPECIALTY_STATS = [
-    { name: 'Nhi khoa',      pct: 82 },
-    { name: 'Nội tổng quát', pct: 71 },
-    { name: 'Tim mạch',      pct: 58 },
-    { name: 'Da liễu',       pct: 45 },
-    { name: 'Mắt',           pct: 32 },
-  ]
+  if (loading) return <div className={styles.loading}>Đang tải dữ liệu...</div>
 
   return (
     <div>
-      {/* Stats */}
+      {/* Stats Row */}
       <div className={styles.statsRow}>
-        <StatCard label="Tổng người dùng"    value={stats.users}        sub="+12 tuần này"           color="blue"  />
-        <StatCard label="Bác sĩ hoạt động"   value={stats.doctors}      sub="4 chuyên khoa"          color="green" />
-        <StatCard label="Lịch khám hôm nay"  value={stats.appointments} sub="32 đã hoàn thành"       color="amber" />
-        <StatCard label="Doanh thu tháng"     value={stats.revenue}      sub="+8% so tháng trước"     color="blue"  />
+        <StatCard label="Tổng người dùng"    value={stats.users}        sub="Trong hệ thống"      color="blue"  />
+        <StatCard label="Bác sĩ hoạt động"   value={stats.doctors}      sub="Đang làm việc"       color="green" />
+        <StatCard label="Lịch khám hôm nay"  value={stats.appointments} sub="Lượt đặt mới"        color="amber" />
+        <StatCard label="Doanh thu tháng"    value={stats.revenue}      sub="Tổng tiền thu"       color="blue"  />
       </div>
 
       {/* Quick actions */}
@@ -72,12 +89,13 @@ export default function AdminDashboard() {
         <div className={styles.card}>
           <div className={styles.cardTitle}>
             Lịch khám mới nhất
-            <span onClick={() => navigate('/admin/appointments')}>Xem tất cả →</span>
+            <span onClick={() => navigate('/admin/appointments')} style={{cursor: 'pointer'}}>Xem tất cả →</span>
           </div>
-          {recentApt.map(a => (
+          {recentApt.length > 0 ? recentApt.map(a => (
             <div key={a.id} className={styles.aptRow}>
               <div className={styles.aptAva}>
-                {a.patientName.split(' ').slice(-2).map(w => w[0]).join('')}
+                {/* Lấy chữ cái đầu của tên bệnh nhân từ Database */}
+                {a.patientName ? a.patientName.split(' ').slice(-1)[0][0] : '?'}
               </div>
               <div className={styles.aptInfo}>
                 <div className={styles.aptName}>{a.patientName}</div>
@@ -85,12 +103,12 @@ export default function AdminDashboard() {
               </div>
               <StatusBadge status={a.status} />
             </div>
-          ))}
+          )) : <div style={{padding: '20px', textAlign: 'center', color: '#999'}}>Chưa có lịch khám mới</div>}
         </div>
 
         <div className={styles.card}>
           <div className={styles.cardTitle}>Chuyên khoa theo lượt</div>
-          {SPECIALTY_STATS.map(s => (
+          {specialtyStats.map(s => (
             <div key={s.name} className={styles.barRow}>
               <span className={styles.barLabel}>{s.name}</span>
               <div className={styles.barBg}>

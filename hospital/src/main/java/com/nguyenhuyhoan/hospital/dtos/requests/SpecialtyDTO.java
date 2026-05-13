@@ -27,4 +27,17 @@ public class SpecialtyDTO {
     public void setIcon_url(MultipartFile icon_url) {
         this.iconUrl = icon_url;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SpecialtyStatDTO {
+        private Long id;
+        private String name;
+        private String description;
+        private String icon;
+        private Long doctorCount;
+        private Long clinicCount;
+        private Long timeSlot;
+    }
 }

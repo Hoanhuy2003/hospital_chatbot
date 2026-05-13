@@ -23,4 +23,6 @@ public interface IMedicalRecordService {
     List<MedicalRecordResponse> getRecordByDoctor(Long doctorId);
 
     List<Map<String, Object>> getNextAppointments(Long doctorOrUserId);
+
+    MedicalRecordResponse getByAppointment(Long appointmentId);
 }

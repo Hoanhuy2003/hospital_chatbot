@@ -74,5 +74,9 @@ public class ClinicController {
             return ResponseEntity.badRequest().body("Lỗi xóa: " + e.getMessage());
         }
     }
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getClinicStat(){
+        return ResponseEntity.ok(clinicService.getClinicStat());
+    }
 
 }

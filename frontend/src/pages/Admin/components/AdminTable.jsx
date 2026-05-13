@@ -37,7 +37,7 @@ export function StatusBadge({ status }) {
     INACTIVE:   { label: 'Vô hiệu',   cls: 'red'   },
     PENDING:    { label: 'Chờ',        cls: 'amber' },
     CONFIRMED:  { label: 'Xác nhận',  cls: 'blue'  },
-    DONE:       { label: 'Hoàn thành',cls: 'green' },
+    COMPLETED:       { label: 'Hoàn thành',cls: 'green' },
     CANCELLED:  { label: 'Đã huỷ',    cls: 'red'   },
     IN_STOCK:   { label: 'Còn hàng',  cls: 'green' },
     OUT_OF_STOCK:{ label: 'Hết hàng', cls: 'red'   },

@@ -6,6 +6,7 @@ import ScheduleList from './components/ScheduleList'
 import PatientModal from './components/PatientModal'
 import RecordList from './components/RecordList'
 import NextAppointments from './components/NextAppointments'
+//import DoctorSchedule from './components/DoctorSchedule'
 import { appointmentService } from '../../services/appointmentService'
 import { medicalRecordService } from '../../services/medicalRecordService' // Thêm service này
 import { toast } from 'react-toastify'
@@ -14,6 +15,7 @@ import styles from './DoctorDashboard.module.css'
 const PAGE_TITLES = {
   dashboard: 'Tổng quan',
   schedule:  'Lịch khám hôm nay',
+ // register_schedule: 'Đăng ký lịch trực',
   patients:  'Danh sách bệnh nhân',
   records:   'Bệnh án',
   next:      'Lịch hẹn lần sau',

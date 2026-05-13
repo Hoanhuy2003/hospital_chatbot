@@ -4,14 +4,14 @@ import styles from './Shared.module.css'
 const badge = s => ({
   pending:   'badgeWait',    // Màu cam
   confirmed: 'badgeConfirm', // Màu xanh lá
-  done:      'badgeDone',    // Màu xanh dương
+  compoleted:      'badgeDone',    // Màu xanh dương
   cancelled: 'badgeCancel'   // Màu đỏ
 }[s] || 'badgeWait')
 
 const label = s => ({
   pending:   'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
-  done:      'Đã khám xong',
+  compoleted:      'Đã khám xong',
   cancelled: 'Đã hủy'
 }[s] || s)
 

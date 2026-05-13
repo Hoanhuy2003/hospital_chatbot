@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
 
@@ -36,6 +37,8 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
             "AND m.followUpDate >= CURRENT_DATE " +
             "ORDER BY m.followUpDate ASC")
     List<MedicalRecord> findUpcomingFollowUps(@Param("userId") Long doctorId);
+
+    Optional<MedicalRecord> findByAppointmentId(Long appointmentId);
 
 
 }

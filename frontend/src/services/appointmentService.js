@@ -3,6 +3,8 @@ import api from './api';
 export const appointmentService = {
 
 
+
+
     create: async (appointmentData) => {
         try {
             // Chuẩn bị payload khớp 100% với Postman Hoàn đã test
@@ -43,6 +45,10 @@ export const appointmentService = {
     },
    getByDoctor: async(doctorId) =>{
     const response = await api.get(`/v1/appointments/doctor/${doctorId}`);
+    return response.data;
+   }
+   ,getAll : async() =>{
+    const response = await api.get(`/v1/appointments/all`);
     return response.data;
    }
 

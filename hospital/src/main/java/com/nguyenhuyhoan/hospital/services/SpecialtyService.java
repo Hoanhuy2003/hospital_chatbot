@@ -109,6 +109,11 @@ public class SpecialtyService implements ISpecialtyService {
                 .toList();
     }
 
+    @Override
+    public List<SpecialtyDTO.SpecialtyStatDTO> getSpecialtyStatistics() {
+        return specialtyRepository.getSpecialtyStatistics();
+    }
+
 
     private SpecialtyResponse mapToResponse(Specialty s) {
         return SpecialtyResponse.builder()

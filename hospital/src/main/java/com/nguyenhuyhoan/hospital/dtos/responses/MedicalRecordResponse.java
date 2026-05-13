@@ -22,6 +22,9 @@ public class MedicalRecordResponse {
     @JsonProperty("doctor_name")
     private String doctorName;
 
+    @JsonProperty("appointment_id")
+    private Long appointmentId;
+
     private String symptoms;    // Triệu chứng
     private String diagnosis;   // Chẩn đoán
     private String treatment;   // Hướng điều trị

@@ -8,4 +8,7 @@ public interface IInvoiceService {
     InvoiceResponse createInvoice(InvoiceDTO invoiceDTO);
 
     InvoiceDetailResponse getInvoice(Long invoiceId);
+
+
+    InvoiceDetailResponse getByMedicalRecord(Long medicalId);
 }

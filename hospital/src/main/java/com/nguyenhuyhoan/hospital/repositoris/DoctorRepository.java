@@ -1,5 +1,6 @@
 package com.nguyenhuyhoan.hospital.repositoris;
 
+import com.nguyenhuyhoan.hospital.dtos.requests.ClinicStatDTO;
 import com.nguyenhuyhoan.hospital.models.Doctor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

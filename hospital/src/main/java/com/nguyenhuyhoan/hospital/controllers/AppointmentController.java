@@ -74,6 +74,17 @@ public class AppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllAppointment(){
+        try {
+            List<AppointmentResponse> appointments = appointmentService.getAllAppointment();
+            return ResponseEntity.ok(appointments);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " +e.getMessage());
+        }
+    }
+
 
 
 //    @GetMapping("/doctor/{doctorId}")

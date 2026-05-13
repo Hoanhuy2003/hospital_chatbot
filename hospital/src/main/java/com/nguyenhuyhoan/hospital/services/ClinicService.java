@@ -1,6 +1,7 @@
 package com.nguyenhuyhoan.hospital.services;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.ClinicDTO;
+import com.nguyenhuyhoan.hospital.dtos.requests.ClinicStatDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.ClinicResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 import com.nguyenhuyhoan.hospital.iservices.IClinicService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -104,6 +106,11 @@ public class ClinicService implements IClinicService {
         clinicRepository.save(clinic);
 
 
+    }
+
+    @Override
+    public List<ClinicStatDTO> getClinicStat() {
+        return clinicRepository.getClinicStatistics();
     }
 
 

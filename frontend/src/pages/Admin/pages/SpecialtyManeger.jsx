@@ -5,10 +5,10 @@ import styles from '../AdminCommon.module.css'
 import api from '../../../services/api'
 
 const specialtyService = {
-  getAll:  async (params) => (await api.get('/v1/specialties', { params })).data,
-  create:  async (data)   => (await api.post('/v1/specialties', data)).data,
-  update:  async (id, d)  => (await api.put(`/v1/specialties/${id}`, d)).data,
-  delete:  async (id)     => (await api.delete(`/v1/specialties/${id}`)).data,
+  getAll:  async (params) => (await api.get('/v1/specialty/statistics', { params })).data,
+  create:  async (data)   => (await api.post('/v1/specialty', data)).data,
+  update:  async (id, d)  => (await api.put(`/v1/specialty/${id}`, d)).data,
+  delete:  async (id)     => (await api.delete(`/v1/specialty/${id}`)).data,
 }
 
 const EMPTY = { name: '', icon: '', description: '' }
@@ -61,11 +61,34 @@ export default function SpecialtyManager() {
   }
 
   const COLUMNS = [
-    { key: 'icon',        label: 'Icon', width: 60, render: v => <span style={{ fontSize: 22 }}>{v}</span> },
+   { 
+    key: 'icon', 
+    label: 'ICON', 
+    width: 80, 
+    // Thay vì render trực tiếp giá trị v, ta bọc nó vào thẻ img
+    render: v => v ? (
+      <img 
+        src={v} 
+        alt="icon" 
+        style={{ 
+          width: '40px', 
+          height: '40px', 
+          objectFit: 'cover', 
+          borderRadius: '4px',
+          display: 'block'
+        }} 
+        onError={(e) => { e.target.src = 'https://via.placeholder.com/40?text=No+Icon'; }} // Ảnh dự phòng nếu link lỗi
+      />
+    ) : '—'
+  },
     { key: 'name',        label: 'Tên chuyên khoa', render: v => <strong>{v}</strong> },
     { key: 'doctorCount', label: 'Số bác sĩ',       render: v => `${v || 0} BS` },
     { key: 'clinicCount', label: 'Số phòng khám',   render: v => `${v || 0} PK` },
-    { key: 'totalBookings',label: 'Tổng lượt khám', render: v => (v || 0).toLocaleString('vi-VN') },
+    { 
+        key: 'totalAppointments', 
+        label: 'Tổng lượt khám', 
+        render: v => <strong>{(v || 0).toLocaleString('vi-VN')}</strong> 
+    },
     { key: 'description', label: 'Mô tả',           render: v => <span style={{ color: '#637381' }}>{v || '—'}</span> },
     {
       key: 'id', label: '', width: 110,
@@ -83,7 +106,7 @@ export default function SpecialtyManager() {
       <div className={styles.toolbar}>
         <input className={styles.searchInput} placeholder="Tìm chuyên khoa..."
           value={keyword} onChange={e => setKeyword(e.target.value)} />
-        <button className={styles.btnPrimary} onClick={openCreate}>+ Thêm chuyên khoa</button>
+        <button className={styles.btnAdd} onClick={openCreate}>+ Thêm chuyên khoa</button>
       </div>
 
       <div className={styles.card}>
