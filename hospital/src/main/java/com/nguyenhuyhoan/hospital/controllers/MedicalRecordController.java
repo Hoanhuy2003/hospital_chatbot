@@ -74,7 +74,11 @@ public class MedicalRecordController {
 
     @GetMapping("/appointment/{appointmentId}")
     public ResponseEntity<?> getByAppointment(@PathVariable Long appointmentId){
-        return ResponseEntity.ok(medicalRecordService.getByAppointment(appointmentId));
+        try {
+            return ResponseEntity.ok(medicalRecordService.getByAppointment(appointmentId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
 }

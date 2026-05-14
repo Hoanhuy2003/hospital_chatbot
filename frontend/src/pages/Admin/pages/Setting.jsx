@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import styles from '../AdminCommon.module.css'
-import settingStyles from './Settings.module.css'
+import settingStyles from './Setting.module.css'
 import api from '../../../services/api'
 
 const NOTIFICATION_SETTINGS = [

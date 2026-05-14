@@ -14,4 +14,8 @@ public class AuthResponse {
     private Long userId;
     private String fullName;
     private String message;
+
+    // Chỉ có giá trị khi role = DOCTOR
+    private Long doctorId;
+    private Long clinicId;
 }

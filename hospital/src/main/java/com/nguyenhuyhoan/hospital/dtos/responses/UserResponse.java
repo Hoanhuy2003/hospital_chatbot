@@ -38,9 +38,18 @@ public class UserResponse {
     @JsonProperty("is_active")
     private Boolean isActive;
 
-    public static UserResponse fromUser(User user){
-        return UserResponse.builder()
+    // ── Bảo hiểm y tế ──
+    @JsonProperty("health_insurance_number")
+    private String healthInsuranceNumber;
 
+    @JsonProperty("insurance_expiry_date")
+    private LocalDate insuranceExpiryDate;
+
+    @JsonProperty("insurance_benefit_level")
+    private Integer insuranceBenefitLevel;
+
+    public static UserResponse fromUser(User user) {
+        return UserResponse.builder()
                 .id(user.getId())
                 .fullName(user.getFullName())
                 .phone(user.getPhone())
@@ -51,7 +60,9 @@ public class UserResponse {
                 .roleName(user.getRole() != null ? user.getRole().getName() : null)
                 .avatarUrl(user.getAvatarUrl())
                 .isActive(user.getIsActive())
+                .healthInsuranceNumber(user.getHealthInsuranceNumber())
+                .insuranceExpiryDate(user.getInsuranceExpiryDate())
+                .insuranceBenefitLevel(user.getInsuranceBenefitLevel())
                 .build();
-
     }
 }

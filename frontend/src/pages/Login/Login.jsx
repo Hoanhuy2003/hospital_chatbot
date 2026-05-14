@@ -34,12 +34,16 @@ export default function Login() {
 
       const data = await authService.login(vals.phone, vals.password)
 
-      // Lưu token
-      localStorage.setItem('token', data.accessToken)
+      // Lưu token và thông tin cơ bản
+      localStorage.setItem('token',    data.accessToken)
+      localStorage.setItem('userId',   data.userId)
+      localStorage.setItem('fullName', data.fullName)
+      localStorage.setItem('role',     data.role)
 
-      // ✅ Lưu thêm doctorId nếu là DOCTOR
-      if (data.doctorId) {
-        localStorage.setItem('doctorId', data.doctorId)
+      // Nếu là DOCTOR thì lưu thêm doctorId và clinicId
+      if (data.role === 'DOCTOR') {
+        if (data.doctorId) localStorage.setItem('doctorId', data.doctorId)
+        if (data.clinicId) localStorage.setItem('clinicId', data.clinicId)
       }
 
       // Lưu vào AuthContext

@@ -4,6 +4,7 @@ import com.nguyenhuyhoan.hospital.dtos.requests.InvoiceDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.InvoiceDetailResponse;
 import com.nguyenhuyhoan.hospital.iservices.IInvoiceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +21,20 @@ public class InvoiceController {
 
     // Lấy chi tiết để hiển thị/in ở Front-end
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceDetailResponse> getInvoice(@PathVariable Long id) {
-        return ResponseEntity.ok(invoiceService.getInvoice(id));
+    public ResponseEntity<?> getInvoice(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(invoiceService.getInvoice(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @GetMapping("/medical_record/{medicalRecordId}")
-    public ResponseEntity<InvoiceDetailResponse> getByMedicalRecord(@PathVariable Long medicalRecordId){
-        return ResponseEntity.ok(invoiceService.getByMedicalRecord(medicalRecordId));
+    public ResponseEntity<?> getByMedicalRecord(@PathVariable Long medicalRecordId) {
+        try {
+            return ResponseEntity.ok(invoiceService.getByMedicalRecord(medicalRecordId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

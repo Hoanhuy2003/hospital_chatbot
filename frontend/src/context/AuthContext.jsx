@@ -18,10 +18,17 @@ export const AuthProvider = ({ children }) => {
 
     const login = (userData) => {
         setUser(userData);
-        // Lưu vào LocalStorage để không bị mất khi F5 trang
         localStorage.setItem('userId', userData.id);
         localStorage.setItem('role', userData.role);
         localStorage.setItem('fullName', userData.fullName);
+    };
+
+    // Cập nhật một phần thông tin user (vd: sau khi sửa hồ sơ)
+    const updateUser = (partial) => {
+        setUser((prev) => ({ ...prev, ...partial }));
+        if (partial.fullName) {
+            localStorage.setItem('fullName', partial.fullName);
+        }
     };
 
     const logout = () => {
@@ -31,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, updateUser, logout }}>
             {children}
         </AuthContext.Provider>
     );

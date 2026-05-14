@@ -32,4 +32,7 @@ public class Invoice {
 
     private String status;             // PENDING, PAID, CANCELLED
     private LocalDateTime createdAt;
+
+    @Column(name = "transaction_id", length = 100)
+    private String transactionId;      // Mã giao dịch VNPay
 }

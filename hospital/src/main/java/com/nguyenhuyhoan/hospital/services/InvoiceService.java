@@ -163,6 +163,16 @@ public class InvoiceService implements IInvoiceService {
         }
     }
 
+    @Override
+    @Transactional
+    public void markAsPaid(Long invoiceId, String transactionId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy hóa đơn #" + invoiceId));
+        invoice.setStatus("PAID");
+        invoice.setTransactionId(transactionId);
+        invoiceRepository.save(invoice);
+    }
+
     private InvoiceResponse mapToResponse(Invoice invoice) {
         return InvoiceResponse.builder()
                 .id(invoice.getId())

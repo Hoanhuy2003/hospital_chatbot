@@ -49,8 +49,12 @@ public class ScheduleService implements IScheduleService {
         Clinic clinic = clinicRepository.findById(scheduleDTO.getClinicId())
                 .orElseThrow(()-> new DataNotFoundException("Không tìm thấy phòng khám"));
 
-        if(!doctor.getClinic().getId().equals(clinic.getId())){
-            throw  new DataNotFoundException("Bác sỹ không  ở phòng này");
+        if (doctor.getClinic() == null) {
+            throw new DataNotFoundException("Bác sĩ chưa được gán phòng khám, vui lòng liên hệ admin");
+        }
+
+        if (!doctor.getClinic().getId().equals(clinic.getId())) {
+            throw new DataNotFoundException("Bác sĩ không thuộc phòng khám này");
         }
 
         for(String slot : scheduleDTO.getTimeSlots()){

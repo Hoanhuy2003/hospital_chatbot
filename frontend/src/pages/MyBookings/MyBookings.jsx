@@ -47,30 +47,37 @@ export default function MyBookings() {
   const handleOpenDetail = async (appointmentId) => {
     try {
       setLoading(true);
+
       // 1. Lấy bệnh án từ appointmentId
       const record = await medicalRecordService.getByAppointment(appointmentId);
 
-      // 2. Lấy hóa đơn từ record.id
+      // 2. Lấy hóa đơn từ record.id (không bắt buộc phải có)
       let invoice = null;
       try {
         invoice = await invoiceService.getByMedicalRecord(record.id);
-      } catch (e) {
-        console.log("Chưa có hóa đơn cho bệnh án này");
+      } catch {
+        // Hóa đơn chưa có — bình thường, vẫn mở bệnh án
       }
 
-      // 3. Gộp data (Ưu tiên các trường từ Invoice cho phần thanh toán)
+      // 3. Gộp data
       const fullData = {
         ...record,
-        ...invoice,
-        // Đảm bảo lấy đúng ngày tạo bệnh án nếu hóa đơn chưa có ngày
-        createAt: invoice?.createAt || record.createAt 
+        ...(invoice || {}),
+        createAt: invoice?.createAt || record.createAt,
       };
 
       setSelectedData(fullData);
       setShowModal(true);
     } catch (error) {
-      console.error(error);
-      toast.info("Thông tin đang được bác sĩ cập nhật.");
+      const status = error.response?.status;
+      if (status === 404) {
+        toast.info("Bác sĩ chưa tạo bệnh án cho lần khám này.");
+      } else if (status === 403) {
+        toast.error("Bạn không có quyền xem bệnh án này. Vui lòng đăng nhập lại.");
+      } else {
+        toast.error("Không thể tải bệnh án, vui lòng thử lại sau.");
+      }
+      console.error("handleOpenDetail error:", error);
     } finally {
       setLoading(false);
     }

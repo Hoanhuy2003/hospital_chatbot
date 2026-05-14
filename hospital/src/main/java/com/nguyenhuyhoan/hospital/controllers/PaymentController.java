@@ -1,72 +1,100 @@
 package com.nguyenhuyhoan.hospital.controllers;
 
-import com.nguyenhuyhoan.hospital.dtos.requests.PaymentDTO;
-import com.nguyenhuyhoan.hospital.iservices.IPaymentService;
-import com.nguyenhuyhoan.hospital.models.Payment;
+import com.nguyenhuyhoan.hospital.dtos.responses.InvoiceDetailResponse;
+import com.nguyenhuyhoan.hospital.iservices.IInvoiceService;
+import com.nguyenhuyhoan.hospital.services.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/payments")
+@RequestMapping("/api/v1/payment")
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final IPaymentService paymentService;
+    private final VNPayService vnPayService;
+    private final IInvoiceService invoiceService;
 
-    @PostMapping("")
-    public ResponseEntity<?> create( @RequestBody PaymentDTO paymentDTO)throws Exception{
-        try {
-            return ResponseEntity.ok(paymentService.createPayment(paymentDTO));
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+    @Value("${vnpay.frontend-result-url}")
+    private String frontendResultUrl;
 
-    @PutMapping("/confirm")
-    public ResponseEntity<?> confirm(@RequestParam String transactionId, @RequestParam String method) {
+    /**
+     * Tạo URL thanh toán VNPay.
+     * Frontend gọi GET /api/v1/payment/create/{invoiceId} → nhận paymentUrl → redirect.
+     */
+    @GetMapping("/create/{invoiceId}")
+    public ResponseEntity<?> createPayment(
+            @PathVariable Long invoiceId,
+            HttpServletRequest request) {
         try {
-            return ResponseEntity.ok(paymentService.processPaymentSuccess(transactionId, method));
+            InvoiceDetailResponse invoice = invoiceService.getInvoice(invoiceId);
+            String ipAddr = getClientIp(request);
+            String paymentUrl = vnPayService.createPaymentUrl(
+                    invoiceId, invoice.getFinalAmount(), ipAddr);
+            return ResponseEntity.ok(Map.of("paymentUrl", paymentUrl));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    Map.of("error", e.getMessage()));
         }
     }
 
-    @GetMapping("/appointment/{appointmentId}")
-    public ResponseEntity<?> getByAppointment(@PathVariable Long appointmentId) {
-        try {
-            return ResponseEntity.ok(paymentService.getPaymentDetail(appointmentId));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
+    /**
+     * VNPay callback — backend xác thực chữ ký, cập nhật trạng thái hóa đơn,
+     * sau đó redirect trình duyệt sang trang kết quả ở frontend.
+     */
+    @GetMapping("/vnpay-return")
+    public void vnpayReturn(HttpServletRequest request,
+                            HttpServletResponse response) throws IOException {
+        // Thu thập toàn bộ params
+        Map<String, String> params = new HashMap<>();
+        request.getParameterMap().forEach((key, values) -> {
+            if (values != null && values.length > 0) {
+                params.put(key, values[0]);
+            }
+        });
 
-    @PostMapping("/{id}/vnpay-url")
-    public ResponseEntity<String> getVNPayUrl(@PathVariable Long id, HttpServletRequest request) throws UnsupportedEncodingException {
-        String url = paymentService.createVNPayPayment(id, request);
-        return ResponseEntity.ok(url);
-    }
+        String secureHash = params.remove("vnp_SecureHash");
+        params.remove("vnp_SecureHashType");
 
+        String responseCode = params.getOrDefault("vnp_ResponseCode", "99");
+        String txnRef       = params.getOrDefault("vnp_TxnRef", "");
 
-    @GetMapping("/vnpay-callback")
-    public ResponseEntity<?> vnpayCallback(HttpServletRequest request) throws Exception{
-        String status = request.getParameter("vnp_ResponseCode");
-        String paymentId = request.getParameter("vnp_TxnRef");
-        String transactionNo = request.getParameter("vnp_TransactionNo");
+        boolean hashValid = vnPayService.verifyHash(params, secureHash);
 
-        if ("00".equals(status)) {
-            // Thanh toán thành công (00 là mã thành công của VNPay)
-            paymentService.updatePaymentStatus(Long.valueOf(paymentId), Payment.Status.PAID, transactionNo);
-            return ResponseEntity.ok("Thanh toán thành công!");
+        if (hashValid && "00".equals(responseCode)) {
+            try {
+                // txnRef = "{invoiceId}_{timestamp}"
+                Long invoiceId = Long.parseLong(txnRef.split("_")[0]);
+                invoiceService.markAsPaid(invoiceId, txnRef);
+                response.sendRedirect(
+                        frontendResultUrl + "?success=true&invoiceId=" + invoiceId);
+            } catch (Exception e) {
+                response.sendRedirect(
+                        frontendResultUrl + "?success=false&message=Loi+cap+nhat");
+            }
         } else {
-            paymentService.updatePaymentStatus(Long.valueOf(paymentId), Payment.Status.FAILED, transactionNo);
-            return ResponseEntity.badRequest().body("Thanh toán thất bại hoặc đã bị hủy.");
+            // responseCode 24 = người dùng huỷ, 07 = nghi ngờ gian lận, v.v.
+            response.sendRedirect(
+                    frontendResultUrl + "?success=false&code=" + responseCode);
         }
     }
 
-
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // Nếu nhiều IP (proxy chain), lấy IP đầu tiên
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return (ip == null || ip.isEmpty()) ? "127.0.0.1" : ip;
+    }
 }

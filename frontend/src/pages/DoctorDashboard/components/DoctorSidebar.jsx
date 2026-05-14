@@ -3,11 +3,12 @@ import { toast } from 'react-toastify'
 import styles from './DoctorSidebar.module.css'
 
 const NAV = [
-  { key: 'dashboard', icon: '📊', label: 'Tổng quan'           },
-  { key: 'schedule',  icon: '📅', label: 'Lịch khám hôm nay'   },
-  { key: 'patients',  icon: '👥', label: 'Danh sách bệnh nhân' },
-  { key: 'records',   icon: '📋', label: 'Bệnh án'               },
-  { key: 'next',      icon: '🔔', label: 'Lịch hẹn lần sau'    },
+  { key: 'dashboard',         icon: '📊', label: 'Tổng quan'           },
+  { key: 'schedule',          icon: '📅', label: 'Lịch khám hôm nay'   },
+  { key: 'register_schedule', icon: '🗓️', label: 'Đăng ký lịch trực'   },
+  { key: 'patients',          icon: '👥', label: 'Danh sách bệnh nhân' },
+  { key: 'records',           icon: '📋', label: 'Bệnh án'              },
+  { key: 'next',              icon: '🔔', label: 'Lịch hẹn lần sau'    },
 ]
 
 export default function DoctorSidebar({ page, setPage }) {

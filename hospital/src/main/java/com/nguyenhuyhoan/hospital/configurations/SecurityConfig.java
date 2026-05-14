@@ -51,13 +51,15 @@ public class SecurityConfig {
                         // ── Doctor ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").permitAll()
-                        // Medicine
-                        .requestMatchers("/api/v1/medicines/**").permitAll()
-                        .requestMatchers("/api/v1/invoices/**").permitAll()
-                        // Sửa từ .hasRole("DOCTOR") thành:
-                        //.requestMatchers(HttpMethod.GET, "/api/v1/medicines/**").hasAnyAuthority("DOCTOR", "ADMIN")
+                        // ── Medicine ──
+                        .requestMatchers(HttpMethod.GET,    "/api/v1/medicines/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,   "/api/v1/medicines/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/medicines/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/medicines/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.POST,"/api/v1/medicines/**").hasRole("ADMIN")
+                        // ── Invoice ──
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/invoices/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/invoices/**").hasAnyRole("ADMIN", "DOCTOR")
 
                         // ── Schedule ──
                         .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").permitAll()
@@ -73,9 +75,25 @@ public class SecurityConfig {
                         //.requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("DOCTOR","ADMIN")
 
                         // ── Chatbot ──
-                        .requestMatchers("/api/v1/chatbots/**").permitAll()
-                        .requestMatchers("/api/v1/medical_records/**").permitAll()
-                        .requestMatchers("/api/v1/medical-records/upload-photo").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/chatbots/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/chatbots/**").permitAll()
+
+                        // ── Payment / VNPay ──
+                        // Tạo URL: cần đăng nhập (để lấy thông tin hóa đơn)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payment/create/**").authenticated()
+                        // Callback từ VNPay: không có token → permitAll
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payment/vnpay-return").permitAll()
+
+                        // ── User profile (xem & sửa hồ sơ cá nhân) ──
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").authenticated()
+
+                        // ── Medical Records ──
+                        // GET: bệnh nhân, bác sĩ, admin đều được xem
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/medical_records/**").permitAll()
+                        // POST/PUT: chỉ bác sĩ và admin mới được tạo / sửa
+                        .requestMatchers(HttpMethod.POST, "/api/v1/medical_records/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.PUT,  "/api/v1/medical_records/**").hasAnyRole("ADMIN", "DOCTOR")
 
                         // ── Static files ──
                         .requestMatchers("/uploads/**").permitAll()

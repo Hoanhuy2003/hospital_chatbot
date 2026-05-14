@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
-import { AuthProvider } from '../../context/AuthContext'
 import styles from './AdminLayout.module.css'
 
 const NAV = [

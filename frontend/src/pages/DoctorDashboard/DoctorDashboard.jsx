@@ -6,40 +6,45 @@ import ScheduleList from './components/ScheduleList'
 import PatientModal from './components/PatientModal'
 import RecordList from './components/RecordList'
 import NextAppointments from './components/NextAppointments'
-//import DoctorSchedule from './components/DoctorSchedule'
+import DoctorSchedule from './components/DoctorSchedule'
 import { appointmentService } from '../../services/appointmentService'
 import { medicalRecordService } from '../../services/medicalRecordService' // Thêm service này
 import { toast } from 'react-toastify'
 import styles from './DoctorDashboard.module.css'
 
 const PAGE_TITLES = {
-  dashboard: 'Tổng quan',
-  schedule:  'Lịch khám hôm nay',
- // register_schedule: 'Đăng ký lịch trực',
-  patients:  'Danh sách bệnh nhân',
-  records:   'Bệnh án',
-  next:      'Lịch hẹn lần sau',
+  dashboard:         'Tổng quan',
+  schedule:          'Lịch khám hôm nay',
+  register_schedule: 'Đăng ký lịch trực',
+  patients:          'Danh sách bệnh nhân',
+  records:           'Bệnh án',
+  next:              'Lịch hẹn lần sau',
 }
 
 export default function DoctorDashboard() {
+  // userId dùng cho AppointmentService (backend query bằng User.id)
+  const userId         = localStorage.getItem('userId');
+  // doctorId dùng cho ScheduleService (backend query bằng Doctor.id)
+  const scheduleDoctorId = localStorage.getItem('doctorId') || userId;
+  const clinicId       = localStorage.getItem('clinicId');
+
   const [page, setPage]             = useState('dashboard')
   const [appointments, setAppts]    = useState([])
-  const [nextAppts, setNextAppts]   = useState([]) // Dữ liệu lịch tái khám
+  const [nextAppts, setNextAppts]   = useState([])
   const [selectedPatient, setSelPt] = useState(null)
   const [modalTab, setModalTab]     = useState(0)
   const [loading, setLoading]       = useState(true)
 
   // 1. Load lịch khám hôm nay và lịch hẹn tái khám
   const loadData = async () => {
-    const doctorId = localStorage.getItem('userId');
-    if (!doctorId) return;
+    if (!userId) return;
 
     try {
       setLoading(true);
       // Gọi song song cả 2 API để tối ưu tốc độ
       const [resToday, resNext] = await Promise.all([
-        appointmentService.getByDoctor(doctorId),
-        medicalRecordService.getNextAppointment(doctorId)
+        appointmentService.getByDoctor(userId),
+        medicalRecordService.getNextAppointment(userId)
       ]);
 
       // Format lịch hôm nay
@@ -112,11 +117,13 @@ export default function DoctorDashboard() {
             <div className={styles.loading}>Đang tải dữ liệu...</div>
           ) : (
             <>
-              {page === 'dashboard' && <DashboardHome {...pageProps} />}
-              {page === 'schedule'  && <ScheduleList  {...pageProps} />}
-              {/* {page === 'patients'  && <RecordList    {...pageProps} />}  */}
-              {page === 'records'   && <RecordList    {...pageProps} />}
-              {page === 'next' && <NextAppointments list={nextAppts} />}
+              {page === 'dashboard'         && <DashboardHome {...pageProps} />}
+              {page === 'schedule'          && <ScheduleList  {...pageProps} />}
+              {page === 'register_schedule' && (
+                <DoctorSchedule doctorId={scheduleDoctorId} clinicId={clinicId} />
+              )}
+              {page === 'records'           && <RecordList    {...pageProps} />}
+              {page === 'next'              && <NextAppointments list={nextAppts} />}
             </>
           )}
         </div>

@@ -11,4 +11,6 @@ public interface IInvoiceService {
 
 
     InvoiceDetailResponse getByMedicalRecord(Long medicalId);
+
+    void markAsPaid(Long invoiceId, String transactionId);
 }

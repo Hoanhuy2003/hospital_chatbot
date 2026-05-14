@@ -30,5 +30,13 @@ public class UpdateUserDTO {
     @JsonProperty("avatar_url")
     private String avatarUrl;
 
+    // ── Bảo hiểm y tế ──
+    @JsonProperty("health_insurance_number")
+    private String healthInsuranceNumber;
 
+    @JsonProperty("insurance_expiry_date")
+    private LocalDate insuranceExpiryDate;
+
+    @JsonProperty("insurance_benefit_level")
+    private Integer insuranceBenefitLevel;
 }

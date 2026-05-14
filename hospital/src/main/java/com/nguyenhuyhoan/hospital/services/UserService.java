@@ -27,14 +27,27 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public UserResponse updateUser(Long id, UpdateUserDTO updateUserDTO) throws DataNotFoundException {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Khong tim thay"));
-        if(updateUserDTO.getFullName() != null) existingUser.setFullName(updateUserDTO.getFullName());
-        if(updateUserDTO.getEmail() != null) existingUser.setEmail(updateUserDTO.getEmail());
-        if(updateUserDTO.getAddress() != null) existingUser.setAddress(updateUserDTO.getAddress());
+    public UserResponse updateUser(Long id, UpdateUserDTO dto) throws DataNotFoundException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng"));
 
-        return UserResponse.fromUser(userRepository.save(existingUser));
+        // ── Thông tin cơ bản ──
+        if (dto.getFullName()    != null) user.setFullName(dto.getFullName());
+        if (dto.getPhone()       != null) user.setPhone(dto.getPhone());
+        if (dto.getEmail()       != null) user.setEmail(dto.getEmail());
+        if (dto.getDateOfBirth() != null) user.setDateOfBirth(dto.getDateOfBirth());
+        if (dto.getAddress()     != null) user.setAddress(dto.getAddress());
+        if (dto.getAvatarUrl()   != null) user.setAvatarUrl(dto.getAvatarUrl());
+
+        // ── Bảo hiểm y tế ──
+        if (dto.getHealthInsuranceNumber() != null)
+            user.setHealthInsuranceNumber(dto.getHealthInsuranceNumber());
+        if (dto.getInsuranceExpiryDate() != null)
+            user.setInsuranceExpiryDate(dto.getInsuranceExpiryDate());
+        if (dto.getInsuranceBenefitLevel() != null)
+            user.setInsuranceBenefitLevel(dto.getInsuranceBenefitLevel());
+
+        return UserResponse.fromUser(userRepository.save(user));
     }
 
     @Override

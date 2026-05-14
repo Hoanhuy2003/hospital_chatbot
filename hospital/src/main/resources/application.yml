@@ -46,3 +46,13 @@ file:
   upload-dir: uploads
   doctor-dir: doctors
   specialty-dir: specialties
+
+# ================== VNPay Configuration ==================
+vnpay:
+  tmn-code: S8B6LL68
+  hash-secret: EO5D4CR44Q9XVHFSPHWL3O5PF109CT1T
+  payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  # Backend xử lý callback rồi redirect sang frontend
+  return-url: http://localhost:8080/api/v1/payment/vnpay-return
+  # Sau khi xác thực xong, backend redirect về trang này
+  frontend-result-url: http://localhost:3000/payment/result

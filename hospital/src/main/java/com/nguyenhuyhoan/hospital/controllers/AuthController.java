@@ -4,8 +4,10 @@ import com.nguyenhuyhoan.hospital.components.JwtTokenUtils;
 import com.nguyenhuyhoan.hospital.dtos.auth.AuthResponse;
 import com.nguyenhuyhoan.hospital.dtos.auth.UserLoginDTO;
 import com.nguyenhuyhoan.hospital.dtos.auth.UserRegisterDTO;
+import com.nguyenhuyhoan.hospital.models.Doctor;
 import com.nguyenhuyhoan.hospital.models.Role;
 import com.nguyenhuyhoan.hospital.models.User;
+import com.nguyenhuyhoan.hospital.repositoris.DoctorRepository;
 import com.nguyenhuyhoan.hospital.repositoris.RoleRepository;
 import com.nguyenhuyhoan.hospital.repositoris.UserRepository;
 import com.nguyenhuyhoan.hospital.securitis.UserDetailsImpl;
@@ -31,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -90,15 +95,24 @@ public class AuthController {
 
             String token = jwtTokenUtils.generateToken(user);
 
-            AuthResponse response = AuthResponse.builder()
+            AuthResponse.AuthResponseBuilder builder = AuthResponse.builder()
                     .accessToken(token)
                     .role(user.getRole().getName())
                     .userId(user.getId())
                     .fullName(user.getFullName())
-                    .message("Đăng nhập thành công")
-                    .build();
+                    .message("Đăng nhập thành công");
 
-            return ResponseEntity.ok(response);
+            // Nếu là DOCTOR thì tra thêm doctorId và clinicId
+            if ("DOCTOR".equals(user.getRole().getName())) {
+                doctorRepository.findByUserId(user.getId()).ifPresent(doctor -> {
+                    builder.doctorId(doctor.getId());
+                    if (doctor.getClinic() != null) {
+                        builder.clinicId(doctor.getClinic().getId());
+                    }
+                });
+            }
+
+            return ResponseEntity.ok(builder.build());
 
         } catch (Exception e){
             e.printStackTrace(); // 🔥 thêm dòng này để debug
@@ -107,15 +121,6 @@ public class AuthController {
                     .build()
             );
         }
-    }
-
-    @PostMapping("/test-password")
-    public String testPassword(@RequestParam String phone, @RequestParam String plainPassword) {
-        User user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
-
-        boolean match = passwordEncoder.matches(plainPassword, user.getPasswordHash());
-        return "Mật khẩu khớp không? " + match + "\nHash trong DB: " + user.getPasswordHash();
     }
 
     @PostMapping("register/admin")

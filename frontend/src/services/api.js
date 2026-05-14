@@ -35,9 +35,9 @@ api.interceptors.response.use(
                 localStorage.removeItem('token');
                 localStorage.removeItem('userId');
                 
-                // Tránh reload liên tục nếu đang ở trang login
-                if (!window.location.pathname.includes('/login')) {
-                    window.location.href = '/login';
+                // Tránh reload liên tục nếu đang ở trang đăng nhập
+                if (!window.location.pathname.includes('/dang-nhap')) {
+                    window.location.href = '/dang-nhap';
                     toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
                 }
             }

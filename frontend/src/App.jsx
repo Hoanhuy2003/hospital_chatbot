@@ -9,6 +9,7 @@ import Clinics from './pages/Clinics/Clinics'
 import ClinicDetail from './pages/ClinicDetail/ClinicDetail'
 import SearchDoctors from './pages/SearchDoctors/SearchDoctors'
 import DoctorDashboard from './pages/DoctorDashboard/DoctorDashboard'
+import PaymentReturn from './pages/PaymentReturn/PaymentReturn'
 
 // ADMIN PAGES - Đã sửa chính tả và dọn dẹp
 import AdminLayout from './pages/Admin/AdminLayout'; // BẮT BUỘC PHẢI CÓ DÒNG NÀY
@@ -20,6 +21,8 @@ import UserManager from './pages/Admin/pages/UserManeger'
 import SpecialtyManager from './pages/Admin/pages/SpecialtyManeger'
 import RecordManager from './pages/Admin/pages/RecordManager'
 import PaymentManager from './pages/Admin/pages/PaymentManager'
+import MedicineManager from './pages/Admin/pages/MedicineManager'
+import Settings from './pages/Admin/pages/Setting'
 import { BookingProvider } from './context/BookingContext'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/Auth/ProtectedRoute';
@@ -54,6 +57,8 @@ export default function App() {
             <Route path="appointments" element={<AppointmentManager />} />
             <Route path="records" element={<RecordManager/>} />
             <Route path="payments" element={<PaymentManager/>} />
+            <Route path="medicines" element={<MedicineManager/>} />
+            <Route path="settings" element={<Settings/>} />
            
           </Route>
 
@@ -67,6 +72,8 @@ export default function App() {
                 <Route path="/tim-kiem" element={<SearchDoctors />} />
                 <Route path="/phong-kham" element={<Clinics />} />
                 <Route path="/phong-kham/:id" element={<ClinicDetail />} />
+                {/* Trang kết quả sau khi thanh toán VNPay */}
+                <Route path="/payment/result" element={<PaymentReturn />} />
               </Routes>
             </Layout>
           } />
