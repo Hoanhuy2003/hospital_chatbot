@@ -26,6 +26,7 @@ public class InvoiceDetailResponse {
     private Double insuranceDiscount; // Số tiền BHYT giảm
     private Double finalAmount;       // Thực trả
     private String status;
+    private String transactionId;     // Mã giao dịch VNPay
 
     @Data
     @Builder

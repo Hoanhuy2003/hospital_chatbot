@@ -13,11 +13,13 @@ public interface SpecialtyRepository extends JpaRepository<Specialty,Long> {
             "s.id, s.name, s.description, s.iconUrl, " +
             "COUNT(DISTINCT d.id), " +
             "COUNT(DISTINCT d.clinic.id), " +
-            "COUNT(a.id)) " +
+            "COUNT(DISTINCT a.id)) " +
             "FROM Specialty s " +
             "LEFT JOIN Doctor d ON d.specialty.id = s.id " +
-            "LEFT JOIN Appointment a ON a.doctor.id = d.id " +
-            "GROUP BY s.id, s.name, s.description, s.iconUrl")
+            "LEFT JOIN Schedule sc ON sc.doctor.id = d.id " +
+            "LEFT JOIN Appointment a ON a.schedule.id = sc.id " +
+            "GROUP BY s.id, s.name, s.description, s.iconUrl " +
+            "ORDER BY COUNT(DISTINCT a.id) DESC")
     List<SpecialtyDTO.SpecialtyStatDTO> getSpecialtyStatistics();
 
 }

@@ -24,6 +24,14 @@ public class MedicalRecordController {
     private final IMedicalRecordService medicalRecordService;
     private final CloudinaryService cloudinaryService;
 
+    // Admin: lấy tất cả bệnh án, hỗ trợ tìm kiếm
+    @GetMapping("")
+    public ResponseEntity<?> getAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String date) {
+        return ResponseEntity.ok(medicalRecordService.getAll(keyword, date));
+    }
+
     @PostMapping("")
     public ResponseEntity<?> createMedical(@Valid @RequestBody MedicalRecordDTO medicalRecordDTO){
         try {

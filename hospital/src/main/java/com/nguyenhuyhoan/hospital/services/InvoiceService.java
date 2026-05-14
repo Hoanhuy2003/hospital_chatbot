@@ -20,9 +20,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -161,6 +164,45 @@ public class InvoiceService implements IInvoiceService {
             System.out.println("Lỗi parse đơn thuốc: " + e.getMessage());
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public List<InvoiceDetailResponse> getAll(String keyword, String status,
+                                              String dateFrom, String dateTo) {
+        LocalDate from = parseDate(dateFrom);
+        LocalDate to   = parseDate(dateTo);
+
+        return invoiceRepository.findAllWithFilter(keyword, status, from, to)
+                .stream()
+                .map(inv -> InvoiceDetailResponse.builder()
+                        .invoiceID(inv.getId())
+                        .patientName(inv.getMedicalRecord().getAppointment().getPatient().getFullName())
+                        .doctorName(inv.getMedicalRecord().getDoctor().getUser().getFullName())
+                        .diagnosis(inv.getMedicalRecord().getDiagnosis())
+                        .createAt(inv.getCreatedAt())
+                        .examinationFee(inv.getExaminationFee())
+                        .totalMedicineCost(inv.getTotalMedicineCost())
+                        .insuranceDiscount(inv.getInsuranceDiscount())
+                        .finalAmount(inv.getFinalAmount())
+                        .status(inv.getStatus())
+                        .transactionId(inv.getTransactionId())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, Object> getStats() {
+        Map<String, Object> stats = new java.util.LinkedHashMap<>();
+        stats.put("revenue",  invoiceRepository.sumRevenue());
+        stats.put("paid",     invoiceRepository.countByStatus("PAID"));
+        stats.put("pending",  invoiceRepository.countByStatus("PENDING"));
+        stats.put("cancelled",invoiceRepository.countByStatus("CANCELLED"));
+        return stats;
+    }
+
+    private LocalDate parseDate(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return LocalDate.parse(s); } catch (Exception e) { return null; }
     }
 
     @Override

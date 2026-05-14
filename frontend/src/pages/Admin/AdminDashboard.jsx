@@ -6,43 +6,54 @@ import { toast } from 'react-toastify'
 import styles from './AdminDashboard.module.css'
 import api from '../../services/api'// Đảm bảo sử dụng instance axios đã cấu hình của bạn
 
+function formatVnd(amount) {
+  if (!amount && amount !== 0) return '0 đ'
+  return new Intl.NumberFormat('vi-VN').format(Math.round(amount)) + ' đ'
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate()
-  const [stats, setStats] = useState({ users: 0, doctors: 0, appointments: 0, revenue: '0 đ' })
+  const [stats, setStats] = useState({
+    users: 0, doctors: 0, appointments: 0,
+    monthlyRevenue: 0, totalRevenue: 0, paidCount: 0, pendingCount: 0
+  })
   const [recentApt, setRecentApt] = useState([])
-  const [specialtyStats, setSpecialtyStats] = useState([]) // State cho biểu đồ chuyên khoa
+  const [specialtyStats, setSpecialtyStats] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         setLoading(true)
-        
-        // 1. Gọi API lấy thông số tổng hợp (AdminController/AdminService)
-        const statsRes = await api.get('/v1/admin/dashboard-stats')
+
+        const [statsRes, specRes] = await Promise.all([
+          api.get('/v1/admin/dashboard-stats'),
+          api.get('/v1/specialty/statistics'),
+        ])
+
         const data = statsRes.data
-        
         setStats({
-          users: data.totalUsers,
-          doctors: data.totalDoctors,
-          appointments: data.todayAppointments,
-          revenue: data.monthlyRevenue || '0 đ'
+          users:          data.totalUsers        ?? 0,
+          doctors:        data.totalDoctors       ?? 0,
+          appointments:   data.todayAppointments  ?? 0,
+          monthlyRevenue: data.monthlyRevenue     ?? 0,
+          totalRevenue:   data.totalRevenue       ?? 0,
+          paidCount:      data.paidCount          ?? 0,
+          pendingCount:   data.pendingCount       ?? 0,
         })
         setRecentApt(data.recentAppointments || [])
 
-        // 2. Tận dụng API thống kê chuyên khoa đã làm để vẽ biểu đồ
-        const specRes = await api.get('/v1/specialty/statistics')
-        // Tính toán % đơn giản (ví dụ: lấy số lượt khám làm % để hiển thị)
+        const maxApts = Math.max(1, ...specRes.data.map(s => s.totalAppointments || 0))
         const formattedSpecs = specRes.data
           .map(s => ({
             name: s.name,
-            pct: s.totalAppointments > 0 ? Math.min(s.totalAppointments, 100) : 0 
+            count: s.totalAppointments || 0,
+            pct: Math.round(((s.totalAppointments || 0) / maxApts) * 100),
           }))
-          .sort((a, b) => b.pct - a.pct) // Sắp xếp phổ biến nhất lên đầu
-          .slice(0, 5) // Chỉ lấy top 5
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5)
 
         setSpecialtyStats(formattedSpecs)
-        
       } catch (err) {
         toast.error('Không thể cập nhật dữ liệu thống kê')
         console.error(err)
@@ -68,10 +79,10 @@ export default function AdminDashboard() {
     <div>
       {/* Stats Row */}
       <div className={styles.statsRow}>
-        <StatCard label="Tổng người dùng"    value={stats.users}        sub="Trong hệ thống"      color="blue"  />
-        <StatCard label="Bác sĩ hoạt động"   value={stats.doctors}      sub="Đang làm việc"       color="green" />
-        <StatCard label="Lịch khám hôm nay"  value={stats.appointments} sub="Lượt đặt mới"        color="amber" />
-        <StatCard label="Doanh thu tháng"    value={stats.revenue}      sub="Tổng tiền thu"       color="blue"  />
+        <StatCard label="Tổng người dùng"   value={stats.users}                     sub="Trong hệ thống"           color="blue"   />
+        <StatCard label="Bác sĩ hoạt động"  value={stats.doctors}                   sub="Đang làm việc"            color="green"  />
+        <StatCard label="Lịch khám hôm nay" value={stats.appointments}              sub="Lượt đặt trong ngày"      color="amber"  />
+        <StatCard label="Doanh thu tháng"   value={formatVnd(stats.monthlyRevenue)} sub={`Tổng: ${formatVnd(stats.totalRevenue)}`} color="blue" />
       </div>
 
       {/* Quick actions */}
@@ -99,7 +110,7 @@ export default function AdminDashboard() {
               </div>
               <div className={styles.aptInfo}>
                 <div className={styles.aptName}>{a.patientName}</div>
-                <div className={styles.aptSub}>{a.specialtyName} · {a.timeSlot}</div>
+                <div className={styles.aptSub}>{a.specialtyName} · {a.appointmentTime}</div>
               </div>
               <StatusBadge status={a.status} />
             </div>
@@ -107,14 +118,19 @@ export default function AdminDashboard() {
         </div>
 
         <div className={styles.card}>
-          <div className={styles.cardTitle}>Chuyên khoa theo lượt</div>
+          <div className={styles.cardTitle}>Top chuyên khoa theo lượt khám</div>
+          {specialtyStats.length === 0 && (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: 13 }}>
+              Chưa có dữ liệu
+            </div>
+          )}
           {specialtyStats.map(s => (
             <div key={s.name} className={styles.barRow}>
               <span className={styles.barLabel}>{s.name}</span>
               <div className={styles.barBg}>
                 <div className={styles.barFill} style={{ width: s.pct + '%' }} />
               </div>
-              <span className={styles.barVal}>{s.pct}</span>
+              <span className={styles.barVal}>{s.count}</span>
             </div>
           ))}
         </div>

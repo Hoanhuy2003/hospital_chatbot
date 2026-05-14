@@ -128,10 +128,23 @@ public class MedicalRecordService implements IMedicalRecordService {
                 .symptoms(record.getSymptoms())
                 .diagnosis(record.getDiagnosis())
                 .treatment(record.getTreatment())
-                .prescription(record.getPrescription()) // Chuỗi JSON đơn thuốc
+                .prescription(record.getPrescription())
                 .photoUrl(record.getPhotoUrl())
                 .followUpDate(record.getFollowUpDate())
                 .createdAt(record.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public List<MedicalRecordResponse> getAll(String keyword, String date) {
+        LocalDate parsedDate = null;
+        if (date != null && !date.isBlank()) {
+            try { parsedDate = LocalDate.parse(date); } catch (Exception ignored) {}
+        }
+        return medicalRecordRepository
+                .findAllWithFilter(keyword, parsedDate)
+                .stream()
+                .map(MedicalRecordResponse::fromMedicalRecord)
+                .collect(Collectors.toList());
     }
 }

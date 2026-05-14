@@ -38,6 +38,6 @@ public class SpecialtyDTO {
         private String icon;
         private Long doctorCount;
         private Long clinicCount;
-        private Long timeSlot;
+        private Long totalAppointments;
     }
 }

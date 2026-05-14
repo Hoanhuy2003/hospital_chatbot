@@ -36,7 +36,13 @@ export const medicalRecordService = {
     getByAppointment : async(appointmentId) =>{
         const response = await api.get(`/v1/medical_records/appointment/${appointmentId}`);
         return response.data;
-    }
+    },
 
-
+    // Admin: lấy tất cả bệnh án, hỗ trợ tìm kiếm keyword + lọc ngày
+    getAll: async (keyword = '', date = '') => {
+        const response = await api.get('/v1/medical_records', {
+            params: { keyword: keyword || undefined, date: date || undefined }
+        });
+        return response.data;
+    },
 }

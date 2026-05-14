@@ -16,7 +16,10 @@ public class AdminDashboardDTO {
     private long totalUsers;
     private long totalDoctors;
     private long todayAppointments;
-    private String monthlyRevenue;
+    private double monthlyRevenue;   // Doanh thu tháng này (số thực)
+    private double totalRevenue;     // Tổng doanh thu tất cả thời gian
+    private long paidCount;          // Số hóa đơn đã thanh toán
+    private long pendingCount;       // Số hóa đơn chờ thanh toán
     private List<RecentAptDTO> recentAppointments;
 
     @Data

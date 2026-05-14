@@ -40,5 +40,14 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
 
     Optional<MedicalRecord> findByAppointmentId(Long appointmentId);
 
-
+    // Admin: tìm tất cả bệnh án, lọc theo tên bệnh nhân/chẩn đoán và ngày lập
+    @Query("SELECT m FROM MedicalRecord m " +
+           "WHERE (:keyword IS NULL OR :keyword = '' " +
+           "       OR LOWER(m.appointment.patient.fullName) LIKE LOWER(CONCAT('%',:keyword,'%')) " +
+           "       OR LOWER(m.diagnosis) LIKE LOWER(CONCAT('%',:keyword,'%'))) " +
+           "AND (:date IS NULL OR CAST(m.createdAt AS date) = :date) " +
+           "ORDER BY m.createdAt DESC")
+    List<MedicalRecord> findAllWithFilter(
+            @Param("keyword") String keyword,
+            @Param("date") java.time.LocalDate date);
 }

@@ -58,6 +58,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/medicines/**").hasRole("ADMIN")
 
                         // ── Invoice ──
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/invoices/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/invoices/stats").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,  "/api/v1/invoices/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/invoices/**").hasAnyRole("ADMIN", "DOCTOR")
 

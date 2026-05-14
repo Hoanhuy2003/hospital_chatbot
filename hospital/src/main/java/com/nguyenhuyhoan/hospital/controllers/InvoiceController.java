@@ -14,6 +14,22 @@ import org.springframework.web.bind.annotation.*;
 public class InvoiceController {
     private final IInvoiceService invoiceService;
 
+    // Admin: danh sách tất cả hóa đơn có lọc
+    @GetMapping("/all")
+    public ResponseEntity<?> getAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
+        return ResponseEntity.ok(invoiceService.getAll(keyword, status, dateFrom, dateTo));
+    }
+
+    // Admin: thống kê nhanh
+    @GetMapping("/stats")
+    public ResponseEntity<?> getStats() {
+        return ResponseEntity.ok(invoiceService.getStats());
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createInvoice(@RequestBody InvoiceDTO recordId) {
         return ResponseEntity.ok(invoiceService.createInvoice(recordId));
