@@ -49,8 +49,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/specialty/**").permitAll()
 
                         // ── Doctor ──
-                        .requestMatchers(HttpMethod.GET, "/api/v1/doctors/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/doctors/me").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.PUT,  "/api/v1/doctors/me").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET,  "/api/v1/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT,  "/api/v1/doctors/**").permitAll()
                         // ── Medicine ──
                         .requestMatchers(HttpMethod.GET,    "/api/v1/medicines/**").permitAll()
                         .requestMatchers(HttpMethod.POST,   "/api/v1/medicines/**").hasRole("ADMIN")
@@ -74,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/appointments/all").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.GET,"/api/v1/appointments/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/appointments/*/cancel").hasRole("PATIENT")
                         //.requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/*/status").hasAnyRole("DOCTOR","ADMIN")
 
                         // ── Chatbot ──

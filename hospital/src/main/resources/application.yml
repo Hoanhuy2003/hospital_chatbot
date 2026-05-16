@@ -48,6 +48,9 @@ file:
   specialty-dir: specialties
 
 # ================== VNPay Configuration ==================
+ai:
+  python-url: http://localhost:8000/ai/chat
+
 vnpay:
   tmn-code: S8B6LL68
   hash-secret: EO5D4CR44Q9XVHFSPHWL3O5PF109CT1T

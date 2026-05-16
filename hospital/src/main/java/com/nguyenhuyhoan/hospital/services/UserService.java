@@ -47,6 +47,14 @@ public class UserService implements IUserService {
         if (dto.getInsuranceBenefitLevel() != null)
             user.setInsuranceBenefitLevel(dto.getInsuranceBenefitLevel());
 
+        if (dto.getGender() != null && !dto.getGender().isBlank()) {
+            try {
+                user.setGender(User.Gender.valueOf(dto.getGender().trim().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+                /* giữ nguyên */
+            }
+        }
+
         return UserResponse.fromUser(userRepository.save(user));
     }
 

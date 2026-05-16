@@ -2,6 +2,8 @@ package com.nguyenhuyhoan.hospital.iservices;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.DoctorDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.DoctorResponse;
+import com.nguyenhuyhoan.hospital.dtos.responses.DoctorSelfProfileResponse;
+import com.nguyenhuyhoan.hospital.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

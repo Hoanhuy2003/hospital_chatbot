@@ -196,6 +196,21 @@
   transform: translateY(-1px);
 }
 
+.btn-cancel {
+    background-color: #fff;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
 @media (max-width: 600px) {
   .card { flex-direction: column; }
   .cardRight { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; }

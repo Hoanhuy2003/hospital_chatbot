@@ -1,27 +1,41 @@
 import { useState, useRef, useEffect } from 'react'
 import { useBooking } from '../../context/BookingContext'
-import { getBotReply } from '../../data/constants'
+import { useAuth } from '../../context/AuthContext'
+import chatbotService from '../../services/chatbotService'
 import styles from './Chatbot.module.css'
 
 const QUICK_OPTIONS = [
-  { label: '👶 Nhi khoa',    msg: 'Tìm bác sĩ nhi khoa' },
-  { label: '❤️ Tim mạch',    msg: 'Đặt lịch khám tim mạch' },
-  { label: '🤔 Tư vấn khoa', msg: 'Tôi bị đau đầu, nên khám khoa gì?' },
-  { label: '💰 Giá khám',    msg: 'Giá khám bao nhiêu?' },
-  { label: '🏥 Bảo hiểm',   msg: 'Có hỗ trợ bảo hiểm y tế không?' },
+  { label: '👶 Nhi khoa',      msg: 'Tôi muốn đặt lịch khám Nhi khoa' },
+  { label: '❤️ Tim mạch',      msg: 'Tôi bị đau ngực khó thở, nên khám khoa gì?' },
+  { label: '🤔 Tư vấn triệu chứng', msg: 'Tôi bị đau đầu và chóng mặt, nên khám khoa nào?' },
+  { label: '💰 Giá khám',      msg: 'Chi phí khám bệnh tại bệnh viện là bao nhiêu?' },
+  { label: '🏥 Bảo hiểm',      msg: 'Bệnh viện có hỗ trợ bảo hiểm y tế không?' },
 ]
+
+// Render **bold** trong text
+function renderText(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/)
+  return parts.map((p, i) =>
+    p.startsWith('**') && p.endsWith('**')
+      ? <strong key={i}>{p.slice(2, -2)}</strong>
+      : <span key={i}>{p}</span>
+  )
+}
 
 export default function Chatbot() {
   const { chatMsg, setChatMsg } = useBooking()
-  const [open, setOpen] = useState(false)
+  const { user } = useAuth()
+
+  const [open, setOpen]       = useState(false)
   const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Xin chào! Tôi là trợ lý đặt khám MedCare.\nTôi có thể giúp bạn tìm bác sĩ, đặt lịch, hoặc tư vấn triệu chứng.' }
+    { role: 'bot', text: 'Xin chào! Tôi là trợ lý AI của Bệnh viện Bạch Mai.\nTôi có thể tư vấn triệu chứng, hướng dẫn đặt lịch và giải đáp thắc mắc cho bạn.' }
   ])
-  const [input, setInput] = useState('')
-  const [typing, setTyping] = useState(false)
+  const [input, setInput]     = useState('')
+  const [typing, setTyping]   = useState(false)
   const [showQuick, setShowQuick] = useState(true)
   const messagesRef = useRef(null)
 
+  // Nhận tin nhắn từ BookingContext (sau khi đặt lịch)
   useEffect(() => {
     if (chatMsg) {
       setOpen(true)
@@ -31,22 +45,31 @@ export default function Chatbot() {
     }
   }, [chatMsg, setChatMsg])
 
+  // Auto scroll xuống cuối
   useEffect(() => {
     if (messagesRef.current)
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight
   }, [messages, typing])
 
-  function send(text) {
+  async function send(text) {
     const t = text.trim()
-    if (!t) return
+    if (!t || typing) return
     setMessages(prev => [...prev, { role: 'user', text: t }])
     setInput('')
     setShowQuick(false)
     setTyping(true)
-    setTimeout(() => {
+    try {
+      const userId = user?.id ? Number(user.id) : null
+      const reply = await chatbotService.sendMessage(t, userId)
+      setMessages(prev => [...prev, { role: 'bot', text: reply }])
+    } catch {
+      setMessages(prev => [...prev, {
+        role: 'bot',
+        text: 'Xin lỗi, không thể kết nối tới trợ lý lúc này. Vui lòng thử lại sau hoặc gọi hotline 024 3869 3731.'
+      }])
+    } finally {
       setTyping(false)
-      setMessages(prev => [...prev, { role: 'bot', text: getBotReply(t) }])
-    }, 800 + Math.random() * 500)
+    }
   }
 
   return (
@@ -56,15 +79,16 @@ export default function Chatbot() {
           <div className={styles.head}>
             <div className={styles.headAvatar}>🤖</div>
             <div>
-              <div className={styles.headName}>Trợ lý MedCare</div>
+              <div className={styles.headName}>Trợ lý AI Bạch Mai</div>
               <div className={styles.headStatus}>• Đang hoạt động</div>
             </div>
-            <button className={styles.headClose} onClick={() => setOpen(false)}>x</button>
+            <button className={styles.headClose} onClick={() => setOpen(false)}>✕</button>
           </div>
+
           <div className={styles.messages} ref={messagesRef}>
             {messages.map((m, i) => (
               <div key={i} className={`${styles.msg} ${m.role === 'bot' ? styles.msgBot : styles.msgUser}`}>
-                {m.text}
+                {renderText(m.text)}
               </div>
             ))}
             {typing && (
@@ -73,23 +97,35 @@ export default function Chatbot() {
               </div>
             )}
           </div>
+
           {showQuick && (
             <div className={styles.quickBtns}>
               {QUICK_OPTIONS.map(q => (
-                <button key={q.label} className={styles.quickBtn} onClick={() => send(q.msg)}>{q.label}</button>
+                <button key={q.label} className={styles.quickBtn} onClick={() => send(q.msg)}>
+                  {q.label}
+                </button>
               ))}
             </div>
           )}
+
           <div className={styles.inputRow}>
-            <input className={styles.input} value={input}
+            <input
+              className={styles.input}
+              value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') send(input) }}
-              placeholder="Nhập tin nhắn..." />
-            <button className={styles.sendBtn} onClick={() => send(input)}>Send</button>
+              placeholder="Nhập triệu chứng hoặc câu hỏi..."
+              disabled={typing}
+            />
+            <button className={styles.sendBtn} onClick={() => send(input)} disabled={typing}>
+              Gửi
+            </button>
           </div>
         </div>
       )}
-      <button className={styles.fab} onClick={() => setOpen(v => !v)}>Chat</button>
+      <button className={styles.fab} onClick={() => setOpen(v => !v)}>
+        {open ? '✕' : '💬'}
+      </button>
     </>
   )
 }

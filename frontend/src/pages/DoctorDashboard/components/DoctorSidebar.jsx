@@ -2,13 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import styles from './DoctorSidebar.module.css'
 
+// THÊM ĐỐI TƯỢNG PROFILE VÀO MẢNG NAV
 const NAV = [
   { key: 'dashboard',         icon: '📊', label: 'Tổng quan'           },
   { key: 'schedule',          icon: '📅', label: 'Lịch khám hôm nay'   },
   { key: 'register_schedule', icon: '🗓️', label: 'Đăng ký lịch trực'   },
-  { key: 'patients',          icon: '👥', label: 'Danh sách bệnh nhân' },
-  { key: 'records',           icon: '📋', label: 'Bệnh án'              },
+  { key: 'records',           icon: '📋', label: 'Bệnh án'             },
   { key: 'next',              icon: '🔔', label: 'Lịch hẹn lần sau'    },
+  { key: 'profile',           icon: '👤', label: 'Thông tin cá nhân'   }, // <-- THÊM MỤC NÀY
 ]
 
 export default function DoctorSidebar({ page, setPage }) {
@@ -17,7 +18,6 @@ export default function DoctorSidebar({ page, setPage }) {
   // 1. Lấy thông tin bác sĩ từ localStorage đã lưu khi Login
   const fullName = localStorage.getItem('fullName') || 'Bác sĩ';
   const role = localStorage.getItem('role') || 'DOCTOR';
- // const specialty = localStorage.getItem('specialtyName') || 'Đang cập nhật';
   
   // Hàm xử lý lấy chữ cái đầu của tên để làm Avatar (Ví dụ: Hoàn -> H)
   const getInitial = (name) => {
@@ -57,7 +57,6 @@ export default function DoctorSidebar({ page, setPage }) {
           <div>
             <div className={styles.docName}>BS. {fullName}</div>
             <div className={styles.docRole}>{role === 'DOCTOR' ? 'Bác sĩ chuyên khoa' : role}</div>
-            
           </div>
         </div>
         

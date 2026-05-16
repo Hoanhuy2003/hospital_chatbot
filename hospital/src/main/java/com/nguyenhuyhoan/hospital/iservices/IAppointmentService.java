@@ -21,6 +21,8 @@ public interface IAppointmentService {
 
     List<AppointmentResponse> getAllAppointment();
 
+    void cancelAppointment(Long id, Long userId) throws Exception;
+
 
     //List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date);
 }

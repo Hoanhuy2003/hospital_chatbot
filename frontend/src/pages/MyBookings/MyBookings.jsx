@@ -3,7 +3,7 @@ import { appointmentService } from '../../services/appointmentService';
 import { notificationService } from '../../services/notificationService';
 import { medicalRecordService } from '../../services/medicalRecordService';
 import { invoiceService } from '../../services/invoiceService';
-import PatientModalPatient from '../PatientModalPatient/PatientModalPatient'; // Đảm bảo bạn đã import component này
+import PatientModalPatient from '../PatientModalPatient/PatientModalPatient'; 
 import { toast } from 'react-toastify';
 import styles from './MyBookings.module.css';
 
@@ -23,43 +23,78 @@ export default function MyBookings() {
   const [showModal, setShowModal] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const userId = localStorage.getItem('userId');
-      if (!userId) return;
-      try {
-        setLoading(true);
-        const data = await appointmentService.getByPatient(userId);
-        setBookings(data || []);
+  // Tách hàm lấy dữ liệu ra ngoài để tái sử dụng khi cần refresh danh sách
+  const fetchData = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+    try {
+      setLoading(true);
+      const data = await appointmentService.getByPatient(userId);
+      setBookings(data || []);
 
-        const notiData = await notificationService.getByUserId(userId);
-        setNotifications(notiData || []);
-      } catch (err) {
-        console.error("Lỗi tải dữ liệu:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const notiData = await notificationService.getByUserId(userId);
+      setNotifications(notiData || []);
+    } catch (err) {
+      console.error("Lỗi tải dữ liệu:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
+
+  // Cải tiến hàm kiểm tra điều kiện dựa trên dữ liệu phẳng b (date, timeSlot) từ API của bạn
+  const canCancel = (appointment) => {
+    if (appointment.status !== 'PENDING') return false;
+
+    try {
+      // Vì b.timeSlot của bạn dạng "08:00_09:00", ta lấy "08:00"
+      const startTimeStr = appointment.timeSlot.split('_')[0];
+      const appointmentDateTime = new Date(`${appointment.date}T${startTimeStr}`);
+        
+      const now = new Date();
+      const diffInMs = appointmentDateTime - now;
+      const diffInHours = diffInMs / (1000 * 60 * 60);
+
+      return diffInHours >= 1; // Thỏa mãn điều kiện trước 1 tiếng
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleCancelClick = async (appointmentId) => {
+    if (window.confirm("Bạn có chắc chắn muốn hủy lịch khám này không?")) {
+        try {
+            setLoading(true); // Bật hiệu ứng chờ khi gọi API
+            const userId = localStorage.getItem('userId');
+            await appointmentService.cancelAppointment(appointmentId, userId);
+            
+            toast.success("Hủy lịch thành công!");
+            await fetchData(); // Gọi lại hàm để cập nhật lại danh sách mới từ database
+        } catch (error) {
+            // Lấy chuỗi thông báo lỗi chi tiết từ backend nếu có
+            toast.error(error.message || error || "Hủy lịch thất bại"); 
+        } finally {
+            setLoading(false);
+        }
+    }
+  };
 
   // Hàm xử lý lấy dữ liệu Bệnh án & Hóa đơn
   const handleOpenDetail = async (appointmentId) => {
     try {
       setLoading(true);
-
-      // 1. Lấy bệnh án từ appointmentId
       const record = await medicalRecordService.getByAppointment(appointmentId);
 
-      // 2. Lấy hóa đơn từ record.id (không bắt buộc phải có)
       let invoice = null;
       try {
         invoice = await invoiceService.getByMedicalRecord(record.id);
       } catch {
-        // Hóa đơn chưa có — bình thường, vẫn mở bệnh án
+        // Không có hóa đơn vẫn mở được bệnh án thường
       }
 
-      // 3. Gộp data
       const fullData = {
         ...record,
         ...(invoice || {}),
@@ -119,17 +154,28 @@ export default function MyBookings() {
                   <span className={styles.code}>Mã phiếu: <strong>{b.queueNumber}</strong></span>
                 </div>
 
-                {/* THÊM NÚT XEM CHI TIẾT KHI ĐÃ HOÀN THÀNH */}
-                {b.status === 'COMPLETED' && (
-                  <div className={styles.actions}>
+                {/* --- KHU VỰC CHỨA CÁC NÚT HÀNH ĐỘNG (ACTIONS) --- */}
+                <div className={styles.actions}>
+                  {/* Nút Xem bệnh án & Hóa đơn (Chỉ hiện khi trạng thái COMPLETED) */}
+                  {b.status === 'COMPLETED' && (
                     <button 
                       className={styles.btnDetail}
                       onClick={() => handleOpenDetail(b.id)}
                     >
                       📄 Xem bệnh án & Hóa đơn
                     </button>
-                  </div>
-                )}
+                  )}
+
+                  {/* NÚT HỦY LỊCH KHÁM MỚI THÊM VÀO (Chỉ hiện khi đủ điều kiện canCancel) */}
+                  {canCancel(b) && (
+                    <button 
+                      className={styles.btnCancel}
+                      onClick={() => handleCancelClick(b.id)}
+                    >
+                      ❌ Hủy lịch khám
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className={styles.cardRight}>
@@ -142,7 +188,7 @@ export default function MyBookings() {
         })}
       </div>
 
-      {/* RENDER MODAL TẠI ĐÂY */}
+      {/* RENDER MODAL */}
       {showModal && (
         <PatientModalPatient 
           patient={selectedData} 

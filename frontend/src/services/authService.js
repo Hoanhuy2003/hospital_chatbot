@@ -12,9 +12,9 @@ export const authService = {
             email : userData.email,
             password : userData.password,
             retype_password : userData.retypePassword,
-            date_of_birth : userData.dateOfBirth,
-            gender : userData.gender
-            
+            date_of_birth : userData.dateOfBirth || null,
+            gender : userData.gender,
+            address : userData.address || null,
         };
         try {
             const response = await api.post('/auth/register', payload);

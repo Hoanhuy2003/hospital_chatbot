@@ -39,4 +39,7 @@ public class UpdateUserDTO {
 
     @JsonProperty("insurance_benefit_level")
     private Integer insuranceBenefitLevel;
+
+    @JsonProperty("gender")
+    private String gender;
 }

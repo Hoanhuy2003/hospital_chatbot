@@ -220,6 +220,45 @@ public class AppointmentService implements IAppointmentService {
                 .map(AppointmentResponse::fromAppointment)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void cancelAppointment(Long id, Long userId) throws Exception {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(()-> new DataNotFoundException("Không có lịch hẹn nào"));
+        if(!appointment.getPatient().getId().equals(userId)){
+            throw  new Exception("Bạn không có quyền hủy lịch khám");
+
+        }
+        if("CONFIRMED".equalsIgnoreCase(appointment.getStatus().toString())){
+            throw new Exception("Bác sĩ đã xác nhận lịch khám, bạn không thể tự hủy.");
+        }
+        if ("CANCELLED".equalsIgnoreCase(appointment.getStatus().toString())) {
+            throw new Exception("Lịch hẹn này đã được hủy trước đó.");
+        }
+
+        String timeSlot = appointment.getSchedule().getTimeSlot(); // Ví dụ: "08:00_09:00"
+        String startTimeStr = timeSlot.split("_")[0]; // Lấy "08:00"
+
+        LocalTime startTime = LocalTime.parse(startTimeStr);
+        LocalDateTime appointmentDateTime = LocalDateTime.of(appointment.getSchedule().getDate(), startTime);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(appointmentDateTime.minusHours(1))) {
+            throw new Exception("Bạn chỉ có thể hủy lịch trước giờ khám ít nhất 1 tiếng.");
+        }
+
+        appointment.setStatus(Appointment.Status.CANCELLED);
+        appointmentRepository.save(appointment);
+
+
+        Schedule schedule = appointment.getSchedule();
+        if(schedule != null){
+            if(schedule.getCurrentPatients() > 0){
+                schedule.setCurrentPatients(schedule.getCurrentPatients() - 1);
+                scheduleRepository.save(schedule);
+            }
+        }
+    }
 //    @Override
 //    public List<AppointmentResponse> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate date) {
 //        List<Appointment> appointments = appointmentRepository.findByDoctorIdAndDate(doctorId, date);

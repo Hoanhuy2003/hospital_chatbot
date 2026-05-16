@@ -50,7 +50,21 @@ export const appointmentService = {
    ,getAll : async() =>{
     const response = await api.get(`/v1/appointments/all`);
     return response.data;
+   },
+
+   cancelAppointment : async(id, userId) =>{
+    try {
+        const response = await api.put(`/v1/appointments/${id}/cancel`,null, {
+            params: {userId}
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Không thể hủy lịch khám";
+        
+    }
+
    }
+
 
 }
 

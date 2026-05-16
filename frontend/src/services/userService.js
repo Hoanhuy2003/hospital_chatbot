@@ -13,6 +13,7 @@ export const userService = {
       email:                    data.email,
       date_of_birth:            data.dateOfBirth || null,
       address:                  data.address,
+      gender:                   data.gender || null,
       avatar_url:               data.avatarUrl || null,
       // Bảo hiểm y tế
       health_insurance_number:  data.healthInsuranceNumber || null,

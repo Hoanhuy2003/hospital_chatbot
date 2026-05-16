@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/appointments")
@@ -82,6 +83,29 @@ public class AppointmentController {
             return ResponseEntity.ok(appointments);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Lỗi: " +e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/cancel")
+    // Đảm bảo chỉ có người dùng có vai trò PATIENT (Bệnh nhân) mới gọi được API này
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<?> cancelAppointment(
+            @PathVariable("id") Long id,
+            @RequestParam("userId") Long userId
+    ) {
+        try {
+            // Gọi service xử lý logic: check 1h, check status, check owner
+            appointmentService.cancelAppointment(id, userId);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Hủy lịch khám thành công",
+                    "status", "CANCELLED"
+            ));
+        } catch (Exception e) {
+            // Trả về lỗi 400 kèm thông báo cụ thể (ví dụ: "Bác sĩ đã xác nhận không thể hủy")
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", e.getMessage()
+            ));
         }
     }
 

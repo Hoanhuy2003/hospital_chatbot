@@ -2,7 +2,9 @@ package com.nguyenhuyhoan.hospital.controllers;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.DoctorDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.DoctorResponse;
+import com.nguyenhuyhoan.hospital.dtos.responses.DoctorSelfProfileResponse;
 import com.nguyenhuyhoan.hospital.iservices.IDoctorService;
+import com.nguyenhuyhoan.hospital.securitis.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -10,7 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -22,7 +24,6 @@ import java.util.List;
 public class DoctorController {
 
     private final IDoctorService doctorService;
-
 
     @PostMapping(value = "/promote", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDoctor(@Valid @ModelAttribute DoctorDTO doctorDTO) {
@@ -48,7 +49,7 @@ public class DoctorController {
     public ResponseEntity<?> getAllDoctor(@RequestParam(required = false) String keyword,
                                           @RequestParam(required = false) Long specialtyId,
                                           @RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "10")int size){
+                                          @RequestParam(defaultValue = "12")int size){
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("id").descending());
         return ResponseEntity.ok(doctorService.getAllDoctors(keyword, specialtyId, pageRequest));
     }

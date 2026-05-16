@@ -104,7 +104,7 @@ public class AuthController {
 
             // Nếu là DOCTOR thì tra thêm doctorId và clinicId
             if ("DOCTOR".equals(user.getRole().getName())) {
-                doctorRepository.findByUserId(user.getId()).ifPresent(doctor -> {
+                doctorRepository.findByUser_Id(user.getId()).ifPresent(doctor -> {
                     builder.doctorId(doctor.getId());
                     if (doctor.getClinic() != null) {
                         builder.clinicId(doctor.getClinic().getId());

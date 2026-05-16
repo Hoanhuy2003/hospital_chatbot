@@ -54,15 +54,14 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
         } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"message\":\"Token hết hạn, vui lòng đăng nhập lại\"}");
+            // Token hết hạn: tiếp tục như chưa đăng nhập. Các route permitAll (vd. chatbot) vẫn dùng được
+            // khi localStorage còn token cũ; route cần authenticated sẽ trả 403.
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
             return;
-
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"message\":\"Token không hợp lệ\"}");
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
             return;
         }
 

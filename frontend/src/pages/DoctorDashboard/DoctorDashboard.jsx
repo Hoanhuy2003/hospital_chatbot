@@ -7,6 +7,7 @@ import PatientModal from './components/PatientModal'
 import RecordList from './components/RecordList'
 import NextAppointments from './components/NextAppointments'
 import DoctorSchedule from './components/DoctorSchedule'
+import DoctorProfile from './components/DoctorProfile'
 import { appointmentService } from '../../services/appointmentService'
 import { medicalRecordService } from '../../services/medicalRecordService' // Thêm service này
 import { toast } from 'react-toastify'
@@ -19,6 +20,7 @@ const PAGE_TITLES = {
   patients:          'Danh sách bệnh nhân',
   records:           'Bệnh án',
   next:              'Lịch hẹn lần sau',
+  profile:           'Thông tin cá nhân',
 }
 
 export default function DoctorDashboard() {
@@ -78,6 +80,11 @@ export default function DoctorDashboard() {
   function openPatient(id, tab = 0) {
     const selected = appointments.find(a => a.id === id);
     if (selected) {
+
+      if (selected.status === 'cancelled') {
+        toast.warning("Lịch hẹn này đã bị bệnh nhân hủy, không thể tiến hành khám!");
+        return; // Dừng lại, không setSelPt nên Modal sẽ không mở
+      }
       setSelPt({
         ...selected,
         specialtyId: selected.specialtyId
@@ -124,6 +131,7 @@ export default function DoctorDashboard() {
               )}
               {page === 'records'           && <RecordList    {...pageProps} />}
               {page === 'next'              && <NextAppointments list={nextAppts} />}
+              {page === 'profile'           && <DoctorProfile />}
             </>
           )}
         </div>

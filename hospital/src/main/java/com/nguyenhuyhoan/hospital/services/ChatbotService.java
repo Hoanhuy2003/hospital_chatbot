@@ -7,104 +7,107 @@ import com.nguyenhuyhoan.hospital.enums.StatusSession;
 import com.nguyenhuyhoan.hospital.models.*;
 import com.nguyenhuyhoan.hospital.repositoris.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatbotService {
+
     private final ChatbotFaqRepository chatbotFaqRepository;
     private final SymptomSpecialtyMappingRepository symptomRepository;
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final RestTemplate restTemplate;
 
-//    public String getBotResponse(String userMessage){
-//
-//        // kiểm tra faq( địa chỉ, thủ tục)
-//        String cleanMessage = userMessage.toLowerCase().trim();
-//
-//        List<ChatbotFaq> faqList = chatbotFaqRepository.searchFaq(cleanMessage);
-//
-//        if(!faqList.isEmpty()){
-//            return faqList.get(0).getAnswer();
-//        }
-//
-//        // kiểm tra triệu chứng
-//        List<SymptomSpecialtyMapping> symptoms = symptomRepository.findMatchedSymptoms(cleanMessage);
-//        if(!symptoms.isEmpty()){
-//            SymptomSpecialtyMapping match = symptoms.get(0);
-//            String specialtyName = match.getSpecialty().getName();
-//
-//            return "Dựa trên triệu chứng '" + match.getSymptomName() + "' bạn mô tả, " +
-//                    "tôi khuyên bạn nên đăng ký khám tại: **" + specialtyName + "**. " +
-//                    "Ghi chú: " + (match.getDescription() != null ? match.getDescription() : "Đây là chuyên khoa phù hợp nhất.");
-//        }
-//
-//
-//        return "Xin lỗi, tôi chưa hiểu ý bạn";
-//    }
+    @Value("${ai.python-url}")
+    private String pythonAiUrl;
 
     @Transactional
     public String processChat(Long userId, String userContent) {
-        ChatSession session = sessionRepository.findFirstByUserIdAndStatusOrderByStartedAtDesc(userId, StatusSession.ACTIVE)
-                .orElseGet(()-> createNewSession(userId));
-        saveMessage(session, userContent, Sender.USER, Message.TEXT);
-
-        String botReply = "Dữ liệu trả về từ logic của bạn...";
-
-        saveMessage(session, botReply, Sender.BOT, Message.TEXT);
-
-        // BƯỚC 3: Tra cứu FAQ (Hỏi đáp nhanh)
-        List<ChatbotFaq> faqs = chatbotFaqRepository.searchFaq(userContent.toLowerCase());
-        if (!faqs.isEmpty()) {
-            String faqAnswer = faqs.get(0).getAnswer();
-            saveMessage(session, faqAnswer, Sender.BOT, Message.TEXT);
-            return faqAnswer;
+        // Lưu tin nhắn người dùng (nếu đã đăng nhập thì gắn session)
+        ChatSession session = null;
+        if (userId != null) {
+            session = sessionRepository
+                    .findFirstByUserIdAndStatusOrderByStartedAtDesc(userId, StatusSession.ACTIVE)
+                    .orElseGet(() -> createNewSession(userId));
+            saveMessage(session, userContent, Sender.USER, Message.TEXT);
         }
 
-        // BƯỚC 4: Tra cứu Triệu chứng (Tư vấn chuyên khoa)
-        List<SymptomSpecialtyMapping> symptoms = symptomRepository.findMatchedSymptoms(userContent.toLowerCase());
+        String botReply = resolveReply(userContent);
+
+        // Lưu câu trả lời bot vào session
+        if (session != null) {
+            saveMessage(session, botReply, Sender.BOT, Message.TEXT);
+        }
+
+        return botReply;
+    }
+
+    private String resolveReply(String userContent) {
+        String clean = userContent.toLowerCase().trim();
+
+        // 1. Tra cứu FAQ trước
+        List<ChatbotFaq> faqs = chatbotFaqRepository.searchFaq(clean);
+        if (!faqs.isEmpty()) {
+            return faqs.get(0).getAnswer();
+        }
+
+        // 2. Mapping triệu chứng → chuyên khoa
+        List<SymptomSpecialtyMapping> symptoms = symptomRepository.findMatchedSymptoms(clean);
         if (!symptoms.isEmpty()) {
             SymptomSpecialtyMapping match = symptoms.get(0);
-            String symptomAnswer = "Dựa trên triệu chứng '" + match.getSymptomName() +
-                    "', bạn nên khám tại: " + match.getSpecialty().getName();
-            saveMessage(session, symptomAnswer, Sender.BOT, Message.TEXT);
-            return symptomAnswer;
+            return "Dựa trên triệu chứng \"" + match.getSymptomName() + "\", bạn nên đến khám tại **"
+                    + match.getSpecialty().getName() + "**. "
+                    + (match.getDescription() != null ? match.getDescription() : "")
+                    + " Bạn có muốn đặt lịch khám ngay không?";
         }
 
-        // BƯỚC 5: Gọi AI (Tạm thời trả về câu mặc định, tí nữa mình sẽ lắp Python vào đây)
-        String fallbackAnswer = "Tôi chưa rõ ý bạn, bạn có thể mô tả kỹ hơn hoặc để tôi kết nối với tư vấn viên nhé?";
+        // 3. Gọi Gemini AI qua Python FastAPI
+        return callPythonAI(userContent);
+    }
 
-        // BƯỚC 6: Phản hồi & Lưu tin nhắn của Bot (BOT)
-        saveMessage(session, fallbackAnswer, Sender.BOT, Message.TEXT);
-
-        return fallbackAnswer;
-
+    @SuppressWarnings("unchecked")
+    private String callPythonAI(String message) {
+        try {
+            Map<String, String> request = Map.of("message", message);
+            ResponseEntity<Map> response = restTemplate.postForEntity(pythonAiUrl, request, Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Object reply = response.getBody().get("reply");
+                if (reply != null) return reply.toString();
+            }
+        } catch (Exception e) {
+            log.warn("Không thể gọi Python AI: {}", e.getMessage());
+        }
+        return "Xin lỗi, tôi chưa hiểu câu hỏi của bạn. Bạn có thể mô tả triệu chứng cụ thể hơn, hoặc gọi hotline **024 3869 3731** để được hỗ trợ trực tiếp.";
     }
 
     private ChatSession createNewSession(Long userId) {
         User user = userRepository.findById(userId).orElseThrow();
         return sessionRepository.save(ChatSession.builder()
                 .user(user)
-                .sessionId(UUID.randomUUID().toString()) // Tạo chuỗi ngẫu nhiên cho session_id
+                .sessionId(UUID.randomUUID().toString())
                 .channelType(ChannelType.WEB)
                 .status(StatusSession.ACTIVE)
                 .build());
     }
 
     private void saveMessage(ChatSession session, String content, Sender sender, Message type) {
-        ChatMessage message = ChatMessage.builder()
+        messageRepository.save(ChatMessage.builder()
                 .session(session)
                 .senderType(sender)
                 .messageType(type)
-                .messageText(content) // Lưu dạng JSON cho trường payload
-                .build();
-        messageRepository.save(message);
+                .messageText(content)
+                .build());
     }
-
-
 }
