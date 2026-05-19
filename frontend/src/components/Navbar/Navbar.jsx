@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useBooking } from '../../context/BookingContext'
 import { useAuth } from '../../context/AuthContext'
 import ProfileModal from '../ProfileModal/ProfileModal'
+import logoBachMai from '../../assets/images/logo_benh_vien.png';
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
@@ -46,7 +47,13 @@ export default function Navbar() {
     <>
       <nav className={styles.nav}>
         <div className={styles.inner}>
-          <Link to="/" className={styles.logo}>Med<span>Care</span></Link>
+          <Link to="/" className={styles.logo}>
+          <img 
+    src={logoBachMai} 
+    alt="Logo Bệnh viện Bạch Mai" 
+    className={styles.logoImg} 
+  />
+          </Link>
 
           <div className={`${styles.links} ${menuOpen ? styles.open : ''}`}>
             {links.map(l => (

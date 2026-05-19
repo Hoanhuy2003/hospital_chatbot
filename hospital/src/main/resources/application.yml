@@ -31,6 +31,10 @@ spring:
 server:
   port: 8080
 
+# URL frontend (để chatbot chèn link đặt khám / chi tiết bác sĩ)
+app:
+  frontend-url: http://localhost:3000
+
 jwt:
   secretKey: "unRgKLqmtvb/9icGgNImphNA9WMs5qCVkrQtH4sKV2w="
   expiration: 2592000
@@ -59,3 +63,9 @@ vnpay:
   return-url: http://localhost:8080/api/v1/payment/vnpay-return
   # Sau khi xác thực xong, backend redirect về trang này
   frontend-result-url: http://localhost:3000/payment/result
+# Trong file application.properties
+
+gemini:
+  api:
+    key: "AIzaSyAh2hROOH-TyYjhXWXK_XKqz5jCi5dB7qc"
+    url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"

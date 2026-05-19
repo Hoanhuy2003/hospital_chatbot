@@ -46,6 +46,19 @@ api.interceptors.response.use(
     }
 );
 
+export const statisticService = {
+    getHomeStats: async () => {
+        try {
+            // URL hoàn chỉnh sau khi nối: http://localhost:8080/api/v1/public/statistics/home-stats
+            const response = await api.get('/v1/public/statistics/home-stats');
+            return response.data;
+        } catch (error) {
+            console.error('Failed to fetch home statistics:', error);
+            throw error;
+        }
+    }
+};
+
 // API Service cho Chuyên khoa
 export const specialtyService = {
     getAll: async () => {

@@ -70,33 +70,45 @@ public class ClinicService implements IClinicService {
     }
 
     @Override
-    public ClinicResponse updateClinic(Long id, ClinicDTO clinicDTO) throws IOException {
+    @Transactional // Nên thêm @Transactional để đảm bảo tính toàn vẹn dữ liệu khi có liên kết bảng
+    public ClinicResponse updateClinic(Long id, ClinicDTO clinicDTO) throws IOException, DataNotFoundException {
+        // 1. Tìm phòng khám cũ trong CSDL
         Clinic clinic = clinicRepository.findById(id)
-                .orElseThrow(()-> new DataNotFoundException("Phòng khám không tồn tại"));
+                .orElseThrow(() -> new DataNotFoundException("Phòng khám không tồn tại"));
 
-        if(clinicDTO.getName() != null) clinic.setName(clinic.getName());
-        if(clinicDTO.getPhone()!= null) clinic.setPhone(clinic.getPhone());
-        if(clinicDTO.getAddress()!= null) clinic.setAddress(clinic.getAddress());
+        // 💡 Đust ĐÃ SỬA: Lấy dữ liệu mới từ clinicDTO để gán vào entity clinic (Tránh gán ngược)
+        if (clinicDTO.getName() != null) {
+            clinic.setName(clinicDTO.getName());
+        }
+        if (clinicDTO.getPhone() != null) {
+            clinic.setPhone(clinicDTO.getPhone());
+        }
+        if (clinicDTO.getAddress() != null) {
+            clinic.setAddress(clinicDTO.getAddress());
+        }
 
-        if(clinicDTO.getSpecialtyId() != null){
+        // 2. Xử lý cập nhật liên kết Chuyên khoa
+        if (clinicDTO.getSpecialtyId() != null) {
             Specialty specialty = specialtyRepository.findById(clinicDTO.getSpecialtyId())
-                    .orElseThrow(()-> new DataNotFoundException("Chuyên khoa không tồn tại"));
+                    .orElseThrow(() -> new DataNotFoundException("Chuyên khoa không tồn tại"));
             clinic.setSpecialty(specialty);
         }
 
-        if(clinicDTO.getPhotoUrl()!=null && !clinicDTO.getPhotoUrl().isEmpty()){
+        // 3. Cập nhật trạng thái hoạt động (Phục vụ nút Khóa/Mở khóa trực tiếp từ hàm PUT)
+        if (clinicDTO.getIsActive() != null) {
+            clinic.setIsActive(clinicDTO.getIsActive());
+        }
+
+        // 4. Xử lý upload ảnh mới lên Cloudinary (nếu có truyền file)
+        if (clinicDTO.getPhotoUrl() != null && !clinicDTO.getPhotoUrl().isEmpty()) {
             String newPhotoUrl = cloudinaryService.uploadClinicImage(clinicDTO.getPhotoUrl());
             clinic.setPhotoUrl(newPhotoUrl);
         }
 
-//        if(clinicDTO.getDoctorId() != null){
-//            Doctor doctor = doctorRepository.findById(id)
-//                    .orElseThrow(()-> new DataNotFoundException("Không có bác sỹ này trong phòng khám"));
-//            clinic.setDoctor(doctor);
-//        }
-         return ClinicResponse.fromClinic(clinicRepository.save(clinic));
+        // 5. Lưu lại vào DB và trả về Response dạng chuẩn của bạn
+        Clinic updatedClinic = clinicRepository.save(clinic);
+        return ClinicResponse.fromClinic(updatedClinic);
     }
-
     @Override
     @Transactional
     public void deleteClinic(Long id) throws DataNotFoundException {

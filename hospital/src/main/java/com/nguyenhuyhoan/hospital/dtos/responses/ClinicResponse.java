@@ -20,6 +20,7 @@ public class ClinicResponse {
     private String phone;
     private String specialtyName;
     private String address;
+    private String description;
     private String photoUrl;
     //private String doctorName;
     private Boolean isActive;
@@ -34,6 +35,7 @@ public class ClinicResponse {
                 .phone(clinic.getPhone())
                 .specialtyName(clinic.getSpecialty().getName())
                 .address(clinic.getAddress())
+                .description(clinic.getDescription())
                 .photoUrl(clinic.getPhotoUrl())
      //           .doctorName(clinic.getDoctor().getUser().getFullName())
                 .isActive(clinic.getIsActive())

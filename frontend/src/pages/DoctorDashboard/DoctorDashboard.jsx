@@ -16,7 +16,7 @@ import styles from './DoctorDashboard.module.css'
 const PAGE_TITLES = {
   dashboard:         'Tổng quan',
   schedule:          'Lịch khám hôm nay',
-  register_schedule: 'Đăng ký lịch trực',
+  register_schedule: 'Đăng ký lịch khám',
   patients:          'Danh sách bệnh nhân',
   records:           'Bệnh án',
   next:              'Lịch hẹn lần sau',

@@ -17,6 +17,10 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 _raw_key = os.getenv("GEMINI_API_KEY") or ""
 api_key = _raw_key.strip().strip("\ufeff").strip('"').strip("'")
 
+FRONTEND_BASE = (
+    os.getenv("FRONTEND_BASE", "http://localhost:3000").rstrip("/")
+)
+
 if not api_key:
     print("❌ LỖI: Không tìm thấy GEMINI_API_KEY trong file .env (cùng thư mục main.py)!")
 else:
@@ -34,10 +38,10 @@ app.add_middleware(
 
 # Ưu tiên model còn được Google mở cho key mới (1.5 đôi khi 404 / không còn list)
 MODEL_CANDIDATES = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-001",
     "gemini-1.5-flash",
     "gemini-1.5-flash-latest",
+    # "gemini-2.0-flash",
+    # "gemini-2.0-flash-001",
     "gemini-flash-latest",
 ]
 
@@ -68,7 +72,8 @@ def _pick_working_model():
         log.warning("Không list được model: %s — dùng model mặc định", e)
 
     # Key mới thường dùng được 2.0 Flash
-    return "gemini-2.0-flash"
+    # return "gemini-2.0-flash"
+    return "models/gemini-1.5-flash"
 
 
 def _text_from_response(response) -> str | None:
@@ -129,7 +134,7 @@ SYMPTOM_DATA = """
 - Khoa Cơ Xương Khớp: Đau khớp, đau lưng, cứng khớp, chấn thương vận động.
 - Khoa Tai Mũi Họng: Đau họng, ngạt mũi, viêm xoang, ù tai, chảy máu cam.
 - Khoa Da Liễu: Nổi mẩn, ngứa da, mụn trứng cá, rụng tóc, viêm da.
-- Khoa Tiêu Hóa: Đau dạ dày, tiêu chảy, táo bón, đầy hơi, ợ chua, vàng da.
+- Khoa Tiêu Hóa: Đau dạ dày,đau bụng tiêu chảy, táo bón, đầy hơi, ợ chua, vàng da.
 - Khoa Thần Kinh: Đau đầu dữ dội, chóng mặt, tê bì tay chân, co giật, mất ngủ.
 - Khoa Mắt: Mờ mắt, đau mắt, đỏ mắt, chảy nước mắt, nhìn đôi.
 - Khoa Nội Tiết: Tiểu đường, béo phì, tuyến giáp, mệt mỏi kéo dài.
@@ -140,8 +145,8 @@ SYMPTOM_DATA = """
 SYSTEM_PROMPT = f"""Bạn là trợ lý AI của Bệnh viện Bạch Mai - một trong những bệnh viện hàng đầu Việt Nam.
 Nhiệm vụ của bạn:
 1. Tư vấn bệnh nhân nên khám tại khoa nào dựa trên triệu chứng họ mô tả.
-2. Trả lời các câu hỏi về dịch vụ, thủ tục, giờ làm việc của bệnh viện.
-3. Hướng dẫn đặt lịch khám trực tuyến qua hệ thống.
+2. Sau khi gợi ý khoa, hướng dẫn họ **đặt khám trên website**: mở danh sách bác sĩ và chọn lịch tại {FRONTEND_BASE}/tim-kiem (lọc theo chuyên khoa), hoặc vào trang chi tiết bác sĩ tại {FRONTEND_BASE}/bac-si/<mã-bác-sĩ> nếu họ đã biết tên.
+3. Trả lời các câu hỏi về dịch vụ, thủ tục, giờ làm việc của bệnh viện.
 
 Thông tin các khoa và triệu chứng:
 {SYMPTOM_DATA}
@@ -154,10 +159,10 @@ Thông tin bệnh viện:
 - Hỗ trợ bảo hiểm y tế theo quy định của Bộ Y tế.
 
 Quy tắc trả lời:
-- Trả lời bằng tiếng Việt, thân thiện và ngắn gọn (dưới 150 từ).
-- Không chuẩn đoán bệnh, chỉ gợi ý khoa khám phù hợp.
+- Trả lời bằng tiếng Việt, thân thiện và ngắn gọn (dưới 180 từ).
+- Không chẩn đoán chính xác bệnh, chỉ gợi ý khoa khám phù hợp.
+- Luôn kết thúc bằng: nhắc bệnh nhân bấm đặt khám tại {FRONTEND_BASE}/tim-kiem (và dán nguyên URL này để họ mở được).
 - Nếu triệu chứng nghiêm trọng (đau ngực dữ dội, khó thở, bất tỉnh) hãy khuyên gọi cấp cứu 115 ngay.
-- Kết thúc câu trả lời bằng lời mời đặt lịch khám nếu phù hợp.
 """
 
 class ChatRequest(BaseModel):

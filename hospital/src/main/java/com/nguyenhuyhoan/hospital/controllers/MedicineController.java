@@ -34,6 +34,14 @@ public class MedicineController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody MedicineDTO medicineDTO){
+        try {
+            return ResponseEntity.ok(medicineService.update(id, medicineDTO));
+        } catch (DataNotFoundException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         try {

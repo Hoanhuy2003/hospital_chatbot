@@ -17,16 +17,17 @@ public class ChatbotController {
     private final ChatbotService chatbotService;
 
     @PostMapping("/chat")
-    public ResponseEntity<String> chat(@RequestBody ChatDTO request) {
+    public ResponseEntity<?> chat(@RequestBody ChatDTO request) { // Đổi sang ResponseEntity<?>
         try {
-            // Bước này sẽ thực hiện toàn bộ 6 bước: Session -> Save -> FAQ -> Symptom -> AI -> Response
+            // Thực hiện toàn bộ 6 bước xử lý dưới Service
             String reply = chatbotService.processChat(request.getUserId(), request.getMessage());
 
-            return ResponseEntity.ok(reply);
+            // BỌC VÀO MAP ĐỂ TRẢ VỀ ĐỊNH DẠNG JSON CHUẨN: {"reply": "..."}
+            return ResponseEntity.ok(Map.of("reply", reply));
         } catch (Exception e) {
-            // Log lỗi ra console để Hoàn dễ debug
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Lỗi hệ thống: " + e.getMessage());
+            // Trả về lỗi dạng JSON cho đồng bộ hệ thống
+            return ResponseEntity.internalServerError().body(Map.of("error", "Lỗi hệ thống: " + e.getMessage()));
         }
     }
 }

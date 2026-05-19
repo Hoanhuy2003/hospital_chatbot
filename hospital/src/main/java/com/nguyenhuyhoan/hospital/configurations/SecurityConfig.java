@@ -93,6 +93,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").authenticated()
 
+                        .requestMatchers(HttpMethod.POST, "/api/v1/clinics").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/clinics/**").hasRole("ADMIN")
+
                         // ── Medical Records ──
                         // GET: bệnh nhân, bác sĩ, admin đều được xem
                         .requestMatchers(HttpMethod.GET,  "/api/v1/medical_records/**").permitAll()

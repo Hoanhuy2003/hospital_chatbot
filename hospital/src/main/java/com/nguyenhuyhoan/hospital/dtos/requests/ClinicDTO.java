@@ -27,6 +27,9 @@ public class ClinicDTO {
     @JsonProperty("specialty_id")
     private Long specialtyId;
 
+    @JsonProperty("description")
+    private String description;
+
 
     // Thông tin Bác sĩ phụ trách
 

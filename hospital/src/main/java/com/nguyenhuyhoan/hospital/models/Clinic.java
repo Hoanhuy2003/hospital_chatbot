@@ -31,6 +31,10 @@ public class Clinic {
     @Column(name = "photo_url")
     private String photoUrl;
 
+
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 //    @ManyToOne
 //    @JoinColumn(name = "doctor_id")
 //    private Doctor doctor;

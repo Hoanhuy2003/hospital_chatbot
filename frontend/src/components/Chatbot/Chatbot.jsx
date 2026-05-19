@@ -12,14 +12,26 @@ const QUICK_OPTIONS = [
   { label: '🏥 Bảo hiểm',      msg: 'Bệnh viện có hỗ trợ bảo hiểm y tế không?' },
 ]
 
-// Render **bold** trong text
+// Render **bold**, link http(s), và xuống dòng
 function renderText(text) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/)
-  return parts.map((p, i) =>
-    p.startsWith('**') && p.endsWith('**')
-      ? <strong key={i}>{p.slice(2, -2)}</strong>
-      : <span key={i}>{p}</span>
-  )
+  if (text == null) return null
+  const lines = String(text).split('\n')
+  return lines.map((line, lineIdx) => (
+    <span key={lineIdx}>
+      {lineIdx > 0 && <br />}
+      {line.split(/(\*\*[^*]+\*\*|https?:\/\/[^\s<]+)/g).map((p, i) => {
+        if (p.startsWith('**') && p.endsWith('**'))
+          return <strong key={i}>{p.slice(2, -2)}</strong>
+        if (/^https?:\/\//.test(p))
+          return (
+            <a key={i} href={p} target="_blank" rel="noopener noreferrer" className={styles.inlineLink}>
+              {p}
+            </a>
+          )
+        return <span key={i}>{p}</span>
+      })}
+    </span>
+  ))
 }
 
 export default function Chatbot() {
@@ -60,8 +72,11 @@ export default function Chatbot() {
     setTyping(true)
     try {
       const userId = user?.id ? Number(user.id) : null
-      const reply = await chatbotService.sendMessage(t, userId)
-      setMessages(prev => [...prev, { role: 'bot', text: reply }])
+      const data = await chatbotService.sendMessage(t, userId)
+      
+      // SỬA DÒNG NÀY: bốc thuộc tính .reply (chuỗi string) để không bị lỗi .split
+      setMessages(prev => [...prev, { role: 'bot', text: data.reply }]) 
+      
     } catch {
       setMessages(prev => [...prev, {
         role: 'bot',

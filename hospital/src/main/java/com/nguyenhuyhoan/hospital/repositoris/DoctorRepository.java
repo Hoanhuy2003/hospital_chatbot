@@ -2,6 +2,7 @@ package com.nguyenhuyhoan.hospital.repositoris;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.ClinicStatDTO;
 import com.nguyenhuyhoan.hospital.models.Doctor;
+import com.nguyenhuyhoan.hospital.models.Specialty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     List<Doctor> findByClinicId(Long clinicId);
 
     List<Doctor> findBySpecialtyId(Long specialtyId);
+
+    List<Doctor> findBySpecialty(Specialty specialty);
 
     java.util.Optional<Doctor> findByUser_Id(Long userId);
 

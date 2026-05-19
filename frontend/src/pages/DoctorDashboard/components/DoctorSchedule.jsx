@@ -107,7 +107,7 @@ export default function DoctorSchedule({ doctorId, clinicId }) {
       {/* ========== PHẦN 1: ĐĂNG KÝ LỊCH MỚI ========== */}
       <section className={styles.card}>
         <div className={styles.cardHeader}>
-          <h3 className={styles.cardTitle}>Đăng ký ca trực</h3>
+          <h3 className={styles.cardTitle}>Đăng ký ca khám</h3>
           <p className={styles.cardSub}>Chọn ngày và các khung giờ bạn muốn nhận bệnh nhân</p>
         </div>
 

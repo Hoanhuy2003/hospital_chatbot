@@ -6,7 +6,7 @@ import styles from './DoctorSidebar.module.css'
 const NAV = [
   { key: 'dashboard',         icon: '📊', label: 'Tổng quan'           },
   { key: 'schedule',          icon: '📅', label: 'Lịch khám hôm nay'   },
-  { key: 'register_schedule', icon: '🗓️', label: 'Đăng ký lịch trực'   },
+  { key: 'register_schedule', icon: '🗓️', label: 'Đăng ký lịch khám'   },
   { key: 'records',           icon: '📋', label: 'Bệnh án'             },
   { key: 'next',              icon: '🔔', label: 'Lịch hẹn lần sau'    },
   { key: 'profile',           icon: '👤', label: 'Thông tin cá nhân'   }, // <-- THÊM MỤC NÀY

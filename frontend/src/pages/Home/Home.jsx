@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import DoctorCard from '../../components/DoctorCard/DoctorCard'
 import BookingModal from '../../components/BookingModal/BookingModal'
 import { specialtyService } from '../../services/api'
 import { clinicService } from '../../services/clinicService'
 import { doctorService } from '../../services/doctorService'
+import { statisticService } from '../../services/api'
 import styles from './Home.module.css'
 
 
@@ -20,6 +22,28 @@ export default function Home() {
   const [error, setError] = useState(null)
   const [clinicsLoading, setClinicsLoading] = useState(true)
   const [clinicError, setClinicError] = useState(null)
+
+  const [systemStats,setSystemStats] = useState({
+    doctorsCount: 0,
+    clinicsCount: 0,
+    specialtiesCount: 0
+
+  })
+
+  useEffect(() => {
+  const fetchHomeStats = async () => {
+    try {
+      const data = await statisticService.getHomeStats();
+      if (data) {
+        setSystemStats(data); // Đổ dữ liệu động từ map CSDL vào giao diện công khai
+      }
+    } catch (error) {
+      console.error("Lỗi đồng bộ số liệu thống kê:", error);
+    }
+  };
+
+  fetchHomeStats();
+}, []);
 
  
 
@@ -112,12 +136,18 @@ export default function Home() {
             <button type="submit">Tìm kiếm</button>
           </form>
           <div className={styles.stats}>
-            {[['25+','Bệnh viện kết nối'],['1000+','Bác sĩ hoạt động'],['100+','Phòng khám đa khoa'],['40+','Chuyên khoa']].map(([n, l]) => (
-              <div key={l} className={styles.statItem}>
-                <span className={styles.statNum}>{n}</span>
-                <span className={styles.statLabel}>{l}</span>
-              </div>
-            ))}
+            <div className={styles.statItem}>
+              <span className={styles.statNum}>{systemStats.doctorsCount}+</span>
+              <span className={styles.statLabel}>Bác sĩ chuyên khoa</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNum}>{systemStats.clinicsCount}+</span>
+              <span className={styles.statLabel}>Phòng khám chức năng</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statNum}>{systemStats.specialtiesCount}+</span>
+              <span className={styles.statLabel}>Chuyên khoa điều trị</span>
+            </div>
           </div>
         </div>
       </div>

@@ -16,19 +16,18 @@
   gap: 32px;
 }
 
+/* Tìm đến đoạn chỉnh class .logo và thêm class con .logoImg vào */
 .logo {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: -0.5px;
-  flex-shrink: 0;
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  /* Các thuộc tính cũ của bạn giữ nguyên */
 }
 
-.logo span {
-  color: var(--teal);
+.logoImg {
+  height: 45px;       /* Chiều cao vừa vặn với thanh Navbar, Hoàn có thể tăng giảm tùy ý từ 40px - 50px */
+  width: auto;        /* Tự động co giãn chiều rộng theo tỉ lệ ảnh để không bị méo hình */
+  object-fit: contain;
 }
-
 .links {
   display: flex;
   gap: 24px;
