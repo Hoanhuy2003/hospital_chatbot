@@ -1,6 +1,7 @@
 package com.nguyenhuyhoan.hospital.controllers;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.AppointmentDTO;
+import com.nguyenhuyhoan.hospital.dtos.requests.AppointmentStatusPatchDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.AppointmentResponse;
 import com.nguyenhuyhoan.hospital.iservices.IAppointmentService;
 import jakarta.validation.Valid;
@@ -53,15 +54,15 @@ public class AppointmentController {
         return ResponseEntity.ok(responses);
     }
 
-    // 4. Cập nhật trạng thái cuộc hẹn (Xác nhận, Hủy, Hoàn thành)
-    // Ví dụ: PATCH /api/v1/appointments/1/status?status=CANCELLED
+    // 4. Cập nhật trạng thái (JSON body: status bắt buộc; cancellationReason bắt buộc khi status=CANCELLED)
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long id,
-            @RequestParam String status) {
+            @Valid @RequestBody AppointmentStatusPatchDTO body) {
         try {
-            AppointmentResponse response = appointmentService.updateStatus(id, status);
+            AppointmentResponse response = appointmentService.updateStatus(
+                    id, body.getStatus(), body.getCancellationReason());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

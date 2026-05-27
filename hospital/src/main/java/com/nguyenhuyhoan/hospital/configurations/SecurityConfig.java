@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/specialty/**").permitAll()
 
                         // ── Doctor ──
+                        .requestMatchers(HttpMethod.POST, "/api/v1/doctors/promote").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,  "/api/v1/doctors/me").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.PUT,  "/api/v1/doctors/me").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.GET,  "/api/v1/doctors/**").permitAll()
@@ -90,6 +91,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/payment/vnpay-return").permitAll()
 
                         // ── User profile (xem & sửa hồ sơ cá nhân) ──
+                        // Danh sách user (phân trang): chỉ ADMIN — GET /api/v1/users
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").authenticated()
 

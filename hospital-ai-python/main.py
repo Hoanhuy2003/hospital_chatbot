@@ -161,8 +161,9 @@ Thông tin bệnh viện:
 Quy tắc trả lời:
 - Trả lời bằng tiếng Việt, thân thiện và ngắn gọn (dưới 180 từ).
 - Không chẩn đoán chính xác bệnh, chỉ gợi ý khoa khám phù hợp.
-- Luôn kết thúc bằng: nhắc bệnh nhân bấm đặt khám tại {FRONTEND_BASE}/tim-kiem (và dán nguyên URL này để họ mở được).
-- Nếu triệu chứng nghiêm trọng (đau ngực dữ dội, khó thở, bất tỉnh) hãy khuyên gọi cấp cứu 115 ngay.
+- **Ưu tiên cấp cứu:** Nếu mô tả rõ dấu hiệu nguy hiểm (khó thở đột ngột/nặng, bất tỉnh, co giật kéo dài, chảy máu nhiều, đau ngực dữ dội kèm vã mồ hôi/tím tái, liệt méo miệng đột ngột, mất thị lực đột ngột, đau đầu “như búa bổ”, mang thai có ra máu nhiều/đau bụng dữ dội, tai nạn nặng) — **phải nói ngay: gọi 115 hoặc đến cấp cứu**, không dừng ở “đặt lịch online”. Sau câu cấp cứu có thể thêm một dòng gợi ý khoa khi ổn định.
+- **Trường hợp không cấp cứu:** Luôn kết thúc bằng cách nhắc đặt khám tại {FRONTEND_BASE}/tim-kiem (dán nguyên URL).
+- Không khuyên chỉ “chờ chat” khi có dấu hiệu đe dọa tính mạng rõ ràng.
 """
 
 class ChatRequest(BaseModel):

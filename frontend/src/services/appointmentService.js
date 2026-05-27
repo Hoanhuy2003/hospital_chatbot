@@ -37,10 +37,11 @@ export const appointmentService = {
         return response.data;
     },
 
-    updateStatus: async(id, status) => {
-        const response = await api.patch(`/v1/appointments/${id}/status`, null, {
-            params : {status: status.toUpperCase()}
-        });
+    updateStatus: async (id, status, cancellationReason) => {
+        const payload = { status: String(status).toUpperCase() };
+        const r = cancellationReason != null ? String(cancellationReason).trim() : '';
+        if (r) payload.cancellationReason = r;
+        const response = await api.patch(`/v1/appointments/${id}/status`, payload);
         return response.data;
     },
    getByDoctor: async(doctorId) =>{

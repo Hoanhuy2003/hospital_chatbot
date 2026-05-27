@@ -15,7 +15,7 @@ public interface IAppointmentService {
 
     List<AppointmentResponse> getByPatient(Long patientId);
 
-    AppointmentResponse updateStatus(Long id, String status) throws DataNotFoundException;
+    AppointmentResponse updateStatus(Long id, String status, String cancellationReason) throws DataNotFoundException;
 
     List<AppointmentResponse> getByDoctor(Long doctorId);
 

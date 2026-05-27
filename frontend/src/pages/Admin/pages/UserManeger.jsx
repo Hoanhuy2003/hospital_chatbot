@@ -68,8 +68,27 @@ export default function UserManager() {
     { key: 'fullName', label: 'Họ tên',    render: v => <strong>{v}</strong> },
     { key: 'email',    label: 'Email' },
     { key: 'phone',    label: 'SĐT' },
-    { key: 'role',     label: 'Vai trò',   render: v => <span className={styles.specBadge}>{v}</span> },
-    { key: 'isActive', label: 'Trạng thái',render: v => <StatusBadge status={v ? 'ACTIVE' : 'INACTIVE'} /> },
+    { 
+    // 💡 ĐÃ SỬA: Đổi từ 'role' thành 'role_name' để khớp 100% với @JsonProperty("role_name") trong Java DTO
+    key: 'role_name', 
+    label: 'Vai trò', 
+    render: (v) => {
+      // Lúc này v chính là chuỗi "ADMIN", "DOCTOR", hoặc "PATIENT"
+      const roleMap = {
+        'ADMIN': 'Admin',
+        'DOCTOR': 'Bác sĩ',
+        'PATIENT': 'Bệnh nhân'
+      };
+
+      return <span className={styles.specBadge}>{roleMap[v] || v || '—'}</span>;
+    }
+  },
+    // 💡 SỬA LẠI THÀNH NHƯ THẾ NÀY:
+{ 
+  key: 'is_active', // ➔ Đổi thành 'is_active' để khớp với @JsonProperty("is_active")
+  label: 'Trạng thái', 
+  render: v => <StatusBadge status={v ? 'ACTIVE' : 'INACTIVE'} /> 
+},
     {
       key: 'id', label: '', width: 100,
       render: (_, row) => (

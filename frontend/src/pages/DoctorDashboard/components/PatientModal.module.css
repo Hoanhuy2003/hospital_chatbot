@@ -10,6 +10,7 @@
 }
 
 .modal {
+  position: relative;
   background: #fff;
   border-radius: 16px;
   width: 100%;
@@ -130,6 +131,110 @@
 .field select:focus { border-color: #1565C0; }
 .field textarea { resize: vertical; min-height: 72px; }
 .field input[readonly] { background: #f5f7fa; color: #637381; }
+
+/* Tab thông tin bệnh nhân */
+.patientInfoCard {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+}
+
+.patientAvatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #e3f2fd;
+}
+
+.patientAvatarPlaceholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #1565c0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.patientInfoMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.patientNameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: #1a2340;
+}
+
+.patientIdPill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1565c0;
+  background: #e3f2fd;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.patientNameNote {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #637381;
+}
+
+.patientInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoItemWide {
+  grid-column: 1 / -1;
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #637381;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: #1a2340;
+  word-break: break-word;
+}
+
+@media (max-width: 520px) {
+  .patientInfoGrid {
+    grid-template-columns: 1fr;
+  }
+  .infoItemWide {
+    grid-column: 1;
+  }
+}
 
 /* Drug table */
 .drugHeader {
@@ -270,8 +375,66 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  flex-wrap: wrap;
   background: #f5f7fa;
   flex-shrink: 0;
+}
+
+.cancelNestedOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.cancelNestedBox {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.cancelNestedTitle {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #0c447c;
+}
+
+.cancelNestedHint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #5c6570;
+  line-height: 1.45;
+}
+
+.cancelNestedTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cfd8dc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 88px;
+  margin-bottom: 14px;
+}
+
+.cancelNestedTextarea:focus {
+  outline: none;
+  border-color: #1565c0;
+}
+
+.cancelNestedActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .btn {

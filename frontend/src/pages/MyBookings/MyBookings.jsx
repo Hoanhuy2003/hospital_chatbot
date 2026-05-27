@@ -148,6 +148,11 @@ export default function MyBookings() {
                   <div>🏥 {b.clinicName}</div>
                   <div>📅 Ngày khám: <strong>{b.date}</strong></div>
                   <div>🕐 Giờ khám: <strong>{b.timeSlot?.replace('_', ' - ')}</strong></div>
+                  {b.status === 'CANCELLED' && b.cancellationReason && (
+                    <div className={styles.cancelReason}>
+                      ⚠️ <strong>Lý do hủy (từ phía bệnh viện):</strong> {b.cancellationReason}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.footerInfo}>

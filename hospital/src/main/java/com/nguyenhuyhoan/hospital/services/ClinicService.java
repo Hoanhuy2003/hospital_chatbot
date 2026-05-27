@@ -94,6 +94,10 @@ public class ClinicService implements IClinicService {
             clinic.setSpecialty(specialty);
         }
 
+        if (clinicDTO.getDescription() != null) {
+            clinic.setDescription(clinicDTO.getDescription());
+        }
+
         // 3. Cập nhật trạng thái hoạt động (Phục vụ nút Khóa/Mở khóa trực tiếp từ hàm PUT)
         if (clinicDTO.getIsActive() != null) {
             clinic.setIsActive(clinicDTO.getIsActive());

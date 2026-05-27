@@ -195,6 +195,27 @@
   transform: translateY(0);
 }
 
+.btnSubmit {
+  background: #1565c0;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btnSubmit:hover:not(:disabled) {
+  background: #0d47a1;
+}
+
+.btnSubmit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 /* Icon cộng (+) giả lập nếu không dùng thư viện icon */
 .plusIcon {
   font-size: 18px;

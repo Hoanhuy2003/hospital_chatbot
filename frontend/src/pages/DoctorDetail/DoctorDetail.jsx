@@ -68,7 +68,7 @@ export default function DoctorDetail() {
         {/* Description */}
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Giới thiệu</h2>
-          <p className={styles.desc}>{doctor.description}</p>
+          <p className={styles.desc}>{doctor.biography}</p>
         </div>
 
         {/* Book button */}

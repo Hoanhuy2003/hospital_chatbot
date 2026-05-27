@@ -69,6 +69,10 @@ public class Appointment {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    /** Lý do hủy (thường do bác sĩ/hệ thống), hiển thị cho bệnh nhân. */
+    @Column(name = "cancellation_reason", columnDefinition = "TEXT")
+    private String cancellationReason;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;

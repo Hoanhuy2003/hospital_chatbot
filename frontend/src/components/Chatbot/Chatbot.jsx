@@ -1,12 +1,25 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../../context/BookingContext'
 import { useAuth } from '../../context/AuthContext'
 import chatbotService from '../../services/chatbotService'
 import styles from './Chatbot.module.css'
 
+const WELCOME_TEXT =
+  'Xin chào! Tôi là trợ lý AI của Bệnh viện Bạch Mai.\n' +
+  'Tôi có thể tư vấn triệu chứng, hướng dẫn đặt lịch và giải đáp thắc mắc.\n\n' +
+  '⚠️ **Lưu ý:** Thông tin chỉ mang tính tham khảo, không thay thế khám trực tiếp. ' +
+  'Nếu **khó thở nặng, bất tỉnh, chảy máu nhiều, đau ngực dữ dội** — hãy **gọi 115** hoặc đến **cấp cứu** ngay.'
+
+const NAV_SHORTCUTS = [
+  { label: '🔎 Tìm bác sĩ', path: '/tim-kiem' },
+  { label: '🏥 Phòng khám', path: '/phong-kham' },
+  { label: '📅 Lịch của tôi', path: '/lich-kham-cua-toi' },
+]
+
 const QUICK_OPTIONS = [
   { label: '👶 Nhi khoa',      msg: 'Tôi muốn đặt lịch khám Nhi khoa' },
-  { label: '❤️ Tim mạch',      msg: 'Tôi bị đau ngực khó thở, nên khám khoa gì?' },
+  { label: '❤️ Tim mạch',      msg: 'Tôi bị khó thở khi gắng sức nhẹ, nên khám khoa gì?' },
   { label: '🤔 Tư vấn triệu chứng', msg: 'Tôi bị đau đầu và chóng mặt, nên khám khoa nào?' },
   { label: '💰 Giá khám',      msg: 'Chi phí khám bệnh tại bệnh viện là bao nhiêu?' },
   { label: '🏥 Bảo hiểm',      msg: 'Bệnh viện có hỗ trợ bảo hiểm y tế không?' },
@@ -35,13 +48,12 @@ function renderText(text) {
 }
 
 export default function Chatbot() {
+  const navigate = useNavigate()
   const { chatMsg, setChatMsg } = useBooking()
   const { user } = useAuth()
 
   const [open, setOpen]       = useState(false)
-  const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Xin chào! Tôi là trợ lý AI của Bệnh viện Bạch Mai.\nTôi có thể tư vấn triệu chứng, hướng dẫn đặt lịch và giải đáp thắc mắc cho bạn.' }
-  ])
+  const [messages, setMessages] = useState([{ role: 'bot', text: WELCOME_TEXT }])
   const [input, setInput]     = useState('')
   const [typing, setTyping]   = useState(false)
   const [showQuick, setShowQuick] = useState(true)
@@ -73,10 +85,11 @@ export default function Chatbot() {
     try {
       const userId = user?.id ? Number(user.id) : null
       const data = await chatbotService.sendMessage(t, userId)
-      
-      // SỬA DÒNG NÀY: bốc thuộc tính .reply (chuỗi string) để không bị lỗi .split
-      setMessages(prev => [...prev, { role: 'bot', text: data.reply }]) 
-      
+      if (data.error) {
+        setMessages(prev => [...prev, { role: 'bot', text: data.error }])
+      } else {
+        setMessages(prev => [...prev, { role: 'bot', text: data.reply }])
+      }
     } catch {
       setMessages(prev => [...prev, {
         role: 'bot',
@@ -114,13 +127,27 @@ export default function Chatbot() {
           </div>
 
           {showQuick && (
-            <div className={styles.quickBtns}>
-              {QUICK_OPTIONS.map(q => (
-                <button key={q.label} className={styles.quickBtn} onClick={() => send(q.msg)}>
-                  {q.label}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className={styles.shortcutRow}>
+                {NAV_SHORTCUTS.map(s => (
+                  <button
+                    key={s.path}
+                    type="button"
+                    className={styles.shortcutBtn}
+                    onClick={() => navigate(s.path)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <div className={styles.quickBtns}>
+                {QUICK_OPTIONS.map(q => (
+                  <button key={q.label} className={styles.quickBtn} onClick={() => send(q.msg)}>
+                    {q.label}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
 
           <div className={styles.inputRow}>

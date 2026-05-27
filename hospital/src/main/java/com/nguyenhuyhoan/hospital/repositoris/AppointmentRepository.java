@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByPatientIdOrderByCreatedAtDesc(Long patientId);
@@ -17,8 +18,31 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByDoctorIdOrderByCreatedAtDesc(Long doctorId);
 
-    @Query("SELECT a FROM Appointment a WHERE a.schedule.doctor.user.id = :userId")
+    @Query("""
+            SELECT DISTINCT a FROM Appointment a
+            JOIN FETCH a.patient
+            JOIN FETCH a.doctor
+            JOIN FETCH a.schedule s
+            JOIN FETCH s.doctor sd
+            JOIN FETCH sd.user
+            JOIN FETCH s.clinic c
+            JOIN FETCH c.specialty
+            WHERE sd.user.id = :userId
+            """)
     List<Appointment> findByDoctorUserId(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT DISTINCT a FROM Appointment a
+            JOIN FETCH a.patient
+            JOIN FETCH a.doctor
+            JOIN FETCH a.schedule s
+            JOIN FETCH s.doctor sd
+            JOIN FETCH sd.user
+            JOIN FETCH s.clinic c
+            JOIN FETCH c.specialty
+            WHERE a.id = :id
+            """)
+    Optional<Appointment> findByIdWithDetails(@Param("id") Long id);
 
     List<Appointment> findAllByOrderByCreatedAtDesc();
 

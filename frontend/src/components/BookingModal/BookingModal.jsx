@@ -1,11 +1,45 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useDates } from '../../hooks/useDates'
+import { useBooking } from '../../context/BookingContext'
 import { scheduleService } from '../../services/scheduleService' // Đảm bảo gọi đúng hàm getAvailableSlots
 import { appointmentService } from '../../services/appointmentService'
 import styles from './BookingModal.module.css'
 
+/** Tin nhắn bot sau khi đặt lịch (hiển thị **bold** trong Chatbot). */
+function formatPostBookingMessage(appt, fallback) {
+  const rawSlot = appt?.timeSlot || fallback?.slot || ''
+  const slot = String(rawSlot).replace(/_/g, ' - ')
+  const date = appt?.date || fallback?.date
+  const doctorName = appt?.doctorName || fallback?.doctorName
+  const clinic = appt?.clinicName || fallback?.clinicName
+  const specialty = appt?.specialtyName || fallback?.specialtyName
+  const id = appt?.id
+  const queue = appt?.queueNumber
+  const status = appt?.status
+
+  const parts = [
+    '✅ **Đặt lịch thành công!**',
+    '',
+    id != null ? `🆔 **Mã lịch:** #${id}` : null,
+    queue ? `🔢 **Số thứ tự:** ${queue}` : null,
+    doctorName ? `👨‍⚕️ **Bác sĩ:** ${doctorName}` : null,
+    clinic ? `🏥 **Phòng khám:** ${clinic}` : null,
+    specialty ? `🩺 **Chuyên khoa:** ${specialty}` : null,
+    date ? `📅 **Ngày khám:** ${date}` : null,
+    slot ? `🕐 **Giờ:** ${slot}` : null,
+    status ? `📌 **Trạng thái:** ${status}` : null,
+    '',
+    '**Gợi ý:** Xem chi tiết đầy đủ tại trang **Lịch khám của tôi**.',
+  ].filter(Boolean)
+
+  return parts.join('\n')
+}
+
 export default function BookingModal({ doctor, onClose }) {
+  const navigate = useNavigate()
+  const { setChatMsg } = useBooking()
 
   console.log("HELLO MODAL");
   const dates = useDates(7) // Lấy danh sách 7 ngày tới
@@ -108,18 +142,21 @@ export default function BookingModal({ doctor, onClose }) {
     // Gán kết quả trả về vào biến 'response'
     const response = await appointmentService.create(appointmentData);
 
-    // Bây giờ log 'response' sẽ không còn bị lỗi nữa
-    console.log("✅ ĐẶT KHÁM THÀNH CÔNG!", response);
-    toast.success('Đặt lịch thành công!');
-    
-    // Đóng Modal trước khi chuyển trang
-    if (onClose) onClose();
+    console.log('✅ ĐẶT KHÁM THÀNH CÔNG!', response)
+    toast.success('Đặt lịch thành công!')
 
-    // Chuyển hướng
-    setTimeout(() => {
-      // Hoàn kiểm tra lại router của bạn là '/my-bookings' hay '/lich-kham-cua-toi' nhé
-      window.location.href = '/lich-kham-cua-toi'; 
-    }, 1000);
+    const slotDisplay = selSlot.replace(/_/g, ' - ')
+    const botText = formatPostBookingMessage(response, {
+      date: currentDateStr,
+      slot: slotDisplay,
+      doctorName: doctor.fullName,
+      clinicName: doctor.clinicName,
+      specialtyName: doctor.specialtyName,
+    })
+    setChatMsg(botText)
+
+    if (onClose) onClose()
+    navigate('/lich-kham-cua-toi')
 
   } catch (err) {
     console.error("❌ Lỗi đặt khám:", err);

@@ -23,6 +23,42 @@ const PAGE_TITLES = {
   profile:           'Thông tin cá nhân',
 }
 
+/** Gộp dòng danh sách + GET /appointments/{id} để luôn có đủ thông tin bệnh nhân. */
+function mergeAppointmentForModal(listRow, detail) {
+  const row = listRow || {}
+  const d = detail || {}
+  const st = String(d.status || row.status || 'PENDING').toLowerCase()
+  const timeFromSlot = d.timeSlot ? String(d.timeSlot).split('_')[0] : null
+
+  return {
+    id: d.id ?? row.id,
+    time: timeFromSlot || row.time || '00:00',
+    name: d.patientName || row.name,
+    patientName: d.patientName ?? row.patientName,
+    reason: d.reason ?? row.reason,
+    status: st,
+    date: d.date ?? row.date,
+    queueNumber: d.queueNumber ?? row.queueNumber,
+    specialtyId: row.specialtyId ?? d.doctor?.specialtyId ?? null,
+    patientId: d.patientId,
+    patientFullName: d.patientFullName,
+    patientPhone: d.patientPhone,
+    patientEmail: d.patientEmail,
+    patientDateOfBirth: d.patientDateOfBirth,
+    patientGender: d.patientGender,
+    patientAddress: d.patientAddress,
+    patientHealthInsuranceNumber: d.patientHealthInsuranceNumber,
+    patientInsuranceExpiryDate: d.patientInsuranceExpiryDate,
+    patientInsuranceBenefitLevel: d.patientInsuranceBenefitLevel,
+    patientAvatarUrl: d.patientAvatarUrl,
+    doctorName: d.doctorName,
+    clinicName: d.clinicName,
+    specialtyName: d.specialtyName,
+    timeSlot: d.timeSlot ?? row.timeSlot,
+    type: d.type ?? row.type,
+  }
+}
+
 export default function DoctorDashboard() {
   // userId dùng cho AppointmentService (backend query bằng User.id)
   const userId         = localStorage.getItem('userId');
@@ -49,16 +85,33 @@ export default function DoctorDashboard() {
         medicalRecordService.getNextAppointment(userId)
       ]);
 
-      // Format lịch hôm nay
+      // Format lịch hôm nay (kèm thông tin hồ sơ bệnh nhân từ API)
       const formattedToday = resToday.map(item => ({
         id: item.id,
         time: item.timeSlot?.split('_')[0] || '00:00',
         name: item.patientName,
+        patientName: item.patientName,
         reason: item.reason,
-        status: item.status.toLowerCase(), 
+        status: String(item.status || 'PENDING').toLowerCase(),
         date: item.date,
         queueNumber: item.queueNumber,
-        specialtyId: item.doctor?.specialtyId || null
+        specialtyId: item.doctor?.specialtyId || null,
+        patientId: item.patientId,
+        patientFullName: item.patientFullName,
+        patientPhone: item.patientPhone,
+        patientEmail: item.patientEmail,
+        patientDateOfBirth: item.patientDateOfBirth,
+        patientGender: item.patientGender,
+        patientAddress: item.patientAddress,
+        patientHealthInsuranceNumber: item.patientHealthInsuranceNumber,
+        patientInsuranceExpiryDate: item.patientInsuranceExpiryDate,
+        patientInsuranceBenefitLevel: item.patientInsuranceBenefitLevel,
+        patientAvatarUrl: item.patientAvatarUrl,
+        doctorName: item.doctorName,
+        clinicName: item.clinicName,
+        specialtyName: item.specialtyName,
+        timeSlot: item.timeSlot,
+        type: item.type,
       }));
 
       setAppts(formattedToday);
@@ -76,20 +129,28 @@ export default function DoctorDashboard() {
     loadData();
   }, []);
 
-  // CHỈ GIỮ LẠI 1 HÀM openPatient NÀY
-  function openPatient(id, tab = 0) {
-    const selected = appointments.find(a => a.id === id);
-    if (selected) {
+  async function openPatient(id, tab = 0) {
+    if (!id) return
+    const selected = appointments.find(a => a.id === id)
+    if (selected?.status === 'cancelled') {
+      toast.warning('Lịch hẹn này đã bị hủy, không thể tiến hành khám.')
+      return
+    }
 
-      if (selected.status === 'cancelled') {
-        toast.warning("Lịch hẹn này đã bị bệnh nhân hủy, không thể tiến hành khám!");
-        return; // Dừng lại, không setSelPt nên Modal sẽ không mở
+    setModalTab(tab)
+
+    try {
+      const detail = await appointmentService.getById(id)
+      const merged = mergeAppointmentForModal(selected, detail)
+      if (merged.status === 'cancelled') {
+        toast.warning('Lịch hẹn này đã bị hủy, không thể tiến hành khám.')
+        return
       }
-      setSelPt({
-        ...selected,
-        specialtyId: selected.specialtyId
-      });
-      setModalTab(tab);
+      setSelPt(merged)
+    } catch (err) {
+      console.error(err)
+      toast.error('Không tải được chi tiết lịch khám. Kiểm tra kết nối hoặc quyền truy cập.')
+      if (selected) setSelPt(selected)
     }
   }
 

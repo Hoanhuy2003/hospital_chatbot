@@ -8,11 +8,37 @@ import styles from './PatientModal.module.css'
 
 const TABS = ['Thông tin', 'Xác nhận khám', 'Bệnh án', 'Đơn thuốc', 'Hóa đơn']
 
+function genderLabel(g) {
+  if (!g) return '—'
+  const m = { MALE: 'Nam', FEMALE: 'Nữ', OTHER: 'Khác' }
+  return m[g] || g
+}
+
+function formatLocalDate(val) {
+  if (val == null || val === '') return '—'
+  if (typeof val === 'string') {
+    const head = val.split('T')[0]
+    const parts = head.split('-')
+    if (parts.length === 3) {
+      const [y, m, d] = parts
+      return `${d}/${m}/${y}`
+    }
+    return val
+  }
+  if (Array.isArray(val) && val.length >= 3) {
+    const [y, m, d] = val
+    return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
+  }
+  return String(val)
+}
+
 export default function PatientModal({ patient: p, initialTab = 0, onClose, onConfirm }) {
   const [tab, setTab] = useState(initialTab)
   const [vitals, setVitals] = useState({ temp: '', bp: '', pulse: '', weight: '' })
   const [record, setRecord] = useState({ diagnosis: '', history: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
   
   // Dữ liệu thuốc từ DB
   const [dbMedicines, setDbMedicines] = useState([]);
@@ -33,6 +59,10 @@ export default function PatientModal({ patient: p, initialTab = 0, onClose, onCo
     treatment: '',
     followUpDate: ''
   })
+
+  useEffect(() => {
+    setTab(initialTab)
+  }, [initialTab])
 
  
  // Lấy danh sách thuốc khi vào Tab "Đơn thuốc"
@@ -131,6 +161,31 @@ useEffect(() => {
     }
   };
 
+  const st = (p.status || '').toLowerCase()
+  const canDoctorCancel = st === 'pending' || st === 'confirmed'
+
+  async function handleDoctorCancel() {
+    const reason = cancelReason.trim()
+    if (!reason) {
+      toast.warning('Vui lòng nhập lý do hủy lịch (bệnh nhân sẽ nhận được nội dung này).')
+      return
+    }
+    try {
+      setIsSubmitting(true)
+      await appointmentService.updateStatus(p.id, 'CANCELLED', reason)
+      toast.success('Đã hủy lịch và gửi lý do tới bệnh nhân.')
+      setShowCancelDialog(false)
+      setCancelReason('')
+      if (onConfirm) await onConfirm()
+      onClose()
+    } catch (err) {
+      const msg = err.response?.data || err.message || 'Không thể hủy lịch.'
+      toast.error(typeof msg === 'string' ? msg : 'Không thể hủy lịch.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   async function handleConfirm() {
     try {
       setIsSubmitting(true);
@@ -190,11 +245,11 @@ useEffect(() => {
   const formatVND = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
   return (
-    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal}>
+    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && !showCancelDialog && onClose()}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <div className={styles.head}>
           <div>
-            <h3>Hồ sơ: {p.patientName || p.name}</h3>
+            <h3>Hồ sơ: {p.patientFullName || p.patientName || p.name}</h3>
             <div className={styles.headSub}>Mã phiếu: <strong>{p.queueNumber}</strong></div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>✕</button>
@@ -215,9 +270,107 @@ useEffect(() => {
         <div className={styles.body}>
           {tab === 0 && (
             <div className={styles.tabContent}>
-              <div className={styles.sectionLabel}>Thông tin lịch hẹn</div>
-              <div className={styles.field}><label>Bệnh nhân</label><input readOnly value={p.patientName || p.name} /></div>
-              <div className={styles.field}><label>Lý do</label><textarea readOnly value={p.reason || "N/A"} /></div>
+              <div className={styles.sectionLabel}>Thông tin bệnh nhân</div>
+              <div className={styles.patientInfoCard}>
+                {p.patientAvatarUrl ? (
+                  <img src={p.patientAvatarUrl} alt="" className={styles.patientAvatar} />
+                ) : (
+                  <div className={styles.patientAvatarPlaceholder}>
+                    {(p.patientFullName || p.patientName || p.name || '?').trim().slice(0, 1)}
+                  </div>
+                )}
+                <div className={styles.patientInfoMain}>
+                  <div className={styles.patientNameRow}>
+                    <strong>{p.patientFullName || p.patientName || p.name || '—'}</strong>
+                    {p.patientId != null && (
+                      <span className={styles.patientIdPill}>Mã BN #{p.patientId}</span>
+                    )}
+                  </div>
+                  {p.patientName && p.patientFullName && p.patientName !== p.patientFullName && (
+                    <div className={styles.patientNameNote}>
+                      Tên trên phiếu khám: <strong>{p.patientName}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.patientInfoGrid}>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Điện thoại</span>
+                  <span className={styles.infoValue}>{p.patientPhone || '—'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Email</span>
+                  <span className={styles.infoValue}>{p.patientEmail || '—'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Ngày sinh</span>
+                  <span className={styles.infoValue}>{formatLocalDate(p.patientDateOfBirth)}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Giới tính</span>
+                  <span className={styles.infoValue}>{genderLabel(p.patientGender)}</span>
+                </div>
+                <div className={`${styles.infoItem} ${styles.infoItemWide}`}>
+                  <span className={styles.infoLabel}>Địa chỉ</span>
+                  <span className={styles.infoValue}>{p.patientAddress?.trim() || '—'}</span>
+                </div>
+              </div>
+
+              <div className={styles.sectionLabel}>Bảo hiểm y tế</div>
+              <div className={styles.patientInfoGrid}>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Số BHYT</span>
+                  <span className={styles.infoValue}>{p.patientHealthInsuranceNumber || '—'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Hạn thẻ</span>
+                  <span className={styles.infoValue}>{formatLocalDate(p.patientInsuranceExpiryDate)}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Mức hưởng (%)</span>
+                  <span className={styles.infoValue}>
+                    {p.patientInsuranceBenefitLevel != null ? p.patientInsuranceBenefitLevel : '—'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.sectionLabel}>Lịch hẹn</div>
+              <div className={styles.patientInfoGrid}>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Ngày khám</span>
+                  <span className={styles.infoValue}>{p.date ? formatLocalDate(p.date) : '—'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Khung giờ</span>
+                  <span className={styles.infoValue}>
+                    {p.timeSlot ? String(p.timeSlot).replace(/_/g, ' - ') : (p.time || '—')}
+                  </span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Bác sĩ</span>
+                  <span className={styles.infoValue}>{p.doctorName || '—'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Chuyên khoa</span>
+                  <span className={styles.infoValue}>{p.specialtyName || '—'}</span>
+                </div>
+                <div className={`${styles.infoItem} ${styles.infoItemWide}`}>
+                  <span className={styles.infoLabel}>Phòng khám</span>
+                  <span className={styles.infoValue}>{p.clinicName || '—'}</span>
+                </div>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoLabel}>Hình thức</span>
+                  <span className={styles.infoValue}>
+                    {p.type === 'ONLINE_VIDEO' ? 'Tư vấn video' : p.type === 'ONLINE_CHAT' ? 'Chat trực tuyến' : 'Trực tiếp'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.sectionLabel}>Lý do khám</div>
+              <div className={styles.field}>
+                <textarea readOnly value={p.reason || '—'} rows={3} />
+              </div>
             </div>
           )}
 
@@ -391,7 +544,18 @@ useEffect(() => {
         
 
         <div className={styles.footer}>
-  <button className={`${styles.btn} ${styles.btnOutline}`} onClick={onClose}>Đóng</button>
+  <button className={`${styles.btn} ${styles.btnOutline}`} onClick={onClose} disabled={isSubmitting}>Đóng</button>
+
+  {canDoctorCancel && (
+    <button
+      type="button"
+      className={`${styles.btn} ${styles.btnDanger}`}
+      onClick={() => setShowCancelDialog(true)}
+      disabled={isSubmitting}
+    >
+      Từ chối / Hủy lịch
+    </button>
+  )}
   
   {tab === 1 && <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={handleConfirm} disabled={isSubmitting}>Xác nhận khám</button>}
   
@@ -408,6 +572,49 @@ useEffect(() => {
     </button>
   )}
 </div>
+
+        {showCancelDialog && (
+          <div
+            className={styles.cancelNestedOverlay}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.cancelNestedBox}>
+              <h4 className={styles.cancelNestedTitle}>Hủy lịch hẹn</h4>
+              <p className={styles.cancelNestedHint}>
+                Nhập lý do để gửi tới bệnh nhân (bắt buộc). Lịch sẽ được trả chỗ và bệnh nhân nhận thông báo.
+              </p>
+              <textarea
+                className={styles.cancelNestedTextarea}
+                rows={4}
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Ví dụ: Hết chỗ trong khung giờ, trùng lịch cấp cứu..."
+                disabled={isSubmitting}
+              />
+              <div className={styles.cancelNestedActions}>
+                <button
+                  type="button"
+                  className={`${styles.btn} ${styles.btnOutline}`}
+                  onClick={() => {
+                    setShowCancelDialog(false)
+                    setCancelReason('')
+                  }}
+                  disabled={isSubmitting}
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.btn} ${styles.btnDanger}`}
+                  onClick={handleDoctorCancel}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Đang xử lý...' : 'Xác nhận hủy lịch'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

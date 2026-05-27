@@ -142,7 +142,7 @@ public class AppointmentService implements IAppointmentService {
     public AppointmentResponse getById(Long id) throws DataNotFoundException {
 
 
-        return appointmentRepository.findById(id)
+        return appointmentRepository.findByIdWithDetails(id)
                 .map(AppointmentResponse:: fromAppointment)
                 .orElseThrow(()-> new DataNotFoundException("lỗi rồi nhé"));
 
@@ -161,12 +161,27 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     @Transactional
-    public AppointmentResponse updateStatus(Long id, String status) throws DataNotFoundException {
+    public AppointmentResponse updateStatus(Long id, String status, String cancellationReason) throws DataNotFoundException {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(()-> new DataNotFoundException("Không tồn tại cuộc hẹn này"));
 
         Appointment.Status newStatus = Appointment.Status.valueOf(status.toUpperCase());
         Appointment.Status oldStatus = appointment.getStatus();
+
+        if (newStatus == Appointment.Status.CANCELLED && oldStatus != Appointment.Status.CANCELLED) {
+            String trimmed = cancellationReason != null ? cancellationReason.trim() : "";
+            if (trimmed.isEmpty()) {
+                throw new RuntimeException("Vui lòng nhập lý do hủy lịch để gửi tới bệnh nhân.");
+            }
+            if (trimmed.length() > 1000) {
+                trimmed = trimmed.substring(0, 1000);
+            }
+            appointment.setCancellationReason(trimmed);
+        }
+
+        if (newStatus == Appointment.Status.CONFIRMED) {
+            appointment.setCancellationReason(null);
+        }
 
         // Hủy lịch trả lại slot
         if(newStatus == Appointment.Status.CANCELLED && oldStatus != Appointment.Status.CANCELLED){
@@ -187,7 +202,11 @@ public class AppointmentService implements IAppointmentService {
             if(newStatus == Appointment.Status.CONFIRMED) {
                 message = "Lịch khám của bạn đã được bác sĩ xác nhận. Hãy đến đúng giờ nhé!";
             } else if(newStatus == Appointment.Status.CANCELLED) {
-                message = "Rất tiếc, lịch khám của bạn đã bị bác sĩ hủy. Vui lòng chọn khung giờ khác.";
+                String reasonTxt = appointment.getCancellationReason() != null
+                        ? appointment.getCancellationReason()
+                        : "";
+                message = "Rất tiếc, lịch khám của bạn đã bị hủy. Vui lòng đặt lịch khác."
+                        + (reasonTxt.isEmpty() ? "" : " Lý do: " + reasonTxt);
             }
 
             if(!message.isEmpty()){
@@ -206,6 +225,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AppointmentResponse> getByDoctor(Long doctorId) {
         return appointmentRepository.findByDoctorUserId(doctorId)
                 .stream()

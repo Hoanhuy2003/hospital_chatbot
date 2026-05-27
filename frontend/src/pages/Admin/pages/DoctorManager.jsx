@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable, { StatusBadge } from '../components/AdminTable'
+import DoctorRegister from '../components/DoctorRegister'
 import styles from '../AdminCommon.module.css'
 import api from '../../../services/api'
 import { clinicService } from '../../../services/clinicService'
@@ -82,72 +83,107 @@ export default function DoctorManager() {
     setShowModal(true)
   }
 
-  // SỬA CHÍNH TẠI ĐÂY: PHẦN CẬP NHẬT VÀ POST
+  // 💡 Đust ĐÃ THÊM: Hàm xử lý Xác minh thông qua API PUT bằng FormData
+  async function handleVerify(row) {
+    if (!window.confirm(`Xác minh hồ sơ cho BS. ${row.fullName}?`)) return
+    try {
+      setLoading(true)
+      const formData = new FormData()
+      
+      // Giữ nguyên các thông tin hiện tại của bác sĩ
+      formData.append('fullName', row.fullName || '')
+      formData.append('email', row.email || '')
+      formData.append('phone', row.phone || '')
+      if (row.specialtyId) formData.append('specialtyId', Number(row.specialtyId))
+      if (row.clinicId) formData.append('clinicId', Number(row.clinicId))
+      if (row.experienceYears) formData.append('experienceYears', Number(row.experienceYears))
+      if (row.price) formData.append('price', Number(row.price))
+      formData.append('description', row.description || '')
+      
+      // Kích hoạt flag xác minh gửi lên DoctorDTO của Backend
+      formData.append('isVerified', true)
+
+      await api.put(`/v1/doctors/${row.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      toast.success(`Đã phê duyệt & xác minh bác sĩ ${row.fullName}`)
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Xác minh thất bại')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleSave(e) {
-    e.preventDefault();
-    if (!form.fullName?.trim()) return toast.warning('Nhập họ tên bác sĩ');
+    e.preventDefault()
+    if (!editTarget) return
+    if (!form.fullName?.trim()) return toast.warning('Nhập họ tên bác sĩ')
 
     try {
-      setSaving(true);
+      setSaving(true)
+      const formData = new FormData()
 
-      // BẮT BUỘC dùng FormData vì Backend của Hoàn dùng Multipart
-      const formData = new FormData();
-      
-      // Duyệt và append dữ liệu
-      Object.keys(form).forEach(key => {
-        if (form[key] !== null && form[key] !== undefined && form[key] !== '') {
-          formData.append(key, form[key]);
-        }
-      });
-
-      if (editTarget) {
-        // Gửi PUT với FormData
-        await api.put(`/v1/doctors/${editTarget.id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        toast.success('Cập nhật bác sĩ thành công');
-      } else {
-        // Gửi POST với FormData vào đúng link /promote
-        await api.post('/v1/doctors/promote', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        toast.success('Thêm bác sĩ thành công');
+      formData.append('fullName', form.fullName || '')
+      formData.append('email', form.email || '')
+      formData.append('phone', form.phone || '')
+      if (form.specialtyId) formData.append('specialtyId', Number(form.specialtyId))
+      if (form.clinicId) formData.append('clinicId', Number(form.clinicId))
+      if (form.experienceYears) formData.append('experienceYears', Number(form.experienceYears))
+      if (form.price) formData.append('price', Number(form.price))
+      formData.append('description', form.description || '')
+      if (form.photoUrl instanceof File) {
+        formData.append('photoUrl', form.photoUrl)
       }
 
-      setShowModal(false);
-      load();
+      await api.put(`/v1/doctors/${editTarget.id}`, formData)
+
+      toast.success('Cập nhật bác sĩ thành công')
+      setShowModal(false)
+      load()
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Thao tác thất bại');
+      toast.error(err.response?.data?.message || 'Thao tác thất bại')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
   const handleToggle = async (row) => {
     try {
       await doctorService.toggleActive(row.id)
-      toast.success(`Đã cập nhật BS. ${row.fullName}`)
+      toast.success(`Đã cập nhật trạng thái hoạt động BS. ${row.fullName}`)
       load()
     } catch { toast.error('Thao tác thất bại') }
   }
 
-  // Các COLUMNS giữ nguyên như cũ của Hoàn
   const COLUMNS = [
     { key: 'fullName', label: 'Họ tên', render: v => <strong>{v}</strong> },
     { key: 'specialtyName', label: 'Chuyên khoa', render: v => <span className={styles.specBadge}>{v}</span> },
     { key: 'clinicName', label: 'Phòng khám' },
     { key: 'experienceYears', label: 'Kinh nghiệm', render: v => v ? `${v} năm` : '—' },
     { key: 'price', label: 'Giá khám', render: v => v ? `${Number(v).toLocaleString()}đ` : '—' },
-    { key: 'isActive', label: 'Trạng thái', render: v => <StatusBadge status={v ? 'ACTIVE' : 'INACTIVE'} /> },
+    { key: 'isVerified', label: 'Trạng thái', render: v => <StatusBadge status={v ? 'ACTIVE' : 'INACTIVE'} /> },
     {
-      key: 'id', label: '', width: 120,
+      key: 'id', label: '', width: 180, // Tăng nhẹ width để vừa vặn khi xuất hiện cả 3 nút
       render: (_, row) => (
         <div style={{ display: 'flex', gap: 4 }}>
+          {/* 💡 ĐUST ĐÃ THÊM: Nút Xác minh ẩn/hiện dựa theo cột trạng thái isVerified */}
+          {!row.isVerified && (
+            <button 
+              className={`${styles.btnSm} ${styles.btnGreen}`} 
+              onClick={() => handleVerify(row)}
+            >
+              Duyệt
+            </button>
+          )}
           <button className={styles.btnSm} onClick={() => openEdit(row)}>Sửa</button>
           <button
             className={`${styles.btnSm} ${row.isActive ? styles.btnDanger : styles.btnGreen}`}
             onClick={() => handleToggle(row)}
-          >{row.isActive ? 'Khoá' : 'Mở'}</button>
+          >
+            {row.isActive ? 'Khoá' : 'Mở'}
+          </button>
         </div>
       )
     },
@@ -173,11 +209,11 @@ export default function DoctorManager() {
         }
       </div>
 
-      {showModal && (
+      {showModal && editTarget && (
         <div className={styles.overlay} onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHead}>
-              <h3>{editTarget ? 'Chỉnh sửa bác sĩ' : 'Thêm bác sĩ mới'}</h3>
+              <h3>Chỉnh sửa bác sĩ</h3>
               <button className={styles.closeBtn} onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSave} className={styles.modalForm}>
@@ -220,6 +256,16 @@ export default function DoctorManager() {
             </form>
           </div>
         </div>
+      )}
+
+      {showModal && !editTarget && (
+        <DoctorRegister
+          open
+          onClose={() => setShowModal(false)}
+          onSuccess={load}
+          specialties={specialties}
+          clinics={clinics}
+        />
       )}
     </div>
   )

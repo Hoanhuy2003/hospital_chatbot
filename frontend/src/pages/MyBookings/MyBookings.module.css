@@ -87,6 +87,18 @@
   margin-bottom: 8px;
 }
 
+.cancelReason {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: #fff3e0;
+  border-radius: 8px;
+  border: 1px solid #ffb74d;
+  color: #5d4037;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .code {
   font-size: 13px;
   color: var(--text);

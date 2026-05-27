@@ -71,12 +71,49 @@ public class ChatbotService {
         return botReply;
     }
 
+    private static String tryEmergencyReply(String clean) {
+        if (clean == null || clean.isEmpty()) {
+            return null;
+        }
+        for (String hint : EMERGENCY_HINTS) {
+            if (clean.contains(hint)) {
+                return EMERGENCY_MESSAGE;
+            }
+        }
+        return null;
+    }
+
+    private static final String[] EMERGENCY_HINTS = {
+            "khó thở đột ngột", "khó thở nặng", "khó thở dữ dội", "thở không ra hơi",
+            "tím tái", "môi tím",
+            "bất tỉnh", "ngất xỉu", "li bì không tiếp xúc", "co giật liên tục", "co giật không dừng",
+            "chảy máu nhiều", "chảy máu ồ ạt", "nôn ra máu", "ói ra máu", "thổ huyết",
+            "đau ngực dữ dội", "đau ngực lan cánh tay", "đau ngực kèm vã mồ hôi",
+            "đau ngực khó thở",
+            "liệt nửa người đột ngột", "méo miệng đột ngột", "nói khó đột ngột",
+            "mất thị lực đột ngột",
+            "đau đầu cực độ", "đau đầu như búa bổ",
+            "ngộ độc nặng", "tai nạn nghiêm trọng",
+            "sốt cao co giật", "trẻ co giật", "trẻ em co giật", "bé co giật",
+            "mang thai ra máu nhiều", "vỡ ối", "đau bụng thai kỳ dữ dội"
+    };
+
+    private static final String EMERGENCY_MESSAGE =
+            "⚠️ **Tình huống có thể cần xử lý y tế khẩn cấp.**\n\n"
+                    + "Hãy **gọi ngay 115** hoặc đưa người bệnh đến **cấp cứu gần nhất** — đừng trì hoãn để chat.\n\n"
+                    + "Nếu không phải cấp cứu, hãy mô tả lại **nhẹ hơn** hoặc gọi hotline **024 3869 3731**.";
+
     private String resolveReply(String userContent) {
         if (userContent == null || userContent.trim().isEmpty()) {
             return "Tôi có thể giúp gì cho bạn?";
         }
 
-        String clean = userContent.toLowerCase().trim();
+        String clean = userContent.toLowerCase().trim().replaceAll("\\s+", " ");
+
+        String emergency = tryEmergencyReply(clean);
+        if (emergency != null) {
+            return emergency;
+        }
 
         // 1. FAQ
         try {
