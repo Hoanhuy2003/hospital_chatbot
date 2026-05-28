@@ -39,6 +39,10 @@ public class DoctorService implements IDoctorService {
         String photoUrl = cloudinaryService.uploadDoctorImage(dto.getPhotoUrl());
 
       //  String licenseUrl = cloudinaryService.uploadLicenseImage(dto.getPracticeLicenseUrl());
+        String licenseUrl = null;
+        if (dto.getPracticeLicenseUrl() != null && !dto.getPracticeLicenseUrl().isEmpty()) {
+            licenseUrl = cloudinaryService.uploadLicenseImage(dto.getPracticeLicenseUrl());
+        }
 
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(()-> new DataNotFoundException("User khoong tồn tại"));
@@ -63,8 +67,8 @@ public class DoctorService implements IDoctorService {
                 .biography(dto.getBiography())
                 .photoUrl(photoUrl)
                 .photoThumbnailUrl(null)
-//                .practiceLicenseNumber(dto.getPracticeLicenseNumber())
-//                .practiceLicenseUrl(licenseUrl)
+                .practiceLicenseNumber(dto.getPracticeLicenseNumber())
+                .practiceLicenseUrl(licenseUrl)
                 .isVerified(dto.getIsVerified())
                 .rating(dto.getRating())
                 .totalReviews(0)
@@ -108,11 +112,11 @@ public class DoctorService implements IDoctorService {
            String newPhotoUrl = cloudinaryService.uploadDoctorImage(doctorDTO.getPhotoUrl());
            doctor.setPhotoUrl(newPhotoUrl);
        }
-//       if(doctorDTO.getPracticeLicenseUrl() != null && !doctorDTO.getPracticeLicenseUrl().isEmpty()){
-//           String newLicenseUrl = cloudinaryService.uploadLicenseImage(doctorDTO.getPracticeLicenseUrl());
-//           doctor.setPracticeLicenseUrl(newLicenseUrl);
-//       }
-//       doctor.setPracticeLicenseNumber(doctor.getPracticeLicenseNumber());
+       if(doctorDTO.getPracticeLicenseUrl() != null && !doctorDTO.getPracticeLicenseUrl().isEmpty()){
+           String newLicenseUrl = cloudinaryService.uploadLicenseImage(doctorDTO.getPracticeLicenseUrl());
+           doctor.setPracticeLicenseUrl(newLicenseUrl);
+       }
+       doctor.setPracticeLicenseNumber(doctor.getPracticeLicenseNumber());
         return mapToDoctor(doctorRepository.save(doctor));
     }
 
@@ -202,8 +206,8 @@ public class DoctorService implements IDoctorService {
                 .experienceYears(doctor.getExperienceYears())
                 .biography(doctor.getBiography())
                 .photoUrl(doctor.getPhotoUrl())
-//                .practiceLicenseNumber(doctor.getPracticeLicenseNumber())
-//                .practiceLicenseUrl(doctor.getPracticeLicenseUrl())
+                .practiceLicenseNumber(doctor.getPracticeLicenseNumber())
+                .practiceLicenseUrl(doctor.getPracticeLicenseUrl())
                 .isVerified(doctor.getIsVerified())
                 .rating(doctor.getRating())
                 .build();

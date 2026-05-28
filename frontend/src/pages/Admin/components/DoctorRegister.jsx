@@ -14,8 +14,12 @@ const EMPTY = {
   rating: '5',
   supportsOnline: true,
   price: '',
+  practiceLicenseNumber: '',
+  licenseFile: null,
   photoFile: null,
 }
+
+const LICENSE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif'
 
 /**
  * Đăng ký bác sĩ: chọn user có sẵn (ưu tiên PATIENT) → POST /v1/doctors/promote (multipart).
@@ -69,6 +73,9 @@ export default function DoctorRegister({ open, onClose, onSuccess, specialties =
     if (!form.specialtyId) return toast.warning('Chọn chuyên khoa')
     if (!form.clinicId) return toast.warning('Chọn phòng khám')
     if (!form.photoFile) return toast.warning('Vui lòng chọn ảnh chân dung')
+    const licenseNo = (form.practiceLicenseNumber || '').trim()
+    if (!licenseNo) return toast.warning('Vui lòng nhập số chứng chỉ hành nghề')
+    if (!form.licenseFile) return toast.warning('Vui lòng tải lên file chứng chỉ hành nghề')
 
     try {
       setSaving(true)
@@ -86,6 +93,8 @@ export default function DoctorRegister({ open, onClose, onSuccess, specialties =
       fd.append('rating', String(form.rating != null ? Number(form.rating) : 5))
       fd.append('supportsOnline', form.supportsOnline ? 'true' : 'false')
       fd.append('price', String(form.price != null ? Number(form.price) : 0))
+      fd.append('practiceLicenseNumber', licenseNo)
+      fd.append('practiceLicenseUrl', form.licenseFile)
       fd.append('photoUrl', form.photoFile)
 
       await api.post('/v1/doctors/promote', fd)
@@ -251,6 +260,48 @@ export default function DoctorRegister({ open, onClose, onSuccess, specialties =
               />
               Hỗ trợ khám / tư vấn trực tuyến
             </label>
+          </div>
+
+          <div className={regStyles.licenseSection}>
+            <div className={regStyles.licenseTitle}>Chứng chỉ hành nghề</div>
+            <div className={styles.field}>
+              <label>
+                Số chứng chỉ <span className={styles.req}>*</span>
+              </label>
+              <input
+                value={form.practiceLicenseNumber}
+                onChange={(e) => setForm({ ...form, practiceLicenseNumber: e.target.value })}
+                placeholder="Ví dụ: 12345/BYT-CCHN"
+                maxLength={100}
+              />
+            </div>
+            <div className={styles.field}>
+              <label>
+                File chứng chỉ (ảnh) <span className={styles.req}>*</span>
+              </label>
+              <label
+                className={`${regStyles.dropZone} ${form.licenseFile ? regStyles.dropZoneFilled : ''}`}
+              >
+                <input
+                  type="file"
+                  className={regStyles.fileInputHidden}
+                  accept={LICENSE_ACCEPT}
+                  onChange={(e) => setForm({ ...form, licenseFile: e.target.files?.[0] || null })}
+                />
+                {form.licenseFile ? (
+                  <>
+                    <span className={regStyles.fileName}>📄 {form.licenseFile.name}</span>
+                    <span className={regStyles.fileHint}>Bấm để chọn file khác</span>
+                  </>
+                ) : (
+                  <>
+                    <span className={regStyles.dropIcon}>📎</span>
+                    <span>Kéo thả hoặc bấm để chọn ảnh chứng chỉ</span>
+                    <span className={regStyles.fileHint}>JPG, PNG, WEBP, GIF — tối đa 100MB</span>
+                  </>
+                )}
+              </label>
+            </div>
           </div>
 
           <div className={styles.field}>

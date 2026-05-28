@@ -61,3 +61,66 @@
 .checkboxLabel input {
   width: auto;
 }
+
+.licenseSection {
+  margin-top: 4px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.licenseTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a2340;
+  margin-bottom: 12px;
+}
+
+.dropZone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 100px;
+  padding: 16px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.dropZone:hover,
+.dropZoneFilled {
+  border-color: #1565c0;
+  background: #f0f7ff;
+}
+
+.fileInputHidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.dropIcon {
+  font-size: 28px;
+}
+
+.fileName {
+  font-weight: 600;
+  color: #1a2340;
+  word-break: break-all;
+}
+
+.fileHint {
+  font-size: 11px;
+  color: #64748b;
+}
