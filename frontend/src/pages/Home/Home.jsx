@@ -102,12 +102,15 @@ export default function Home() {
     fetchClinics()
   }, [])
 
-  const filteredDoctors = doctors.filter(d =>
-    search === '' ||
-    d.name.toLowerCase().includes(search.toLowerCase()) ||
-    d.specialty.toLowerCase().includes(search.toLowerCase()) ||
-    d.hospital.toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredDoctors = doctors.filter(d => {
+    if (!search.trim()) return true
+    const q = search.toLowerCase()
+    return (
+      d.fullName?.toLowerCase().includes(q) ||
+      d.specialtyName?.toLowerCase().includes(q) ||
+      d.clinicName?.toLowerCase().includes(q)
+    )
+  })
 
   // Nhấn Enter hoặc nút Tìm kiếm → sang trang /tim-kiem
   function handleSearch(e) {

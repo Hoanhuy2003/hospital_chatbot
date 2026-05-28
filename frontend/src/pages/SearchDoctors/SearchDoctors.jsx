@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BookingModal from '../../components/BookingModal/BookingModal'
-import { specialtyService } from '../../services/api' 
+import { specialtyService } from '../../services/api'
+import { doctorService } from '../../services/doctorService'
 import styles from './SearchDoctors.module.css'
 
 export default function SearchDoctors() {
@@ -39,11 +40,7 @@ export default function SearchDoctors() {
           // Bóc tách nếu có .content (phân trang)
           result = data?.content || data
         } else {
-          // Gọi API lấy tất cả bác sĩ
-          const res = await fetch('http://localhost:8080/api/v1/doctors')
-          const data = await res.json()
-          // Dựa trên ảnh Hoàn gửi, dữ liệu nằm trong data.content
-          result = data?.content || data
+          result = await doctorService.getAllList()
         }
         
         setDoctors(Array.isArray(result) ? result : [])

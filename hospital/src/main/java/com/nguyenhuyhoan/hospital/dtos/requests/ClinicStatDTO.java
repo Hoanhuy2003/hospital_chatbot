@@ -13,7 +13,9 @@ public class ClinicStatDTO {
     private String name;
     private String address;
     private String phone;
+    private Long specialtyId;
     private String specialtyName;
+    private String description;
     private Boolean isActive;
     private Long doctorCount;
 }

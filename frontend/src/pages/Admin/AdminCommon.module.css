@@ -483,3 +483,19 @@
   border-top: 1px solid #f1f5f9;
   margin-top: 4px;
 }
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a2340;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.checkboxRow input {
+  width: auto;
+}

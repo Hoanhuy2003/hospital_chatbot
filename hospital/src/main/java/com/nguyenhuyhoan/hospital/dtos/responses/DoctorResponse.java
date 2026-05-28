@@ -19,6 +19,8 @@ public class DoctorResponse {
     private Double price;
     private String qualification;
     private Integer experienceYears;
+    private String practiceLicenseNumber;
+    private String practiceLicenseUrl;
     private Integer totalReviews;
     private Double rating;
     private String photoUrl;

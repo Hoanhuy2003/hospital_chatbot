@@ -59,7 +59,8 @@ export default function UserManager() {
   async function handleToggle(user) {
     try {
       await userService.toggleActive(user.id)
-      toast.success(`Đã ${user.isActive ? 'khoá' : 'mở khoá'} tài khoản ${user.fullName}`)
+      const active = user.is_active ?? user.isActive
+      toast.success(`Đã ${active ? 'khoá' : 'mở khoá'} tài khoản ${user.fullName}`)
       load()
     } catch { toast.error('Thao tác thất bại') }
   }
@@ -91,15 +92,17 @@ export default function UserManager() {
 },
     {
       key: 'id', label: '', width: 100,
-      render: (_, row) => (
-        <div style={{ display: 'flex', gap: 4 }}>
-          <button className={styles.btnSm}>Sửa</button>
+      render: (_, row) => {
+        const active = row.is_active ?? row.isActive
+        return (
           <button
-            className={`${styles.btnSm} ${!row.isActive ? styles.btnGreen : styles.btnDanger}`}
+            className={`${styles.btnSm} ${!active ? styles.btnGreen : styles.btnDanger}`}
             onClick={() => handleToggle(row)}
-          >{row.isActive ? 'Khoá' : 'Mở khoá'}</button>
-        </div>
-      )
+          >
+            {active ? 'Khoá' : 'Mở khoá'}
+          </button>
+        )
+      }
     },
   ]
 
@@ -122,7 +125,6 @@ export default function UserManager() {
           <option value="DOCTOR">Bác sĩ</option>
           <option value="ADMIN">Admin</option>
         </select>
-        <button className={styles.btnAdd}>+ Thêm người dùng</button>
       </div>
 
       <div className={styles.card}>

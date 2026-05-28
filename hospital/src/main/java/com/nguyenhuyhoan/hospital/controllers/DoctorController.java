@@ -26,25 +26,25 @@ public class DoctorController {
 
     private final IDoctorService doctorService;
 
-    @PostMapping(value = "/promote", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createDoctor(@Valid @ModelAttribute DoctorDTO doctorDTO) {
-        try {
+        @PostMapping(value = "/promote", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<?> createDoctor(@Valid @ModelAttribute DoctorDTO doctorDTO) {
+            try {
 
-            if(doctorDTO.getPhotoUrl() == null || doctorDTO.getPhotoUrl().isEmpty()){
-                return ResponseEntity.badRequest().body("Vui lòng upload ảnh chân dung bác sĩ");
+                if(doctorDTO.getPhotoUrl() == null || doctorDTO.getPhotoUrl().isEmpty()){
+                    return ResponseEntity.badRequest().body("Vui lòng upload ảnh chân dung bác sĩ");
+                }
+
+
+                DoctorResponse doctorResponse = doctorService.createDoctor(doctorDTO);
+                return ResponseEntity.status(HttpStatus.CREATED).body(doctorResponse);
+
+            } catch (IOException e){
+                return ResponseEntity.internalServerError().body("Lỗi hệ thống khi lưu file: " + e.getMessage());
+            } catch (Exception e){
+                return ResponseEntity.badRequest().body(e.getMessage());
             }
-
-
-            DoctorResponse doctorResponse = doctorService.createDoctor(doctorDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(doctorResponse);
-
-        } catch (IOException e){
-            return ResponseEntity.internalServerError().body("Lỗi hệ thống khi lưu file: " + e.getMessage());
-        } catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
         }
-    }
 
 
     @GetMapping("")

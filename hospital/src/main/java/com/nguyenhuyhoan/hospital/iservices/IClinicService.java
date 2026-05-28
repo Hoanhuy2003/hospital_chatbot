@@ -22,5 +22,7 @@ public interface IClinicService {
 
     void deleteClinic(Long id) throws DataNotFoundException;
 
+    ClinicResponse toggleClinicActive(Long id) throws DataNotFoundException;
+
     List<ClinicStatDTO> getClinicStat();
 }

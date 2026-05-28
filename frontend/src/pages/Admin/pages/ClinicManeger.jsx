@@ -10,19 +10,22 @@ const clinicService = {
   getClinicStat: async (params) => (await api.get(`/v1/clinics/statistics`, { params })).data,
   
   // Gửi FormData qua phương thức POST (Thêm mới) và PUT (Cập nhật)
-  create:   async (formData) => (await api.post('/v1/clinics', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })).data,
-  
-  update:   async (id, formData) => (await api.put(`/v1/clinics/${id}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })).data,
-  
+  create:   async (formData) => (await api.post('/v1/clinics', formData)).data,
+  update:   async (id, formData) => (await api.put(`/v1/clinics/${id}`, formData)).data,
+  toggleActive: async (id) => (await api.patch(`/v1/clinics/${id}/toggle-active`)).data,
   delete:   async (id) => (await api.delete(`/v1/clinics/${id}`)).data,
   getSpecialties: async () => (await api.get(`/v1/specialty`)).data
 }
 
-const EMPTY = { name: '', address: '', phone: '', specialtyId: '', description: '', imageFile: null }
+const EMPTY = {
+  name: '',
+  address: '',
+  phone: '',
+  specialtyId: '',
+  description: '',
+  imageFile: null,
+  isActive: true,
+}
 
 export default function ClinicManager() {
   const [data,      setData]      = useState([])
@@ -67,9 +70,10 @@ export default function ClinicManager() {
       name: row.name || '', 
       address: row.address || '', 
       phone: row.phone || '',
-      specialtyId: row.specialtyId || '', 
+      specialtyId: row.specialtyId || row.specialty_id || '',
       description: row.description || '',
-      imageFile: null 
+      imageFile: null,
+      isActive: row.isActive !== false && row.is_active !== false,
     })
     setShowModal(true)
   }
@@ -92,8 +96,9 @@ export default function ClinicManager() {
       formData.append('description', form.description || '')
       
       if (form.imageFile) {
-        formData.append('photoUrl', form.imageFile) 
+        formData.append('photoUrl', form.imageFile)
       }
+      formData.append('isActive', form.isActive ? 'true' : 'false')
 
       if (editTarget) {
         await clinicService.update(editTarget.id, formData)
@@ -112,31 +117,15 @@ export default function ClinicManager() {
     }
   }
 
-  // 💡 ĐÃ SỬA CHÍNH: Thay đổi trạng thái hoạt động thông qua hàm PUT cũ
   async function handleToggleActive(row) {
+    const active = row.isActive !== false && row.is_active !== false
     try {
-      setLoading(true);
-      const formData = new FormData();
-      
-      // Đổ đầy đủ thông tin cũ của phòng khám vào gói FormData
-      formData.append('name', row.name);
-      formData.append('address', row.address || '');
-      formData.append('phone', row.phone || '');
-      formData.append('specialtyId', Number(row.specialtyId));
-      formData.append('description', row.description || '');
-      
-      // Khớp chính xác với cấu trúc định danh @JsonProperty("is_active") trong ClinicDTO
-      formData.append('isActive', !row.isActive); 
-
-      // Gọi API PUT (Hệ thống đã được phân quyền Admin sẵn từ trước nên sẽ ăn ngay)
-      await clinicService.update(row.id, formData);
-      
-      toast.success(`Đã ${row.isActive ? 'khóa' : 'mở khóa'} phòng khám "${row.name}" thành công`);
-      load(); 
+      await clinicService.toggleActive(row.id)
+      toast.success(`Đã ${active ? 'khóa' : 'mở khóa'} phòng khám "${row.name}" thành công`)
+      load()
     } catch (err) {
-      toast.error('Cập nhật trạng thái thất bại');
-    } finally {
-      setLoading(false);
+      const msg = err.response?.data
+      toast.error(typeof msg === 'string' ? msg : msg?.message || 'Cập nhật trạng thái thất bại')
     }
   }
 
@@ -154,17 +143,24 @@ export default function ClinicManager() {
     { key: 'address',      label: 'Địa chỉ' },
     { key: 'phone',        label: 'SĐT' },
     { key: 'doctorCount',  label: 'Bác sĩ',          render: v => `${v || 0} BS` },
-    { key: 'isActive',     label: 'Trạng thái',      render: v => <StatusBadge status={v ? 'ACTIVE' : 'INACTIVE'} /> },
+    {
+      key: 'isActive',
+      label: 'Trạng thái',
+      render: (v, row) => {
+        const active = v !== false && row?.is_active !== false
+        return <StatusBadge status={active ? 'ACTIVE' : 'INACTIVE'} />
+      },
+    },
     {
       key: 'id', label: '', width: 160, 
       render: (_, row) => (
         <div style={{ display: 'flex', gap: 4 }}>
           <button className={styles.btnSm} onClick={() => openEdit(row)}>Sửa</button>
           <button
-            className={`${styles.btnSm} ${!row.isActive ? styles.btnGreen : styles.btnDanger}`}
+            className={`${styles.btnSm} ${row.isActive === false || row.is_active === false ? styles.btnGreen : styles.btnDanger}`}
             onClick={() => handleToggleActive(row)}
           >
-            {row.isActive ? 'Khoá' : 'Mở khoá'}
+            {row.isActive === false || row.is_active === false ? 'Mở khoá' : 'Khoá'}
           </button>
           <button className={`${styles.btnSm} ${styles.btnDanger}`} onClick={() => handleDelete(row)}>Xoá</button>
         </div>
@@ -241,6 +237,16 @@ export default function ClinicManager() {
                 <label>Mô tả</label>
                 <textarea rows={3} placeholder="Giới thiệu sơ bộ về chức năng phòng khám..."
                   value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={form.isActive}
+                    onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
+                  />
+                  Phòng khám đang hoạt động (bỏ chọn = khóa phòng)
+                </label>
               </div>
               <div className={styles.modalFooter}>
                 <button type="button" className={styles.btnCancel} onClick={() => setShowModal(false)}>Huỷ</button>

@@ -26,6 +26,12 @@ public class Doctor {
     @Column(name = "qualification", length = 200)//trinh do
     private String qualification;
 
+    @Column(name = "practice_license_number", length = 100)
+    private String practiceLicenseNumber;
+
+    @Column(name = "practice_license_url", length = 500)
+    private String practiceLicenseUrl;
+
     @Column(name = "experience_years")
     private Integer experienceYears = 0;// nam kinh nghiem
 

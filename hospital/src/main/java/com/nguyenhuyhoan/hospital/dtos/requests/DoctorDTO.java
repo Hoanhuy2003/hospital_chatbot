@@ -33,6 +33,11 @@ public class DoctorDTO {
     @JsonProperty("biography")
     private String biography;
 
+    @JsonProperty("practice_license_number")
+    private String practiceLicenseNumber;
+
+    private MultipartFile practiceLicenseUrl;
+
     // Đánh giá và xác minh
     @JsonProperty("rating")
     private Double rating;

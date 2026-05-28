@@ -67,6 +67,16 @@ public class ClinicController {
         }
     }
 
+    @PatchMapping("/{id}/toggle-active")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> toggleClinicActive(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(clinicService.toggleClinicActive(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Không đổi được trạng thái: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteClinic(@PathVariable Long id) {
         try {

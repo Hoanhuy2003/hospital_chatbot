@@ -34,9 +34,10 @@ public class ClinicService implements IClinicService {
     @Transactional
     public ClinicResponse createClinic(ClinicDTO clinicDTO) throws IOException {
 
-        String photoUrl = cloudinaryService.uploadClinicImage(clinicDTO.getPhotoUrl());
-
-
+        String photoUrl = null;
+        if (clinicDTO.getPhotoUrl() != null && !clinicDTO.getPhotoUrl().isEmpty()) {
+            photoUrl = cloudinaryService.uploadClinicImage(clinicDTO.getPhotoUrl());
+        }
 
         Specialty specialty = specialtyRepository.findById(clinicDTO.getSpecialtyId())
                 .orElseThrow(()-> new DataNotFoundException("Không tồn tại chuyên khoa này"));
@@ -50,9 +51,10 @@ public class ClinicService implements IClinicService {
                 .name(clinicDTO.getName())
                 .phone(clinicDTO.getPhone())
                 .address(clinicDTO.getAddress())
+                .description(clinicDTO.getDescription())
                 .specialty(specialty)
                 .photoUrl(photoUrl)
-                .isActive(clinicDTO.getIsActive())
+                .isActive(clinicDTO.getIsActive() != null ? clinicDTO.getIsActive() : true)
                 .build();
         return ClinicResponse.fromClinic(clinicRepository.save(clinic));
     }
@@ -122,6 +124,15 @@ public class ClinicService implements IClinicService {
         clinicRepository.save(clinic);
 
 
+    }
+
+    @Override
+    @Transactional
+    public ClinicResponse toggleClinicActive(Long id) throws DataNotFoundException {
+        Clinic clinic = clinicRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Phòng khám không tồn tại"));
+        clinic.setIsActive(!Boolean.TRUE.equals(clinic.getIsActive()));
+        return ClinicResponse.fromClinic(clinicRepository.save(clinic));
     }
 
     @Override

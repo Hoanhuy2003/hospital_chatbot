@@ -55,6 +55,21 @@ public class CloudinaryService {
         return (String) uploadResult.get("secure_url");
     }
 
+    public String uploadLicenseImage(MultipartFile file) throws IOException{
+        if (file == null || file.isEmpty()){
+            throw new RuntimeException("File chứng chỉ không được bỏ trống");
+        }
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                "folder", "hospital/license",
+                "resource_type", "image",
+                "overwrite", true
+        ));
+
+        return (String) uploadResult.get("secure_url");
+
+
+    }
+
     public String uploadClinicImage(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new RuntimeException("File ảnh phòng khám không được để trống");

@@ -14,11 +14,11 @@ public interface ClinicRepository extends JpaRepository<Clinic, Long> {
     Page<Clinic> findByNameContaining(String name, Pageable pageable);
 
     @Query("SELECT new com.nguyenhuyhoan.hospital.dtos.requests.ClinicStatDTO(" +
-            "c.id, c.name, c.address, c.phone, s.name, c.isActive, " +
+            "c.id, c.name, c.address, c.phone, s.id, s.name, c.description, c.isActive, " +
             "COUNT(d.id)) " +
             "FROM Clinic c " +
             "LEFT JOIN c.specialty s " +
             "LEFT JOIN Doctor d ON d.clinic.id = c.id " +
-            "GROUP BY c.id, c.name, c.address, c.phone, s.name, c.isActive")
+            "GROUP BY c.id, c.name, c.address, c.phone, s.id, s.name, c.description, c.isActive")
     List<ClinicStatDTO> getClinicStatistics();
 }

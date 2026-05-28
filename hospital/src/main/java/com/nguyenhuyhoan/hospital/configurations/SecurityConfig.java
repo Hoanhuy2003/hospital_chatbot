@@ -98,6 +98,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/clinics").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/clinics/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/clinics/**").hasRole("ADMIN")
 
                         // ── Medical Records ──
                         // GET: bệnh nhân, bác sĩ, admin đều được xem
