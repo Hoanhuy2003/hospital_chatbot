@@ -78,8 +78,8 @@ export default function Home() {
 
       try{
         setLoading(true)
-        const data = await doctorService.getAll()
-        setDoctors(data.content || data || [])
+        const list = await doctorService.getAllList()
+        setDoctors(Array.isArray(list) ? list : [])
          
       }catch(err){
         console.error("Errow", err)

@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable, { StatusBadge } from '../components/AdminTable'
+import AdminPagination from '../components/AdminPagination'
 import DoctorRegister from '../components/DoctorRegister'
 import styles from '../AdminCommon.module.css'
+
+const DOCTOR_PAGE_SIZE = 12
 import api from '../../../services/api'
 import { clinicService } from '../../../services/clinicService'
 
@@ -35,18 +38,31 @@ export default function DoctorManager() {
   const [editTarget, setEditTarget] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   const load = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await doctorService.getAll({ keyword, specialtyId })
-      setData(Array.isArray(res) ? res : res.content || [])
+      const res = await doctorService.getAll({
+        keyword: keyword || undefined,
+        specialtyId: specialtyId || undefined,
+        page,
+        size: DOCTOR_PAGE_SIZE,
+      })
+      if (res?.content) {
+        setData(res.content)
+        setTotalPages(res.totalPages ?? 0)
+      } else {
+        setData(Array.isArray(res) ? res : [])
+        setTotalPages(0)
+      }
     } catch (err) {
       toast.error('Không tải được danh sách bác sĩ')
     } finally {
       setLoading(false)
     }
-  }, [keyword, specialtyId])
+  }, [keyword, specialtyId, page])
 
   useEffect(() => {
     load()
@@ -193,9 +209,9 @@ export default function DoctorManager() {
     <div>
       <div className={styles.toolbar}>
         <input className={styles.searchInput} placeholder="Tìm bác sĩ..."
-          value={keyword} onChange={e => setKeyword(e.target.value)} />
+          value={keyword} onChange={e => { setPage(0); setKeyword(e.target.value) }} />
         <select className={styles.select} value={specialtyId}
-          onChange={e => setSpecialtyId(e.target.value)}>
+          onChange={e => { setPage(0); setSpecialtyId(e.target.value) }}>
           <option value="">Tất cả chuyên khoa</option>
           {specialties.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
@@ -205,7 +221,12 @@ export default function DoctorManager() {
       <div className={styles.card}>
         {loading
           ? <div className={styles.loading}><div className={styles.spinner}/>Đang tải...</div>
-          : <AdminTable columns={COLUMNS} data={data} />
+          : (
+            <>
+              <AdminTable columns={COLUMNS} data={data} />
+              <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </>
+          )
         }
       </div>
 

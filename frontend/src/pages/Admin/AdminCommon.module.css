@@ -499,3 +499,42 @@
 .checkboxRow input {
   width: auto;
 }
+
+/* ── Phân trang admin ── */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.paginationBtn {
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #f8f9fa;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #333;
+}
+
+.paginationBtn:hover:not(:disabled) {
+  border-color: #1565C0;
+  color: #1565C0;
+}
+
+.paginationBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.paginationBtnActive {
+  background: #1565C0;
+  color: #fff;
+  border-color: #1565C0;
+  font-weight: 700;
+}

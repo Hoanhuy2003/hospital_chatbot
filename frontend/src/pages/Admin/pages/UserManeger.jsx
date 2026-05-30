@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable, { StatusBadge } from '../components/AdminTable'
+import AdminPagination from '../components/AdminPagination'
+import { ADMIN_PAGE_SIZE } from '../hooks/useAdminPagination'
 import styles from '../AdminCommon.module.css'
 import api from '../../../services/api'
 
@@ -19,7 +21,7 @@ export default function UserManager() {
   // 💡 ĐÃ THÊM: State quản lý phân trang tương thích Spring Data JPA
   const [page, setPage] = useState(0)            // Trang hiện tại (Mặc định trang đầu là 0)
   const [totalPages, setTotalPages] = useState(0) // Tổng số trang trả về từ hệ thống
-  const PAGE_SIZE = 12;                          // Số lượng phần tử hiển thị trên một trang
+  const PAGE_SIZE = ADMIN_PAGE_SIZE;
 
   // ĐÃ SỬA: Hàm load bắn kèm dữ liệu phân trang và đọc đúng cấu trúc res.content
   const load = useCallback(async () => {
@@ -135,45 +137,7 @@ export default function UserManager() {
               {/* Bảng dữ liệu người dùng */}
               <AdminTable columns={COLUMNS} data={data} />
               
-              {/* 💡 ĐÃ THÊM: THANH ĐIỀU HƯỚNG PHÂN TRANG NGƯỜI DÙNG */}
-              {totalPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '20px', paddingBottom: '10px' }}>
-                  <button 
-                    disabled={page === 0} 
-                    onClick={() => setPage(p => p - 1)}
-                    style={{ padding: '6px 12px', cursor: page === 0 ? 'not-allowed' : 'pointer', background: '#f8f9fa', border: '1px solid #ccc', borderRadius: '4px' }}
-                  >
-                    ◀ Trước
-                  </button>
-                  
-                  {/* Khởi tạo mảng nút bấm số trang dựa trên dữ liệu thật */}
-                  {[...Array(totalPages).keys()].map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => setPage(num)}
-                      style={{
-                        padding: '6px 12px',
-                        cursor: 'pointer',
-                        backgroundColor: page === num ? '#007bff' : '#f8f9fa',
-                        color: page === num ? '#fff' : '#333',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        fontWeight: page === num ? 'bold' : 'normal'
-                      }}
-                    >
-                      {num + 1}
-                    </button>
-                  ))}
-
-                  <button 
-                    disabled={page === totalPages - 1} 
-                    onClick={() => setPage(p => p + 1)}
-                    style={{ padding: '6px 12px', cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer', background: '#f8f9fa', border: '1px solid #ccc', borderRadius: '4px' }}
-                  >
-                    Sau ▶
-                  </button>
-                </div>
-              )}
+              <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </>
           )
         }

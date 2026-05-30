@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable from '../components/AdminTable'
+import AdminPagination from '../components/AdminPagination'
+import { useAdminPagination } from '../hooks/useAdminPagination'
 import styles from '../AdminCommon.module.css'
 import api from '../../../services/api'
 
@@ -26,6 +28,8 @@ export default function SpecialtyManager() {
   const [editTarget, setEditTarget] = useState(null)
   const [form,      setForm]      = useState(EMPTY)
   const [saving,    setSaving]    = useState(false)
+
+  const { pageData, page, setPage, totalPages } = useAdminPagination(data, undefined, [keyword])
 
   const load = useCallback(async () => {
     try {
@@ -149,7 +153,12 @@ export default function SpecialtyManager() {
       <div className={styles.card}>
         {loading
           ? <div className={styles.loading}><div className={styles.spinner}/>Đang tải...</div>
-          : <AdminTable columns={COLUMNS} data={data} />
+          : (
+            <>
+              <AdminTable columns={COLUMNS} data={pageData} />
+              <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </>
+          )
         }
       </div>
 

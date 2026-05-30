@@ -1,4 +1,6 @@
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { useAuth } from '../../context/AuthContext'
 import styles from './AdminLayout.module.css'
 
 const NAV = [
@@ -19,6 +21,19 @@ const PAGE_TITLES = Object.fromEntries(NAV.map(n => [n.path, n.label]))
 export default function AdminLayout() {
   const navigate  = useNavigate()
   const location  = useLocation()
+  const { logout } = useAuth()
+
+  const fullName = localStorage.getItem('fullName') || 'Admin hệ thống'
+  const initials = fullName
+    ? fullName.trim().split(/\s+/).pop()[0].toUpperCase()
+    : 'AD'
+
+  function handleLogout() {
+    if (window.confirm('Bạn chắc chắn muốn đăng xuất chứ?')) {
+      toast.info('Đã đăng xuất')
+      logout()
+    }
+  }
 
   const title = PAGE_TITLES[location.pathname] || 'Admin'
   const now   = new Date().toLocaleDateString('vi-VN', {
@@ -49,8 +64,13 @@ export default function AdminLayout() {
         </nav>
 
         <div className={styles.sidebarUser}>
-          <div className={styles.userAva}>AD</div>
-          <div className={styles.userName}>Admin hệ thống</div>
+          <div className={styles.userRow}>
+            <div className={styles.userAva}>{initials}</div>
+            <div className={styles.userName}>{fullName}</div>
+          </div>
+          <button type="button" className={styles.logoutBtn} onClick={handleLogout}>
+            Đăng xuất
+          </button>
         </div>
       </aside>
 

@@ -18,6 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -58,7 +60,7 @@ public class ChatbotService {
             log.error("Lỗi khi khởi tạo hoặc lưu session người dùng: {}", e.getMessage());
         }
 
-        String botReply = resolveReply(userContent);
+        String botReply = resolveReply(userContent, session);
 
         if (session != null) {
             try {
@@ -103,7 +105,7 @@ public class ChatbotService {
                     + "Hãy **gọi ngay 115** hoặc đưa người bệnh đến **cấp cứu gần nhất** — đừng trì hoãn để chat.\n\n"
                     + "Nếu không phải cấp cứu, hãy mô tả lại **nhẹ hơn** hoặc gọi hotline **024 3869 3731**.";
 
-    private String resolveReply(String userContent) {
+    private String resolveReply(String userContent, ChatSession session) {
         if (userContent == null || userContent.trim().isEmpty()) {
             return "Tôi có thể giúp gì cho bạn?";
         }
@@ -115,14 +117,18 @@ public class ChatbotService {
             return emergency;
         }
 
-        // 1. FAQ
-        try {
-            List<ChatbotFaq> faqs = chatbotFaqRepository.searchFaq(clean);
-            if (!faqs.isEmpty()) {
-                return faqs.get(0).getAnswer();
+        boolean wantsDoctors = isDoctorRecommendationIntent(clean);
+
+        // 1. FAQ (bỏ qua nếu đang hỏi gợi ý bác sĩ — tránh FAQ "giá khám bác sĩ" chặn luồng)
+        if (!wantsDoctors) {
+            try {
+                List<ChatbotFaq> faqs = chatbotFaqRepository.searchFaq(clean);
+                if (!faqs.isEmpty()) {
+                    return faqs.get(0).getAnswer();
+                }
+            } catch (Exception e) {
+                log.warn("Lỗi tra cứu bảng FAQ: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Lỗi tra cứu bảng FAQ: {}", e.getMessage());
         }
 
         // 2. Triệu chứng → chuyên khoa + gợi ý bác sĩ & link đặt khám
@@ -143,15 +149,131 @@ public class ChatbotService {
         try {
             Specialty byName = findBestSpecialtyMentionInMessage(clean);
             if (byName != null) {
-                String intro = "Bạn quan tâm **" + byName.getName() + "**.\n\n";
+                String intro = wantsDoctors
+                        ? "Dưới đây là một số bác sĩ **" + byName.getName() + "** bạn có thể đặt khám:\n\n"
+                        : "Bạn quan tâm **" + byName.getName() + "**.\n\n";
                 return intro + buildDoctorBookingAdvice(byName);
             }
         } catch (Exception e) {
             log.warn("Lỗi ghép tên chuyên khoa: {}", e.getMessage());
         }
 
-        // 4. AI (Python / Gemini)
+        // 4. Hỏi tiếp "bác sĩ nào / nên khám ai" — lấy khoa từ tin nhắn trước trong phiên chat
+        if (wantsDoctors) {
+            try {
+                Specialty fromContext = resolveSpecialtyForDoctorAdvice(clean, session);
+                if (fromContext != null) {
+                    String intro = "Theo cuộc trao đổi trước, bạn đang cần gợi ý bác sĩ **"
+                            + fromContext.getName() + "**:\n\n";
+                    return intro + buildDoctorBookingAdvice(fromContext);
+                }
+            } catch (Exception e) {
+                log.warn("Lỗi gợi ý bác sĩ theo ngữ cảnh: {}", e.getMessage());
+            }
+            return "Để gợi ý **bác sĩ cụ thể**, bạn cho tôi biết **triệu chứng** hoặc **tên chuyên khoa** (ví dụ: Nhi khoa, Tim mạch).\n\n"
+                    + "Hoặc xem danh sách bác sĩ tại: " + trimSlash(frontendUrl) + "/tim-kiem";
+        }
+
+        // 5. AI (Python / Gemini)
         return callPythonAI(userContent);
+    }
+
+    /** Câu hỏi kiểu: bác sĩ nào, nên khám ai, đặt lịch với ai… */
+    private boolean isDoctorRecommendationIntent(String clean) {
+        if (clean.contains("giá khám") || clean.contains("phí khám")
+                || clean.contains("bao nhiêu") || clean.contains("chi phí")) {
+            return false;
+        }
+        if (clean.contains("bác sĩ") || clean.contains("bac si") || clean.contains(" bs ")) {
+            if (clean.contains("nào") || clean.contains("nao") || clean.contains("gợi ý")
+                    || clean.contains("đặt lịch") || clean.contains("nên khám")
+                    || clean.contains("chọn") || clean.contains("danh sách")
+                    || clean.contains("ai khám") || clean.contains("khám ai")) {
+                return true;
+            }
+        }
+        if (clean.contains("nên khám") && (clean.contains(" ai") || clean.contains("nào"))) {
+            return true;
+        }
+        if (clean.contains("đặt lịch") && clean.contains("ai")) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Khoa từ câu hiện tại, triệu chứng trong phiên, hoặc tin bot/user gần nhất. */
+    private Specialty resolveSpecialtyForDoctorAdvice(String clean, ChatSession session) {
+        Specialty byMessage = findBestSpecialtyMentionInMessage(clean);
+        if (byMessage != null) {
+            return byMessage;
+        }
+        try {
+            List<SymptomSpecialtyMapping> symptoms = symptomRepository.findMatchedSymptoms(clean);
+            if (!symptoms.isEmpty()) {
+                return symptoms.get(0).getSpecialty();
+            }
+        } catch (Exception ignored) {
+        }
+        if (session != null && session.getId() != null) {
+            Specialty fromHistory = findSpecialtyFromSessionHistory(session.getId());
+            if (fromHistory != null) {
+                return fromHistory;
+            }
+        }
+        return null;
+    }
+
+    private Specialty findSpecialtyFromSessionHistory(Long sessionDbId) {
+        List<ChatMessage> messages = messageRepository.findBySessionIdOrderByCreateAtAsc(sessionDbId);
+        int start = Math.max(0, messages.size() - 14);
+        for (int i = messages.size() - 1; i >= start; i--) {
+            String text = messages.get(i).getMessageText();
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+            Specialty s = extractSpecialtyFromBotOrUserText(text.toLowerCase());
+            if (s != null) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    private static final Pattern SPECIALTY_IN_BOT_REPLY = Pattern.compile(
+            "khoa \\*\\*([^*]+)\\*\\*",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+    );
+
+    private Specialty extractSpecialtyFromBotOrUserText(String lowerText) {
+        String norm = lowerText.replaceAll("\\s+", " ");
+        Matcher m = SPECIALTY_IN_BOT_REPLY.matcher(norm);
+        if (m.find()) {
+            Specialty byMarked = findSpecialtyByNameFragment(m.group(1).trim());
+            if (byMarked != null) {
+                return byMarked;
+            }
+        }
+        return findBestSpecialtyMentionInMessage(norm);
+    }
+
+    private Specialty findSpecialtyByNameFragment(String fragment) {
+        if (fragment == null || fragment.isBlank()) {
+            return null;
+        }
+        String f = fragment.toLowerCase().trim();
+        Specialty best = null;
+        int bestLen = 0;
+        for (Specialty s : specialtyRepository.findAll()) {
+            if (s.getName() == null) {
+                continue;
+            }
+            String n = s.getName().toLowerCase().trim();
+            if ((n.equals(f) || n.contains(f) || f.contains(n)) && n.length() > bestLen) {
+                best = s;
+                bestLen = n.length();
+            }
+        }
+        return best;
     }
 
     /** Tìm chuyên khoa có tên xuất hiện trong câu (ưu tiên tên dài nhất khớp). */
@@ -175,7 +297,7 @@ public class ChatbotService {
     private String buildDoctorBookingAdvice(Specialty specialty) {
         String listUrl = trimSlash(frontendUrl) + "/tim-kiem?specialtyId=" + specialty.getId();
 
-        List<Doctor> doctors = doctorRepository.findBySpecialty(specialty).stream()
+        List<Doctor> doctors = doctorRepository.findBySpecialtyId(specialty.getId()).stream()
                 .sorted(Comparator
                         .comparing(Doctor::getRating, Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(d -> d.getUser() != null ? d.getUser().getFullName() : ""))

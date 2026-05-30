@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import { medicalRecordService } from '../../../services/medicalRecordService'
+import AdminPagination from '../components/AdminPagination'
+import { useAdminPagination, ADMIN_PAGE_SIZE } from '../hooks/useAdminPagination'
 import styles from '../AdminCommon.module.css'
 
 const fmtDate  = (v) => v ? new Date(v).toLocaleDateString('vi-VN') : '—'
@@ -29,6 +31,8 @@ export default function RecordManager() {
   }, [keyword, date])
 
   useEffect(() => { load() }, [load])
+
+  const { pageData, page, setPage, totalPages } = useAdminPagination(data, undefined, [keyword, date])
 
   /* ── stats ── */
   const today       = new Date().toLocaleDateString('vi-VN')
@@ -121,9 +125,9 @@ export default function RecordManager() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((r, i) => (
+                {pageData.map((r, i) => (
                   <tr key={r.id}>
-                    <td className={styles.numCell}>{i + 1}</td>
+                    <td className={styles.numCell}>{page * ADMIN_PAGE_SIZE + i + 1}</td>
                     <td className={styles.nameCell}>
                       <strong>{r.patient_name || r.patientName}</strong>
                     </td>
@@ -165,6 +169,9 @@ export default function RecordManager() {
             </table>
           )}
         </div>
+        {!loading && data.length > 0 && (
+          <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        )}
       </div>
 
       {/* ── Modal chi tiết ── */}

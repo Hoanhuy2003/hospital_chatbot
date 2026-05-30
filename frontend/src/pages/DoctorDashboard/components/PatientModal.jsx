@@ -162,6 +162,7 @@ useEffect(() => {
   };
 
   const st = (p.status || '').toLowerCase()
+  const canConfirmAppointment = st === 'pending'
   const canDoctorCancel = st === 'pending' || st === 'confirmed'
 
   async function handleDoctorCancel() {
@@ -376,6 +377,9 @@ useEffect(() => {
 
           {tab === 1 && (
             <div className={styles.tabContent}>
+              {!canConfirmAppointment && st === 'confirmed' && (
+                <p className={styles.confirmedNotice}>✓ Lịch khám đã được xác nhận. Bạn có thể tiếp tục nhập bệnh án ở các tab sau.</p>
+              )}
               <div className={styles.sectionLabel}>Khám sàng lọc</div>
               <div className={styles.row2}>
                 <div className={styles.field}><label>Nhiệt độ (°C)</label><input type="number" value={vitals.temp} onChange={e => setVitals({...vitals, temp: e.target.value})} /></div>
@@ -557,7 +561,15 @@ useEffect(() => {
     </button>
   )}
   
-  {tab === 1 && <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={handleConfirm} disabled={isSubmitting}>Xác nhận khám</button>}
+  {tab === 1 && canConfirmAppointment && (
+    <button
+      className={`${styles.btn} ${styles.btnSuccess}`}
+      onClick={handleConfirm}
+      disabled={isSubmitting}
+    >
+      Xác nhận khám
+    </button>
+  )}
   
   {/* Sửa tab === 2 (Bệnh án) hoặc tab === 3 (Đơn thuốc) tùy theo Hoàn muốn hiện nút Lưu ở đâu */}
   {(tab === 2 || tab === 3) && (

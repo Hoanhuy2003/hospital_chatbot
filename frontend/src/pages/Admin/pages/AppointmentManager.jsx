@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable, { StatusBadge } from '../components/AdminTable'
+import AdminPagination from '../components/AdminPagination'
+import { useAdminPagination } from '../hooks/useAdminPagination'
 import { appointmentService } from '../../../services/appointmentService'
 import styles from '../AdminCommon.module.css'
 
@@ -13,6 +15,8 @@ export default function AppointmentManager() {
   
   // 1. Thêm state để quản lý Modal chi tiết
   const [selectedItem, setSelectedItem] = useState(null)
+
+  const { pageData, page, setPage, totalPages } = useAdminPagination(data, undefined, [keyword, status, date])
 
   const load = useCallback(async () => {
     try {
@@ -68,7 +72,12 @@ export default function AppointmentManager() {
       <div className={styles.card}>
         {loading
           ? <div className={styles.loading}><div className={styles.spinner} /> Đang tải...</div>
-          : <AdminTable columns={COLUMNS} data={data} />
+          : (
+            <>
+              <AdminTable columns={COLUMNS} data={pageData} />
+              <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </>
+          )
         }
       </div>
 

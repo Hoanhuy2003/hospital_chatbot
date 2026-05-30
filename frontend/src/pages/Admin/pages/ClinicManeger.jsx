@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import AdminTable, { StatusBadge } from '../components/AdminTable'
+import AdminPagination from '../components/AdminPagination'
+import { useAdminPagination } from '../hooks/useAdminPagination'
 import { specialtyService } from '../../../services/api'
 import styles from '../AdminCommon.module.css'
 import api from '../../../services/api'
@@ -36,6 +38,8 @@ export default function ClinicManager() {
   const [form,      setForm]      = useState(EMPTY)
   const [saving,    setSaving]    = useState(false)
   const [specialties, setSpecialties] = useState([]);
+
+  const { pageData, page, setPage, totalPages } = useAdminPagination(data, undefined, [keyword])
 
   const load = useCallback(async () => {
     try {
@@ -179,7 +183,12 @@ export default function ClinicManager() {
       <div className={styles.card}>
         {loading
           ? <div className={styles.loading}><div className={styles.spinner}/>Đang tải...</div>
-          : <AdminTable columns={COLUMNS} data={data} />
+          : (
+            <>
+              <AdminTable columns={COLUMNS} data={pageData} />
+              <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </>
+          )
         }
       </div>
 

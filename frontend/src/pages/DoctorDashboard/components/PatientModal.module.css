@@ -895,6 +895,16 @@
 
 /* --- GIỮ NGUYÊN DRUG TABLE, PRINT PREVIEW VÀ CÁC PHẦN CÒN LẠI --- */
 
+.confirmedNotice {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .btnPrimary { background: #1565C0; color: #fff; }
 .btnPrimary:hover { background: #0D47A1; }
 .btnSuccess { background: #2E7D32; color: #fff; }

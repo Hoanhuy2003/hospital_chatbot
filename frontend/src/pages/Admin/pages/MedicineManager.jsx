@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import { medicineService } from '../../../services/medicineService'
 import api from '../../../services/api'
+import AdminPagination from '../components/AdminPagination'
+import { useAdminPagination, ADMIN_PAGE_SIZE } from '../hooks/useAdminPagination'
 import styles from '../AdminCommon.module.css'
 
 const EMPTY = { name: '', unit: '', price: '', dosageInstruction: '', specialtyId: '' }
@@ -35,6 +37,8 @@ export default function MedicineManager() {
   const filtered = data.filter(m =>
     !keyword || m.name?.toLowerCase().includes(keyword.toLowerCase())
   )
+
+  const { pageData, page, setPage, totalPages } = useAdminPagination(filtered, undefined, [keyword])
 
   function openAdd() {
     setForm(EMPTY)
@@ -161,13 +165,13 @@ export default function MedicineManager() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((m, i) => {
+                {pageData.map((m, i) => {
                   const specName = specialties.find(
                     s => s.id === (m.specialtyId || m.specialty_id)
                   )?.name
                   return (
                     <tr key={m.id}>
-                      <td className={styles.numCell}>{i + 1}</td>
+                      <td className={styles.numCell}>{page * ADMIN_PAGE_SIZE + i + 1}</td>
                       <td className={styles.nameCell}>
                         <strong>{m.name}</strong>
                       </td>
@@ -198,6 +202,9 @@ export default function MedicineManager() {
             </table>
           )}
         </div>
+        {!loading && filtered.length > 0 && (
+          <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        )}
       </div>
 
       {/* ── Modal thêm / sửa ── */}

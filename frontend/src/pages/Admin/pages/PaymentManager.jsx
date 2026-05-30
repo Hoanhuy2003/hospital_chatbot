@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../../services/api'
+import AdminPagination from '../components/AdminPagination'
+import { useAdminPagination, ADMIN_PAGE_SIZE } from '../hooks/useAdminPagination'
 import styles from '../AdminCommon.module.css'
 
 /* ── helpers ── */
@@ -56,6 +58,8 @@ export default function PaymentManager() {
   }, [keyword, status, dateFrom, dateTo])
 
   useEffect(() => { load() }, [load])
+
+  const { pageData, page, setPage, totalPages } = useAdminPagination(data, undefined, [keyword, status, dateFrom, dateTo])
 
   const hasFilter = keyword || status || dateFrom || dateTo
 
@@ -143,9 +147,9 @@ export default function PaymentManager() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((inv, i) => (
+                {pageData.map((inv, i) => (
                   <tr key={inv.invoiceID}>
-                    <td className={styles.numCell}>{i + 1}</td>
+                    <td className={styles.numCell}>{page * ADMIN_PAGE_SIZE + i + 1}</td>
                     <td>
                       <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#2563eb' }}>
                         #INV-{inv.invoiceID}
@@ -181,6 +185,9 @@ export default function PaymentManager() {
             </table>
           )}
         </div>
+        {!loading && data.length > 0 && (
+          <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        )}
       </div>
 
       {/* ── Modal chi tiết ── */}
