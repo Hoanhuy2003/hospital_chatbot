@@ -31,7 +31,7 @@ export default function AdminLayout() {
       {/* ── SIDEBAR ── */}
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
-          Med<span>Care</span>
+          Bệnh viện <span>Bạch Mai</span>
           <em>Admin</em>
         </div>
 

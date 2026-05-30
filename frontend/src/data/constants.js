@@ -161,7 +161,7 @@ export const BOT_REPLIES = {
   'sản phụ khoa': 'Bệnh viện Từ Dũ là địa chỉ uy tín nhất về sản phụ khoa. BS. CK1 Trần Thị Mai hiện đang nhận lịch.',
   'xương khớp': 'BV Chấn thương Chỉnh hình có đội ngũ bác sĩ cơ xương khớp hàng đầu. Hiện có 9 bác sĩ nhận lịch.',
   'giá': 'Phí khám dao động từ 180.000đ – 400.000đ tuỳ bác sĩ. Giá đã bao gồm phí tư vấn và phiếu khám.',
-  'bảo hiểm': 'Hiện tại MedCare hỗ trợ thanh toán BHYT tại một số bệnh viện công. Vui lòng kiểm tra khi đặt lịch.',
+  'bảo hiểm': 'Bệnh viện Bạch Mai hỗ trợ thanh toán BHYT theo quy định. Vui lòng kiểm tra khi đặt lịch.',
 }
 
 export const DAYS_VN = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']

@@ -98,7 +98,7 @@ export default function Login() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <Link to="/" className={styles.logo}>Med<span>Care</span></Link>
+        <Link to="/" className={styles.logo}>Bệnh viện <span>Bạch Mai</span></Link>
         <p className={styles.subtitle}>Hệ thống đặt lịch khám bệnh viện trực tuyến</p>
 
         <div className={styles.tabs}>

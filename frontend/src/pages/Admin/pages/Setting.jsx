@@ -13,8 +13,8 @@ const NOTIFICATION_SETTINGS = [
 
 export default function Settings() {
   const [sysForm, setSysForm] = useState({
-    systemName: 'MedCare Hospital',
-    supportEmail: 'support@medcare.vn',
+    systemName: 'Bệnh viện Bạch Mai',
+    supportEmail: 'lienhe@bachmai.vn',
     hotline: '1900-2805',
     timezone: 'UTC+7',
     address: 'TP. Hồ Chí Minh, Việt Nam',
@@ -67,8 +67,8 @@ export default function Settings() {
         <div className={settingStyles.sectionTitle}>Thông tin hệ thống</div>
         <form onSubmit={handleSaveSys} className={styles.modalForm}>
           {[
-            ['systemName',   'Tên hệ thống',      'text',  'MedCare Hospital'     ],
-            ['supportEmail', 'Email hỗ trợ',       'email', 'support@medcare.vn'   ],
+            ['systemName',   'Tên hệ thống',      'text',  'Bệnh viện Bạch Mai'     ],
+            ['supportEmail', 'Email hỗ trợ',       'email', 'lienhe@bachmai.vn'   ],
             ['hotline',      'Hotline',            'text',  '1900-2805'            ],
             ['address',      'Địa chỉ',            'text',  'TP. Hồ Chí Minh'     ],
           ].map(([key, label, type, ph]) => (

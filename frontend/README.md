@@ -1,4 +1,4 @@
-# MedCare – Đặt lịch khám bệnh viện 🏥
+# Bệnh viện Bạch Mai – Đặt lịch khám trực tuyến 🏥
 
 Ứng dụng React đặt lịch khám bệnh viện tích hợp chatbot, xây dựng với Vite + React 18.
 

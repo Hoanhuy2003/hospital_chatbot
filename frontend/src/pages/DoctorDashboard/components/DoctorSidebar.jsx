@@ -35,7 +35,7 @@ export default function DoctorSidebar({ page, setPage }) {
 
   return (
     <div className={styles.sidebar}>
-      <div className={styles.logo}>Med<span>Care</span> <em>Bác sĩ</em></div>
+      <div className={styles.logo}>Bệnh viện <span>Bạch Mai</span> <em>Bác sĩ</em></div>
 
       <nav className={styles.nav}>
         {NAV.map(n => (

@@ -69,7 +69,7 @@ export default function Register() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <Link to="/" className={styles.logo}>Med<span>Care</span></Link>
+        <Link to="/" className={styles.logo}>Bệnh viện <span>Bạch Mai</span></Link>
         <p className={styles.subtitle}>Tạo tài khoản để đặt lịch khám dễ dàng hơn</p>
 
         {/* Tabs */}
@@ -192,7 +192,7 @@ export default function Register() {
               <span>
                 Tôi đồng ý với{' '}
                 <Link to="/dieu-khoan" className={styles.link}>Điều khoản dịch vụ</Link> và{' '}
-                <Link to="/bao-mat" className={styles.link}>Chính sách bảo mật</Link> của MedCare
+                <Link to="/bao-mat" className={styles.link}>Chính sách bảo mật</Link> của Bệnh viện Bạch Mai
               </span>
             </label>
             {errors.agree && <div className={styles.errMsg}>{errors.agree}</div>}
