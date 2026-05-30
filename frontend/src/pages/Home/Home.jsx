@@ -9,9 +9,19 @@ import { doctorService } from '../../services/doctorService'
 import { statisticService } from '../../services/api'
 import styles from './Home.module.css'
 
+const HOME_CLINIC_LIMIT = 12
+const HOME_SPECIALTY_LIMIT = 12
+
+const HOME_TABS = [
+  { key: 'hospital', label: 'Bệnh viện kết nối', targetId: 'home-top' },
+  { key: 'doctors', label: 'Bác sĩ hoạt động', targetId: 'section-doctors' },
+  { key: 'clinics', label: 'Phòng khám đa khoa', targetId: 'section-clinics' },
+  { key: 'specialties', label: 'Chuyên khoa', targetId: 'section-specialties' },
+]
 
 export default function Home() {
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('hospital')
   const [specialties, setSpecialties] = useState([])
   const [doctors, setDoctors] = useState([])
   const [clinics, setClinics] = useState([])
@@ -89,8 +99,9 @@ export default function Home() {
     const fetchClinics = async () => {
       try {
         setClinicsLoading(true)
-        const data = await clinicService.getAll()
-        setClinics(data?.content || data || [])
+        const data = await clinicService.getAll({ page: 0, size: HOME_CLINIC_LIMIT })
+        const list = data?.content || data || []
+        setClinics(Array.isArray(list) ? list.slice(0, HOME_CLINIC_LIMIT) : [])
       } catch (err) {
         console.error('Error fetching clinics:', err)
         setClinicError(err.message || 'Không thể tải phòng khám')
@@ -122,11 +133,19 @@ export default function Home() {
     }
   }
 
+  function handleTabClick(tab) {
+    setActiveTab(tab.key)
+    const el = document.getElementById(tab.targetId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <>
-      <div className={styles.hero}>
+      <div id="home-top" className={styles.hero}>
         <div className={styles.heroInner}>
-          <h1 className={styles.heroTitle}>Ứng dụng đặt khám bệnh viện</h1>
+          <h1 className={styles.heroTitle}>Ứng dụng đặt khám trực tuyến Bệnh viện Bạch Mai</h1>
           <p className={styles.heroSub}>
             Đặt khám với hơn 1000 bác sĩ, 25 bệnh viện, 100 phòng khám để có số thứ tự và khung giờ khám trước.
           </p>
@@ -157,8 +176,15 @@ export default function Home() {
 
       <div className={styles.tabBar}>
         <div className={styles.tabBarInner}>
-          {['Bệnh viện kết nối','Bác sĩ hoạt động','Phòng khám đa khoa','Chuyên khoa'].map((t, i) => (
-            <div key={t} className={`${styles.tabItem} ${i === 0 ? styles.tabActive : ''}`}>{t}</div>
+          {HOME_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`${styles.tabItem} ${activeTab === tab.key ? styles.tabActive : ''}`}
+              onClick={() => handleTabClick(tab)}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
       </div>
@@ -167,13 +193,14 @@ export default function Home() {
 
         
         {/* CHUYÊN KHOA */}
+<div id="section-specialties" className={styles.sectionAnchor} />
 <div className={styles.sectionHeader}>
   <div>
     <div className={styles.sectionTitle}>Đặt lịch theo chuyên khoa</div>
     <div className={styles.sectionSub}>Thuận tiện, an toàn và nhanh chóng trong việc đặt lịch</div>
   </div>
   {/* Sửa lại: Xem thêm thì sang trang tìm kiếm chung, không cần truyền ID cụ thể */}
-  <button className={styles.btnMore} onClick={() => navigate('/tim-kiem')}>
+  <button className={styles.btnMore} onClick={() => navigate('/chuyen-khoa')}>
     Xem thêm
   </button>
 </div>
@@ -186,7 +213,7 @@ export default function Home() {
   ) : specialties.length === 0 ? (
     <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '20px' }}>Chưa có chuyên khoa nào</div>
   ) : (
-    specialties.map((s, i) => (
+    specialties.slice(0, HOME_SPECIALTY_LIMIT).map((s, i) => (
       <div
         key={s.id}
         className={`${styles.specCard} ${activeSpec === i ? styles.specActive : ''}`}
@@ -222,6 +249,7 @@ export default function Home() {
 
 
 
+        <div id="section-clinics" className={styles.sectionAnchor} />
         <div className={styles.sectionHeader}>
   <div>
     <div className={styles.sectionTitle}>Đặt khám phòng khám</div>
@@ -270,6 +298,7 @@ export default function Home() {
         
 
         {/* BÁC SĨ */}
+        <div id="section-doctors" className={styles.sectionAnchor} />
         <div className={styles.sectionHeader}>
           <div>
             <div className={styles.sectionTitle}>Đặt khám bác sĩ</div>

@@ -3,6 +3,8 @@ import styles from './Footer.module.css'
 
 const QUICK_LINKS = [
   { label: 'Trang chủ', path: '/' },
+  { label: 'Chuyên khoa', path: '/chuyen-khoa' },
+  { label: 'Tin Y tế', path: '/tin-tuc' },
   { label: 'Tìm bác sĩ', path: '/tim-kiem' },
   { label: 'Phòng khám', path: '/phong-kham' },
   { label: 'Lịch khám của tôi', path: '/lich-kham-cua-toi' },

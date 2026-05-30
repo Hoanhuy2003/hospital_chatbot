@@ -130,9 +130,17 @@
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
+  border: none;
   border-bottom: 3px solid transparent;
+  background: transparent;
+  font-family: inherit;
   transition: all 0.2s;
   white-space: nowrap;
+}
+
+.sectionAnchor {
+  scroll-margin-top: 128px;
+  height: 0;
 }
 
 .tabItem:hover,
