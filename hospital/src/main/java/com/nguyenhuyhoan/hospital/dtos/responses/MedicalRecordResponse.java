@@ -42,6 +42,7 @@ public class MedicalRecordResponse {
     public static MedicalRecordResponse fromMedicalRecord(MedicalRecord record) {
         return MedicalRecordResponse.builder()
                 .id(record.getId())
+                .appointmentId(record.getAppointment() != null ? record.getAppointment().getId() : null)
                 .patientName(record.getPatient().getFullName())
                 .doctorName(record.getDoctor().getUser().getFullName())
                 .symptoms(record.getSymptoms())

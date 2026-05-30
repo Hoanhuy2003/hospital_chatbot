@@ -15,6 +15,8 @@ public interface IMedicineService {
 
     List<MedicineResponse> getBySpecialty(Long specialtyId);
 
+    List<MedicineResponse> getByDoctorUserId(Long userId) throws DataNotFoundException;
+
     MedicineResponse getById(Long id) throws DataNotFoundException;
 
     List<MedicineResponse> getAll();

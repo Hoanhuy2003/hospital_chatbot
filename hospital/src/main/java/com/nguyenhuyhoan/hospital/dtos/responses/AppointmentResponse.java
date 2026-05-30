@@ -31,6 +31,7 @@ public class AppointmentResponse {
 
     private String doctorName;
     private String clinicName;
+    private Long specialtyId;
     private String specialtyName;
     private String photoUrl;
 
@@ -68,7 +69,12 @@ public class AppointmentResponse {
                 .patientAvatarUrl(patient != null ? patient.getAvatarUrl() : null)
                 .doctorName(appointment.getSchedule().getDoctor().getUser().getFullName())
                 .clinicName(appointment.getSchedule().getClinic().getName())
-                .specialtyName(appointment.getSchedule().getClinic().getSpecialty().getName())
+                .specialtyId(appointment.getDoctor() != null && appointment.getDoctor().getSpecialty() != null
+                        ? appointment.getDoctor().getSpecialty().getId() : null)
+                .specialtyName(appointment.getDoctor() != null && appointment.getDoctor().getSpecialty() != null
+                        ? appointment.getDoctor().getSpecialty().getName()
+                        : (appointment.getSchedule().getClinic().getSpecialty() != null
+                        ? appointment.getSchedule().getClinic().getSpecialty().getName() : null))
                 .photoUrl(appointment.getDoctor().getPhotoUrl())
                 .date(appointment.getSchedule().getDate().toString())
                 .timeSlot(appointment.getSchedule().getTimeSlot())

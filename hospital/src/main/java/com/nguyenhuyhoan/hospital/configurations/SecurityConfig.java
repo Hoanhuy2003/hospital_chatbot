@@ -100,12 +100,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/clinics/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/clinics/**").hasRole("ADMIN")
 
-                        // ── Medical Records ──
-                        // GET: bệnh nhân, bác sĩ, admin đều được xem
-                        .requestMatchers(HttpMethod.GET,  "/api/v1/medical_records/**").permitAll()
-                        // POST/PUT: chỉ bác sĩ và admin mới được tạo / sửa
-                        .requestMatchers(HttpMethod.POST, "/api/v1/medical_records/**").hasAnyRole("ADMIN", "DOCTOR")
-                        .requestMatchers(HttpMethod.PUT,  "/api/v1/medical_records/**").hasAnyRole("ADMIN", "DOCTOR")
+                        // ── Medical Records (chi tiết quyền: @PreAuthorize trên controller) ──
+                        .requestMatchers("/api/v1/medical_records/**").authenticated()
 
                         // ── Static files ──
                         .requestMatchers("/uploads/**").permitAll()

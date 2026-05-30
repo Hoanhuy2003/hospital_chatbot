@@ -19,4 +19,5 @@ public class AuthResponse {
     // Chỉ có giá trị khi role = DOCTOR
     private Long doctorId;
     private Long clinicId;
+    private Long specialtyId;
 }

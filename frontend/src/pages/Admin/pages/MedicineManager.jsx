@@ -60,6 +60,7 @@ export default function MedicineManager() {
     if (!form.name.trim())               return toast.warning('Tên thuốc không được để trống')
     if (!form.unit.trim())               return toast.warning('Đơn vị không được để trống')
     if (!form.price || isNaN(form.price)) return toast.warning('Giá không hợp lệ')
+    if (!form.specialtyId)              return toast.warning('Vui lòng chọn chuyên khoa cho thuốc')
 
     const payload = {
       name:               form.name,

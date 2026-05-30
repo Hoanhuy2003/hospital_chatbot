@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { appointmentService } from '../../../services/appointmentService' 
 import { medicalRecordService } from '../../../services/medicalRecordService'
-import { medicineService } from '../../../services/medicineService' // Đảm bảo đã import service này
+import { medicineService } from '../../../services/medicineService'
 import { invoiceService } from '../../../services/invoiceService'
 import { toast } from 'react-toastify'
 import styles from './PatientModal.module.css'
@@ -65,52 +65,35 @@ export default function PatientModal({ patient: p, initialTab = 0, onClose, onCo
   }, [initialTab])
 
  
- // Lấy danh sách thuốc khi vào Tab "Đơn thuốc"
-// Lấy danh sách thuốc khi vào Tab "Đơn thuốc"
-// ================== PHẦN LẤY THUỐC ==================
-// ================== LẤY DANH SÁCH THUỐC ==================
-useEffect(() => {
-  const fetchMedicines = async () => {
-    if (tab !== 3) return;     // Chỉ load khi ở tab "Đơn thuốc"
+  useEffect(() => {
+    const fetchMedicines = async () => {
+      if (tab !== 3) return
 
-    try {
-      console.log("🔍 ID chuyên khoa nhận được:", p?.specialtyId || "NULL");
-
-      let data = [];
-
-      // Ưu tiên lấy theo chuyên khoa
-      if (p?.specialtyId) {
-        console.log(`📌 Đang gọi API lấy thuốc theo chuyên khoa ID = ${p.specialtyId}`);
-        data = await medicineService.getBySpecialty(p.specialtyId);
-      }
-
-      // Nếu không có specialtyId hoặc lấy theo khoa bị rỗng → lấy tất cả
-      if (!data || data.length === 0) {
-        console.warn("⚠️ Không có dữ liệu theo chuyên khoa → Lấy tất cả thuốc");
-        data = await medicineService.getAll();
-      }
-
-      console.log(`✅ Thành công! Đã lấy được ${data.length} loại thuốc`);
-      setDbMedicines(data || []);
-    } catch (err) {
-      console.error("❌ Lỗi khi lấy danh sách thuốc:", err);
-
-      // Fallback lấy tất cả thuốc
       try {
-        console.log("🔄 Thử lấy tất cả thuốc làm fallback...");
-        const allData = await medicineService.getAll();
-        setDbMedicines(allData || []);
-        console.log(`✅ Fallback thành công: ${allData.length} thuốc`);
-      } catch (fallbackErr) {
-        console.error("❌ Fallback cũng thất bại:", fallbackErr);
-        setDbMedicines([]);
-        toast.error("Không thể tải danh sách thuốc");
+        let data = await medicineService.getForDoctor()
+        if (!Array.isArray(data) || data.length === 0) {
+          const specialtyId = p?.specialtyId || localStorage.getItem('specialtyId')
+          if (specialtyId) {
+            data = await medicineService.getBySpecialty(specialtyId)
+          }
+        }
+        setDbMedicines(Array.isArray(data) ? data : [])
+        if (!data?.length) {
+          const specLabel = p?.specialtyName || 'chuyên khoa của bạn'
+          toast.info(
+            `Chưa có thuốc trong danh mục ${specLabel}. Vào Admin → Danh mục thuốc để thêm thuốc và chọn đúng chuyên khoa.`
+          )
+        }
+      } catch (err) {
+        console.error('Lỗi tải thuốc:', err)
+        setDbMedicines([])
+        const msg = err.response?.data?.message || err.response?.data || err.message
+        toast.error(typeof msg === 'string' ? msg : 'Không thể tải danh sách thuốc')
       }
     }
-  };
 
-  fetchMedicines();
-}, [tab, p?.specialtyId]);   // Phụ thuộc vào tab và specialtyId // Quan trọng: phụ thuộc vào tab và specialtyId// Quan trọng: theo dõi tab và specialtyId
+    fetchMedicines()
+  }, [tab, p?.specialtyId, p?.specialtyName, p?.id])
   if (!p) return null;
 
 
@@ -420,7 +403,12 @@ useEffect(() => {
 
           {tab === 3 && (
             <div className={styles.recordForm}>
-              <div className={styles.sectionLabel}>Kê đơn thuốc điện tử</div>
+              <div className={styles.sectionLabel}>
+                Kê đơn thuốc điện tử
+                {p?.specialtyName ? (
+                  <span className={styles.specHint}> — chỉ thuốc khoa: {p.specialtyName}</span>
+                ) : null}
+              </div>
               <div className={styles.drugHeader}>
                 <span>Tên thuốc / Hàm lượng</span>
                 <span>Số lượng</span>

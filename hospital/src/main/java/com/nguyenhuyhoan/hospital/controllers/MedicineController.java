@@ -4,11 +4,12 @@ import com.nguyenhuyhoan.hospital.dtos.requests.MedicineDTO;
 import com.nguyenhuyhoan.hospital.dtos.responses.MedicineResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 import com.nguyenhuyhoan.hospital.iservices.IMedicineService;
+import com.nguyenhuyhoan.hospital.securitis.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +22,19 @@ public class MedicineController {
     private final IMedicineService medicineService;
 
     @GetMapping("/specialty/{specialtyId}")
-    public ResponseEntity<?> getBySpecialty(@PathVariable Long specialtyId){
+    public ResponseEntity<?> getBySpecialty(@PathVariable Long specialtyId) {
         return ResponseEntity.ok(medicineService.getBySpecialty(specialtyId));
+    }
+
+    /** Thuốc theo chuyên khoa của bác sĩ đang đăng nhập (kê đơn). */
+    @GetMapping("/for-doctor")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    public ResponseEntity<?> getForLoggedInDoctor(@AuthenticationPrincipal UserDetailsImpl principal) {
+        try {
+            return ResponseEntity.ok(medicineService.getByDoctorUserId(principal.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("")
@@ -52,6 +64,7 @@ public class MedicineController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<MedicineResponse>> getAll() {
         List<MedicineResponse> medicines = medicineService.getAll();
         return ResponseEntity.ok(medicines);

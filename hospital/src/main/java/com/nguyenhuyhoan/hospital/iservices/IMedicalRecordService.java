@@ -1,13 +1,13 @@
 package com.nguyenhuyhoan.hospital.iservices;
 
 import com.nguyenhuyhoan.hospital.dtos.requests.MedicalRecordDTO;
+import com.nguyenhuyhoan.hospital.dtos.responses.FollowUpResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.MedicalRecordResponse;
 import com.nguyenhuyhoan.hospital.dtos.responses.UserResponse;
 import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
-import com.nguyenhuyhoan.hospital.models.MedicalRecord;
+import com.nguyenhuyhoan.hospital.securitis.UserDetailsImpl;
 
 import java.util.List;
-import java.util.Map;
 
 public interface IMedicalRecordService {
 
@@ -22,7 +22,13 @@ public interface IMedicalRecordService {
 
     List<MedicalRecordResponse> getRecordByDoctor(Long doctorId);
 
-    List<Map<String, Object>> getNextAppointments(Long doctorOrUserId);
+    List<FollowUpResponse> getNextAppointments(Long doctorUserId);
+
+    List<FollowUpResponse> getFollowUpsByPatient(Long patientId);
+
+    void assertCanAccessPatientRecords(UserDetailsImpl principal, Long patientId);
+
+    void assertDoctorOwnsFollowUpList(UserDetailsImpl principal, Long doctorUserId);
 
     MedicalRecordResponse getByAppointment(Long appointmentId);
 

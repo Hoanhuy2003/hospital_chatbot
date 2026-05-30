@@ -44,6 +44,7 @@ export default function Login() {
       if (data.role === 'DOCTOR') {
         if (data.doctorId) localStorage.setItem('doctorId', data.doctorId)
         if (data.clinicId) localStorage.setItem('clinicId', data.clinicId)
+        if (data.specialtyId) localStorage.setItem('specialtyId', String(data.specialtyId))
       }
 
       // Lưu vào AuthContext

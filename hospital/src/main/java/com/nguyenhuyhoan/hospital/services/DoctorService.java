@@ -199,6 +199,7 @@ public class DoctorService implements IDoctorService {
         return DoctorResponse.builder()
                 .id(doctor.getId())
                 .fullName(doctor.getUser() != null ? doctor.getUser().getFullName() : null)
+                .specialtyId(doctor.getSpecialty() != null ? doctor.getSpecialty().getId() : null)
                 .specialtyName(doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : null)
                 .clinicName(doctor.getClinic() != null ? doctor.getClinic().getName() : null)
                 .price(doctor.getPrice())

@@ -6,6 +6,8 @@ import com.nguyenhuyhoan.hospital.exception.DataNotFoundException;
 import com.nguyenhuyhoan.hospital.iservices.IMedicineService;
 import com.nguyenhuyhoan.hospital.models.Medicine;
 import com.nguyenhuyhoan.hospital.models.Specialty;
+import com.nguyenhuyhoan.hospital.models.Doctor;
+import com.nguyenhuyhoan.hospital.repositoris.DoctorRepository;
 import com.nguyenhuyhoan.hospital.repositoris.MedicineRepository;
 import com.nguyenhuyhoan.hospital.repositoris.SpecialtyRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class MedicineService implements IMedicineService {
 
     private final MedicineRepository medicineRepository;
     private final SpecialtyRepository specialtyRepository;
+    private final DoctorRepository doctorRepository;
 
 
     @Override
@@ -53,6 +56,9 @@ public class MedicineService implements IMedicineService {
         medicine.setPrice(medicineDTO.getPrice());
         medicine.setDosageInstruction(medicineDTO.getDosageInstruction());
         medicine.setSpecialty(specialty);
+        if (medicine.getIsActive() == null) {
+            medicine.setIsActive(true);
+        }
 
         return mapToResponse(medicineRepository.save(medicine));
     }
@@ -68,11 +74,20 @@ public class MedicineService implements IMedicineService {
 
     @Override
     public List<MedicineResponse> getBySpecialty(Long specialtyId) {
-
-        return medicineRepository.findBySpecialtyIdAndIsActiveTrue(specialtyId)
+        return medicineRepository.findAvailableBySpecialtyId(specialtyId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MedicineResponse> getByDoctorUserId(Long userId) throws DataNotFoundException {
+        Doctor doctor = doctorRepository.findByUser_Id(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy hồ sơ bác sĩ"));
+        if (doctor.getSpecialty() == null) {
+            throw new DataNotFoundException("Bác sĩ chưa được gán chuyên khoa");
+        }
+        return getBySpecialty(doctor.getSpecialty().getId());
     }
 
     @Override
@@ -91,16 +106,17 @@ public class MedicineService implements IMedicineService {
                 .collect(Collectors.toList());
     }
 
-    private MedicineResponse mapToResponse (Medicine medicine){
+    private MedicineResponse mapToResponse(Medicine medicine) {
+        Long specialtyId = medicine.getSpecialty() != null ? medicine.getSpecialty().getId() : null;
+        String specialtyName = medicine.getSpecialty() != null ? medicine.getSpecialty().getName() : null;
         return MedicineResponse.builder()
                 .id(medicine.getId())
                 .name(medicine.getName())
                 .unit(medicine.getUnit())
                 .price(medicine.getPrice())
                 .dosageInstruction(medicine.getDosageInstruction())
-                .specialtyId(medicine.getSpecialty().getId())
-                .specialtyName(medicine.getSpecialty().getName())
-
+                .specialtyId(specialtyId)
+                .specialtyName(specialtyName)
                 .build();
     }
 }

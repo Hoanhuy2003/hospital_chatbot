@@ -14,6 +14,7 @@ public class DoctorResponse {
 
     private Long id;
     private String fullName;
+    private Long specialtyId;
     private String specialtyName;
     private String clinicName;
     private Double price;

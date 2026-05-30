@@ -27,12 +27,16 @@ export const medicalRecordService = {
     getByDoctor : async(doctorId) =>{
         const response = await api.get(`/v1/medical_records/doctor/${doctorId}`);
         return response.data;
-    }
-    ,getNextAppointment : async(doctorId) =>{
-        const response = await api.get(`/v1/medical_records/doctor/${doctorId}/next-appointments`);
+    },
+    getNextAppointment: async (doctorUserId) => {
+        const response = await api.get(`/v1/medical_records/doctor/${doctorUserId}/next-appointments`);
         return response.data;
+    },
 
-    }, 
+    getFollowUpsByPatient: async (patientId) => {
+        const response = await api.get(`/v1/medical_records/patient/${patientId}/follow-ups`);
+        return response.data;
+    },
     getByAppointment : async(appointmentId) =>{
         const response = await api.get(`/v1/medical_records/appointment/${appointmentId}`);
         return response.data;

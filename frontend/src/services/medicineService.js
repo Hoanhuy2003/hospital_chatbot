@@ -6,6 +6,12 @@ export const medicineService = {
         const response = await api.get(`/v1/medicines/specialty/${specialtyId}`);
         return response.data;
     },
+
+    /** Thuốc đúng chuyên khoa bác sĩ đang đăng nhập (ưu tiên dùng khi kê đơn). */
+    getForDoctor: async () => {
+        const response = await api.get('/v1/medicines/for-doctor');
+        return response.data;
+    },
     
     // Nếu muốn lấy tất cả thuốc
     getAll: async () => {

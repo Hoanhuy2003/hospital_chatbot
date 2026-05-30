@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { appointmentService } from '../../services/appointmentService';
 import { notificationService } from '../../services/notificationService';
 import { medicalRecordService } from '../../services/medicalRecordService';
@@ -15,7 +16,9 @@ const STATUS_MAP = {
 };
 
 export default function MyBookings() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
+  const [followUps, setFollowUps] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,6 +37,13 @@ export default function MyBookings() {
 
       const notiData = await notificationService.getByUserId(userId);
       setNotifications(notiData || []);
+
+      try {
+        const fu = await medicalRecordService.getFollowUpsByPatient(userId);
+        setFollowUps(Array.isArray(fu) ? fu : []);
+      } catch {
+        setFollowUps([]);
+      }
     } catch (err) {
       console.error("Lỗi tải dữ liệu:", err);
     } finally {
@@ -123,6 +133,35 @@ export default function MyBookings() {
   return (
     <div className={styles.wrapper}>
       <h1 className={styles.title}>Danh sách bác sĩ đã đặt</h1>
+
+      {followUps.length > 0 && (
+        <section className={styles.followUpSection}>
+          <h2 className={styles.followUpTitle}>🔁 Lịch tái khám được gợi ý</h2>
+          {followUps.map((fu) => (
+            <div key={fu.medical_record_id ?? fu.date} className={styles.followUpCard}>
+              <div className={styles.followUpMain}>
+                <div className={styles.followUpDoctor}>BS. {fu.doctor_name || fu.name}</div>
+                <div className={styles.followUpMeta}>
+                  📅 Ngày tái khám: <strong>{fu.follow_up_date || fu.date}</strong>
+                  {fu.days_until != null && (
+                    <span> — còn {fu.days_until} ngày</span>
+                  )}
+                </div>
+                {fu.note && <div className={styles.followUpNote}>{fu.note}</div>}
+              </div>
+              {fu.doctor_id && (
+                <button
+                  type="button"
+                  className={styles.btnFollowUpBook}
+                  onClick={() => navigate(`/bac-si/${fu.doctor_id}`)}
+                >
+                  Đặt lịch tái khám
+                </button>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
       
       <div className={styles.list}>
         {bookings.map((b) => {

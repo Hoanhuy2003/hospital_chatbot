@@ -34,9 +34,19 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
 
     @Query("SELECT m FROM MedicalRecord m " +
             "WHERE m.appointment.doctor.user.id = :userId " +
+            "AND m.followUpDate IS NOT NULL " +
             "AND m.followUpDate >= CURRENT_DATE " +
             "ORDER BY m.followUpDate ASC")
-    List<MedicalRecord> findUpcomingFollowUps(@Param("userId") Long doctorId);
+    List<MedicalRecord> findUpcomingFollowUps(@Param("userId") Long userId);
+
+    @Query("SELECT m FROM MedicalRecord m " +
+            "WHERE m.patient.id = :patientId " +
+            "AND m.followUpDate IS NOT NULL " +
+            "AND m.followUpDate >= CURRENT_DATE " +
+            "ORDER BY m.followUpDate ASC")
+    List<MedicalRecord> findUpcomingFollowUpsByPatientId(@Param("patientId") Long patientId);
+
+    boolean existsByAppointmentId(Long appointmentId);
 
     Optional<MedicalRecord> findByAppointmentId(Long appointmentId);
 

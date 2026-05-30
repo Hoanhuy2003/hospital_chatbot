@@ -109,6 +109,9 @@ public class AuthController {
                     if (doctor.getClinic() != null) {
                         builder.clinicId(doctor.getClinic().getId());
                     }
+                    if (doctor.getSpecialty() != null) {
+                        builder.specialtyId(doctor.getSpecialty().getId());
+                    }
                 });
             }
 

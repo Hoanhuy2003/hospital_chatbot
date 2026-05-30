@@ -11,6 +11,7 @@ import styles from './Home.module.css'
 
 const HOME_CLINIC_LIMIT = 12
 const HOME_SPECIALTY_LIMIT = 12
+const HOME_DOCTOR_LIMIT = 12
 
 const HOME_TABS = [
   { key: 'hospital', label: 'Bệnh viện kết nối', targetId: 'home-top' },
@@ -74,18 +75,16 @@ export default function Home() {
     }
 
     // bác sỹ
-    const fetchDoctor = async () =>{
-
-      try{
+    const fetchDoctor = async () => {
+      try {
         setLoading(true)
-        const list = await doctorService.getAllList()
-        setDoctors(Array.isArray(list) ? list : [])
-         
-      }catch(err){
-        console.error("Errow", err)
+        const data = await doctorService.getAll({ page: 0, size: HOME_DOCTOR_LIMIT })
+        const list = data?.content ?? (Array.isArray(data) ? data : [])
+        setDoctors(Array.isArray(list) ? list.slice(0, HOME_DOCTOR_LIMIT) : [])
+      } catch (err) {
+        console.error('Error fetching doctors:', err)
         setError(err.message)
-
-      }finally{
+      } finally {
         setLoading(false)
       }
     }
@@ -315,7 +314,7 @@ export default function Home() {
           </div>
         ) : (
           <div className={styles.docGrid}>
-            {filteredDoctors.map(doc => (
+            {filteredDoctors.slice(0, HOME_DOCTOR_LIMIT).map(doc => (
               <DoctorCard key={doc.id} doctor={doc} onBook={setModalDoctor} />
             ))}
           </div>
